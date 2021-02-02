@@ -88,15 +88,15 @@ infixr 20 _+_
 UnitModality : Modality ⊤
 UnitModality = record
   { _+_                 = _+_
-  ; _·_                 = _+_
+  ; _∙_                 = _+_
   ; _∧_                 = _+_
   ; 𝟘                   = tt
   ; 𝟙                   = tt
   ; +-CommutativeMonoid = +-CommutativeMonoid
-  ; ·-Monoid            = +-Monoid
+  ; ∙-Monoid            = +-Monoid
   ; ∧-Semilattice       = +-Semilattice
-  ; ·-Zero              = (λ x → refl)    , (λ x → refl)
-  ; ·Distr+             = +-Distributiveˡ , +-Distributiveʳ
-  ; ·Distr∧             = +-Distributiveˡ , +-Distributiveʳ
+  ; ∙-Zero              = (λ x → refl)    , (λ x → refl)
+  ; ∙Distr+             = +-Distributiveˡ , +-Distributiveʳ
+  ; ∙Distr∧             = +-Distributiveˡ , +-Distributiveʳ
   ; +Distr∧             = +-Distributiveˡ , +-Distributiveʳ
   }

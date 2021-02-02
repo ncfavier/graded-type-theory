@@ -14,9 +14,9 @@ _+_ : Op₂ Erasure
 x + 𝟘 = x
 x + ω = ω
 
-_·_ : Op₂ Erasure
-x · 𝟘 = 𝟘
-x · ω = x
+_∙_ : Op₂ Erasure
+x ∙ 𝟘 = 𝟘
+x ∙ ω = x
 
 _∧_ : Op₂ Erasure
 _∧_ = _+_
@@ -53,47 +53,47 @@ _∧_ = _+_
 
 
 -- Properties of multiplication
-·-Congruent : Congruent₂ _≡_ _·_
-·-Congruent refl refl = refl
+∙-Congruent : Congruent₂ _≡_ _∙_
+∙-Congruent refl refl = refl
 
-·-Associative : Associative _≡_ _·_
-·-Associative x y 𝟘 = refl
-·-Associative x y ω = refl
+∙-Associative : Associative _≡_ _∙_
+∙-Associative x y 𝟘 = refl
+∙-Associative x y ω = refl
 
-·-LeftZero : LeftZero _≡_ 𝟘 _·_
-·-LeftZero 𝟘 = refl
-·-LeftZero ω = refl
+∙-LeftZero : LeftZero _≡_ 𝟘 _∙_
+∙-LeftZero 𝟘 = refl
+∙-LeftZero ω = refl
 
-·-RightZero : RightZero _≡_ 𝟘 _·_
-·-RightZero x = refl
+∙-RightZero : RightZero _≡_ 𝟘 _∙_
+∙-RightZero x = refl
 
-·-Zero : Zero _≡_ 𝟘 _·_
-·-Zero = ·-LeftZero , ·-RightZero
+∙-Zero : Zero _≡_ 𝟘 _∙_
+∙-Zero = ∙-LeftZero , ∙-RightZero
 
-·-LeftIdentity : LeftIdentity _≡_ ω _·_
-·-LeftIdentity 𝟘 = refl
-·-LeftIdentity ω = refl
+∙-LeftIdentity : LeftIdentity _≡_ ω _∙_
+∙-LeftIdentity 𝟘 = refl
+∙-LeftIdentity ω = refl
 
-·-RightIdentity : RightIdentity _≡_ ω _·_
-·-RightIdentity x = refl
+∙-RightIdentity : RightIdentity _≡_ ω _∙_
+∙-RightIdentity x = refl
 
-·-Identity : Identity _≡_ ω _·_
-·-Identity = ·-LeftIdentity , ·-RightIdentity
+∙-Identity : Identity _≡_ ω _∙_
+∙-Identity = ∙-LeftIdentity , ∙-RightIdentity
 
 
 -- Distributive properties of addition, multiplication (and meet)
-·Distrˡ+ : _DistributesOverˡ_ _≡_ _·_ _+_
-·Distrˡ+ x y 𝟘 = refl
-·Distrˡ+ ω y ω = refl
-·Distrˡ+ 𝟘 𝟘 ω = refl
-·Distrˡ+ 𝟘 ω ω = refl
+∙Distrˡ+ : _DistributesOverˡ_ _≡_ _∙_ _+_
+∙Distrˡ+ x y 𝟘 = refl
+∙Distrˡ+ ω y ω = refl
+∙Distrˡ+ 𝟘 𝟘 ω = refl
+∙Distrˡ+ 𝟘 ω ω = refl
 
-·Distrʳ+ : _DistributesOverʳ_ _≡_ _·_ _+_
-·Distrʳ+ 𝟘 y z = refl
-·Distrʳ+ ω y z = refl
+∙Distrʳ+ : _DistributesOverʳ_ _≡_ _∙_ _+_
+∙Distrʳ+ 𝟘 y z = refl
+∙Distrʳ+ ω y z = refl
 
-·Distr+ : _DistributesOver_ _≡_ _·_ _+_
-·Distr+ = ·Distrˡ+ , ·Distrʳ+
+∙Distr+ : _DistributesOver_ _≡_ _∙_ _+_
+∙Distr+ = ∙Distrˡ+ , ∙Distrʳ+
 
 +Distrˡ+ : _DistributesOverˡ_ _≡_ _+_ _+_
 +Distrˡ+ x y ω = refl
@@ -146,36 +146,36 @@ _∧_ = _+_
   }
 
 -- Multiplication forms the following algebras
-·-Magma : IsMagma _≡_ _·_
-·-Magma = record
+∙-Magma : IsMagma _≡_ _∙_
+∙-Magma = record
   { isEquivalence = isEquivalence
-  ; ∙-cong        = ·-Congruent
+  ; ∙-cong        = ∙-Congruent
   }
 
-·-Semigroup : IsSemigroup _≡_ _·_
-·-Semigroup = record
-  { isMagma = ·-Magma
-  ; assoc   = ·-Associative
+∙-Semigroup : IsSemigroup _≡_ _∙_
+∙-Semigroup = record
+  { isMagma = ∙-Magma
+  ; assoc   = ∙-Associative
   }
 
-·-Monoid : IsMonoid _≡_ _·_ ω
-·-Monoid = record
-  { isSemigroup = ·-Semigroup
-  ; identity    = ·-Identity
+∙-Monoid : IsMonoid _≡_ _∙_ ω
+∙-Monoid = record
+  { isSemigroup = ∙-Semigroup
+  ; identity    = ∙-Identity
   }
 
 ErasureModality : Modality Erasure
 ErasureModality = record
   { _+_                 = _+_
-  ; _·_                 = _·_
+  ; _∙_                 = _∙_
   ; _∧_                 = _∧_
   ; 𝟘                   = 𝟘
   ; 𝟙                   = ω
   ; +-CommutativeMonoid = +-CommutativeMonoid
-  ; ·-Monoid            = ·-Monoid
+  ; ∙-Monoid            = ∙-Monoid
   ; ∧-Semilattice       = +-Semilattice
-  ; ·-Zero              = ·-Zero
-  ; ·Distr+             = ·Distr+
-  ; ·Distr∧             = ·Distr+
+  ; ∙-Zero              = ∙-Zero
+  ; ∙Distr+             = ∙Distr+
+  ; ∙Distr∧             = ∙Distr+
   ; +Distr∧             = +Distr+
   }

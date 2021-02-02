@@ -9,7 +9,7 @@ record Modality (M : Set) : Set where
   field
     -- A modality consists of a type M with three binary operations...
     _+_ : Op₂ M -- Addition
-    _·_ : Op₂ M -- Multiplication
+    _∙_ : Op₂ M -- Multiplication
     _∧_ : Op₂ M -- Meet
 
     -- ... and two special elements
@@ -18,18 +18,18 @@ record Modality (M : Set) : Set where
 
     -- + forms a commutative monoid with 𝟘 as unit element
     +-CommutativeMonoid : IsCommutativeMonoid _≡_ _+_ 𝟘
-    -- · forms a monoid with 𝟙 as unit element
-    ·-Monoid            : IsMonoid _≡_ _·_ 𝟙
+    -- ∙ forms a monoid with 𝟙 as unit element
+    ∙-Monoid            : IsMonoid _≡_ _∙_ 𝟙
     -- ∧ forms a semilattice
     ∧-Semilattice       : IsSemilattice _≡_ _∧_
 
     -- 𝟘 is zero for multiplication
-    ·-Zero              : Zero _≡_ 𝟘 _·_
+    ∙-Zero              : Zero _≡_ 𝟘 _∙_
 
     -- Multiplication distributes over addition
-    ·Distr+             : _DistributesOver_ _≡_ _·_ _+_
+    ∙Distr+             : _DistributesOver_ _≡_ _∙_ _+_
     -- Multiplation distributes over meet
-    ·Distr∧             : _DistributesOver_ _≡_ _·_ _∧_
+    ∙Distr∧             : _DistributesOver_ _≡_ _∙_ _∧_
     -- Addition distributes over meet
     +Distr∧             : _DistributesOver_ _≡_ _+_ _∧_
 
@@ -48,11 +48,11 @@ record Modality (M : Set) : Set where
   +-Identity : Identity _≡_ 𝟘 _+_
   +-Identity = IsMonoid.identity (IsCommutativeMonoid.isMonoid +-CommutativeMonoid)
 
-  ·-Associative : Associative _≡_ _·_
-  ·-Associative = IsSemigroup.assoc (IsMonoid.isSemigroup ·-Monoid)
+  ∙-Associative : Associative _≡_ _∙_
+  ∙-Associative = IsSemigroup.assoc (IsMonoid.isSemigroup ∙-Monoid)
 
-  ·-Identity : Identity _≡_ 𝟙 _·_
-  ·-Identity = (IsMonoid.identity ·-Monoid)
+  ∙-Identity : Identity _≡_ 𝟙 _∙_
+  ∙-Identity = (IsMonoid.identity ∙-Monoid)
 
   ∧-Commutative : Commutative _≡_ _∧_
   ∧-Commutative = IsSemilattice.comm ∧-Semilattice
