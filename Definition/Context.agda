@@ -12,9 +12,10 @@ data Con (A : Set) : Nat → Set where
   ε   : Con A 0
   _∙_ : {n : Nat} → Con A n → A → Con A (1+ n)
 
-variable
-  ℓ : Nat
-  A : Set
+private
+  variable
+    ℓ : Nat
+    A : Set
 
 infix 15 _▷_+_
 infix 15 _▷_∧_
