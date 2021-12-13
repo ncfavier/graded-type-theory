@@ -1,19 +1,22 @@
 {-# OPTIONS --without-K --safe #-}
 
 open import Definition.Typed.EqualityRelation
+open import Tools.Relation
 
-module Definition.LogicalRelation.Properties.Transitivity (M : Set) {{eqrel : EqRelSet M}} where
+module Definition.LogicalRelation.Properties.Transitivity {a ℓ} (M′ : Setoid a ℓ)
+                                                          {{eqrel : EqRelSet M′}} where
 open EqRelSet {{...}}
+open Setoid M′ using () renaming (Carrier to M)
 
 open import Definition.Untyped M hiding (_∷_)
-open import Definition.Typed M
-open import Definition.Typed.Properties M
-import Definition.Typed.Weakening M as Weak
-open import Definition.LogicalRelation M
-open import Definition.LogicalRelation.ShapeView M
-open import Definition.LogicalRelation.Irrelevance M
-open import Definition.LogicalRelation.Properties.Conversion M
-open import Definition.LogicalRelation.Properties.Symmetry M
+open import Definition.Typed M′
+open import Definition.Typed.Properties M′
+import Definition.Typed.Weakening M′ as Weak
+open import Definition.LogicalRelation M′
+open import Definition.LogicalRelation.ShapeView M′
+open import Definition.LogicalRelation.Irrelevance M′
+open import Definition.LogicalRelation.Properties.Conversion M′
+open import Definition.LogicalRelation.Properties.Symmetry M′
 
 open import Tools.Nat
 open import Tools.Product
@@ -51,7 +54,7 @@ mutual
     let ΠF₁G₁≡ΠF′G′       = whrDet* (red D₁ , ⟦ W ⟧ₙ) (D′  , ⟦ W ⟧ₙ)
         F₁≡F′ , G₁≡G′ , _ = B-PE-injectivity W W ΠF₁G₁≡ΠF′G′
         F₂≡F″ , G₂≡G″ , _ = B-PE-injectivity W W (whrDet* (red D₂ , ⟦ W ⟧ₙ) (D″ , ⟦ W ⟧ₙ))
-        substLift : ∀ {m n Δ l a} (ρ : Wk m n) x → Set
+        substLift : ∀ {m n Δ l a} (ρ : Wk m n) x → Set _
         substLift {_} {_} {Δ} {l} {a} ρ x = Δ ⊩⟨ l ⟩ wk (lift ρ) x [ a ]
         [F′] : ∀ {m} {ρ : Wk m n} {Δ} [ρ] ⊢Δ → Δ ⊩⟨ l′ ⟩ wk ρ F′
         [F′] {_} {ρ} [ρ] ⊢Δ = PE.subst (λ x → _ ⊩⟨ _ ⟩ wk ρ x) F₁≡F′ ([F]₁ [ρ] ⊢Δ)

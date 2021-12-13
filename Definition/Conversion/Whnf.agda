@@ -1,10 +1,15 @@
 {-# OPTIONS --without-K --safe #-}
 
-module Definition.Conversion.Whnf (M : Set) where
+open import Tools.Level
+open import Tools.Relation
+
+module Definition.Conversion.Whnf (M′ : Setoid ℓ₀ ℓ₀) where
+
+open Setoid M′ renaming (Carrier to M)
 
 open import Definition.Untyped M hiding (_∷_)
-open import Definition.Typed M
-open import Definition.Conversion M
+open import Definition.Typed M′
+open import Definition.Conversion M′
 
 open import Tools.Nat
 open import Tools.Product

@@ -16,7 +16,7 @@ open import Definition.Modality.Context.Properties 𝕄
 open import Definition.Modality.Substitution.Properties 𝕄
 open import Definition.Modality.Usage 𝕄
 open import Definition.Modality.Usage.Inversion 𝕄
-open import Definition.Typed M
+open import Definition.Typed M′
 open import Definition.Untyped M hiding (_∷_)
 open import Definition.Usage 𝕄
 
@@ -58,22 +58,6 @@ usagePresTerm γ▸u′ (Σ-β₂ x x₁ x₂ x₃ x₄) with inv-usage-snd γ�
 ... | invUsageProj 𝟘▸tu γ≤𝟘 with inv-usage-prod 𝟘▸tu
 ... | invUsageProd {δ = δ} {η} δ▸t η▸u refl 𝟘≤δ+η = sub η▸u
   (≤ᶜ-trans γ≤𝟘 (proj₂ (+ᶜ-positive δ η 𝟘≤δ+η)))
-usagePresTerm γ▸ptu (prodrec-subst x x₁ x₂ x₃ t⇒t′) with inv-usage-prodrec γ▸ptu
-... | invUsageProdrec δ▸t η▸u γ≤pδ+η = sub (prodrecₘ (usagePresTerm δ▸t t⇒t′) η▸u) γ≤pδ+η
-usagePresTerm {γ = γ} γ▸ptu (prodrec-β {p = p} x x₁ x₂ x₃ x₄ x₅) with inv-usage-prodrec γ▸ptu
-... | invUsageProdrec {δ} {η} δ▸tt′ η▸u γ≤pδ+η with inv-usage-prod δ▸tt′
-... | invUsageProd {δ = δ′} {η = η′} δ′▸t η′▸t′ refl δ≤δ′+η′ = sub
-  (doubleSubstₘ-lemma η▸u η′▸t′ δ′▸t)
-  le
-  where
-  open import Tools.Reasoning.PartialOrder ≤ᶜ-poset
-  le = begin
-      γ                       ≤⟨ γ≤pδ+η ⟩
-      p ·ᶜ δ +ᶜ η             ≈⟨ +ᶜ-comm (p ·ᶜ δ) η ⟩
-      η +ᶜ p ·ᶜ δ             ≤⟨ +ᶜ-monotoneʳ (·ᶜ-monotoneʳ δ≤δ′+η′) ⟩
-      η +ᶜ p ·ᶜ (δ′ +ᶜ η′)    ≈⟨ +ᶜ-cong ≈ᶜ-refl (·ᶜ-distribˡ-+ᶜ p δ′ η′) ⟩
-      η +ᶜ p ·ᶜ δ′ +ᶜ p ·ᶜ η′ ≈⟨ +ᶜ-cong ≈ᶜ-refl (+ᶜ-comm (p ·ᶜ δ′) (p ·ᶜ η′)) ⟩
-      η +ᶜ p ·ᶜ η′ +ᶜ p ·ᶜ δ′ ∎
 
 usagePresTerm γ▸natrec (natrec-subst x x₁ x₂ t⇒u) with inv-usage-natrec γ▸natrec
 ... | invUsageNatrec δ▸z η▸s θ▸n γ≤X = sub (natrecₘ δ▸z η▸s (usagePresTerm θ▸n t⇒u)) γ≤X

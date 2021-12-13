@@ -1,21 +1,24 @@
 {-# OPTIONS --without-K --safe #-}
 
 open import Definition.Typed.EqualityRelation
+open import Tools.Relation
 
-module Definition.LogicalRelation.Properties.Neutral (M : Set) {{eqrel : EqRelSet M}} where
+module Definition.LogicalRelation.Properties.Neutral {a ℓ} (M′ : Setoid a ℓ)
+                                                     {{eqrel : EqRelSet M′}} where
 open EqRelSet {{...}}
+open Setoid M′ using () renaming (Carrier to M; refl to ≈-refl)
 
 open import Definition.Untyped M hiding (Wk; _∷_)
 open import Definition.Untyped.Properties M
-open import Definition.Typed M
-open import Definition.Typed.Properties M
-import Definition.Typed.Weakening M as Wk
-open import Definition.LogicalRelation M
-open import Definition.LogicalRelation.ShapeView M
-open import Definition.LogicalRelation.Irrelevance M
-open import Definition.LogicalRelation.Properties.Reflexivity M
-open import Definition.LogicalRelation.Properties.Escape M
-open import Definition.LogicalRelation.Properties.Symmetry M
+open import Definition.Typed M′
+open import Definition.Typed.Properties M′
+import Definition.Typed.Weakening M′ as Wk
+open import Definition.LogicalRelation M′
+open import Definition.LogicalRelation.ShapeView M′
+open import Definition.LogicalRelation.Irrelevance M′
+open import Definition.LogicalRelation.Properties.Reflexivity M′
+open import Definition.LogicalRelation.Properties.Escape M′
+open import Definition.LogicalRelation.Properties.Symmetry M′
 
 open import Tools.Nat
 open import Tools.Product
@@ -99,16 +102,19 @@ mutual
                   neN∘a = ∘ₙ (wkNeutral ρ neN)
                   neN∘b = ∘ₙ (wkNeutral ρ neN)
               in  neuEqTerm ([G] [ρ] ⊢Δ [a]) neN∘a neN∘b
-                            (ρn ∘ⱼ a)
-                            (conv (ρn ∘ⱼ b) (≅-eq G[a]≡G[b]))
-                            (~-app (~-wk [ρ] ⊢Δ (~-conv n~n A≡ΠFG)) a≡b))
+                            ({!ρn!} ∘ⱼ a) (conv ({!!} ∘ⱼ b) (≅-eq G[a]≡G[b]))
+                            (~-app (~-wk [ρ] ⊢Δ (~-conv n~n {!!})) a≡b {!!}))
+              -- neuEqTerm ([G] [ρ] ⊢Δ [a]) neN∘a neN∘b
+              --               (ρn ∘ⱼ a) (conv (ρn ∘ⱼ b) (≅-eq G[a]≡G[b]))
+              --               (~-app (~-wk [ρ] ⊢Δ (~-conv n~n A≡ΠFG)) a≡b ≈-refl))
            (λ {_} {ρ} [ρ] ⊢Δ [a] →
               let ρA≡ρΠFG = Wk.wkEq [ρ] ⊢Δ (subset* (red D))
                   a = escapeTerm ([F] [ρ] ⊢Δ) [a]
                   a≡a = escapeTermEq ([F] [ρ] ⊢Δ) (reflEqTerm ([F] [ρ] ⊢Δ) [a])
-              in  neuTerm ([G] [ρ] ⊢Δ [a]) (∘ₙ (wkNeutral ρ neN))
-                          (conv (Wk.wkTerm [ρ] ⊢Δ n) ρA≡ρΠFG ∘ⱼ a)
-                          (~-app (~-wk [ρ] ⊢Δ (~-conv n~n A≡ΠFG)) a≡a))
+              in  {!!})
+              -- neuTerm ([G] [ρ] ⊢Δ [a]) (∘ₙ (wkNeutral ρ neN))
+              --             (conv (Wk.wkTerm [ρ] ⊢Δ n) ρA≡ρΠFG ∘ⱼ a)
+              --             (~-app (~-wk [ρ] ⊢Δ (~-conv n~n A≡ΠFG)) a≡a ≈-refl))
   neuTerm (Σᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext) neN ⊢n n~n =
     let A≡ΣFG = subset* (red D)
         ⊢Γ = wf ⊢F
@@ -190,10 +196,11 @@ mutual
                                           (reflEqTerm ([F] [ρ] ⊢Δ) [a])
                    neN∙a   = ∘ₙ (wkNeutral ρ neN)
                    neN′∙a′ = ∘ₙ (wkNeutral ρ neN′)
-               in  neuEqTerm ([G] [ρ] ⊢Δ [a]) neN∙a neN′∙a′
-                             (conv ρn  ρA≡ρΠFG ∘ⱼ a)
-                             (conv ρn′ ρA≡ρΠFG ∘ⱼ a)
-                             (~-app (~-wk [ρ] ⊢Δ n~n′₁) a≡a))
+               in  {!!})
+               -- neuEqTerm ([G] [ρ] ⊢Δ [a]) neN∙a neN′∙a′
+               --               (conv ρn  ρA≡ρΠFG ∘ⱼ a)
+               --               (conv ρn′ ρA≡ρΠFG ∘ⱼ a)
+               --               (~-app (~-wk [ρ] ⊢Δ n~n′₁) a≡a ≈-refl))
   neuEqTerm (Σᵣ′ F G [ ⊢A , ⊢B , D ] ⊢F ⊢G A≡A [F] [G] G-ext) neN neN′ ⊢n ⊢n′ n~n′ =
     let [ΣFG] = Σᵣ′ F G [ ⊢A , ⊢B , D ] ⊢F ⊢G A≡A [F] [G] G-ext
         A≡ΣFG = subset* D

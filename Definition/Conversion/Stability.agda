@@ -115,16 +115,6 @@ stabilityRedTerm Γ≡Δ (natrec-suc x x₁ x₂ x₃) =
                  (stabilityTerm (Γ≡Δ ∙ refl (ℕⱼ ⊢Γ) ∙ refl x₁) x₃)
 stabilityRedTerm Γ≡Δ (Emptyrec-subst x d) =
   Emptyrec-subst (stability Γ≡Δ x) (stabilityRedTerm Γ≡Δ d)
-stabilityRedTerm Γ≡Δ (prodrec-subst x x₁ x₂ x₃ d) =
-  prodrec-subst (stability Γ≡Δ x) (stability (Γ≡Δ ∙ refl x) x₁)
-                (stabilityTerm (Γ≡Δ ∙ refl x ∙ refl x₁) x₂)
-                (stability (Γ≡Δ ∙ refl (Σⱼ x ▹ x₁)) x₃)
-                (stabilityRedTerm Γ≡Δ d)
-stabilityRedTerm Γ≡Δ (prodrec-β x x₁ x₂ x₃ x₄ x₅) =
-  prodrec-β (stability Γ≡Δ x) (stability (Γ≡Δ ∙ refl x) x₁)
-            (stabilityTerm Γ≡Δ x₂) (stabilityTerm Γ≡Δ x₃)
-            (stability (Γ≡Δ ∙ refl (Σⱼ x ▹ x₁)) x₄)
-            (stabilityTerm ((Γ≡Δ ∙ refl x) ∙ refl x₁) x₅)
 
 -- Stability of type reductions.
 stabilityRed : ∀ {A B} → ⊢ Γ ≡ Δ → Γ ⊢ A ⇒ B → Δ ⊢ A ⇒ B

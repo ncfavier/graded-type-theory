@@ -1,12 +1,17 @@
 {-# OPTIONS --without-K  #-}
 
-module Definition.Conversion.Soundness (M : Set) where
+open import Tools.Level
+open import Tools.Relation
+
+module Definition.Conversion.Soundness (M′ : Setoid ℓ₀ ℓ₀) where
+
+open Setoid M′ renaming (Carrier to M) hiding (refl; trans; sym)
 
 open import Definition.Untyped M hiding (_∷_)
-open import Definition.Typed M
-open import Definition.Typed.Properties M
-open import Definition.Conversion M
-open import Definition.Conversion.Whnf M
+open import Definition.Typed M′
+open import Definition.Typed.Properties M′
+open import Definition.Conversion M′
+open import Definition.Conversion.Whnf M′
 open import Definition.Typed.Consequences.InverseUniv M
 open import Definition.Typed.Consequences.Syntactic M
 open import Definition.Typed.Consequences.NeTypeEq M
@@ -24,7 +29,8 @@ mutual
   -- Algorithmic equality of neutrals is well-formed.
   soundness~↑ : ∀ {k l A} → Γ ⊢ k ~ l ↑ A → Γ ⊢ k ≡ l ∷ A
   soundness~↑ (var-refl x x≡y) = PE.subst (λ y → _ ⊢ _ ≡ var y ∷ _) x≡y (refl x)
-  soundness~↑ (app-cong k~l x₁ PE.refl) = app-cong (soundness~↓ k~l) (soundnessConv↑Term x₁)
+  soundness~↑ (app-cong k~l x₁ p≈p′) = {!app-cong!}
+  -- app-cong (soundness~↓ k~l) (soundnessConv↑Term x₁)
   soundness~↑ (fst-cong x) =
     let p≡ = soundness~↓ x
         ⊢ΣFG = proj₁ (syntacticEqTerm p≡)
