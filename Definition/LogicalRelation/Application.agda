@@ -6,7 +6,7 @@ open import Tools.Relation
 module Definition.LogicalRelation.Application {a ℓ} (M′ : Setoid a ℓ)
                                               {{eqrel : EqRelSet M′}} where
 open EqRelSet {{...}}
-open Setoid M′ using () renaming (Carrier to M)
+open Setoid M′ using () renaming (Carrier to M; refl to ≈-refl)
 
 open import Definition.Untyped M hiding (_∷_)
 open import Definition.Untyped.Properties M
@@ -47,7 +47,7 @@ appTerm′ {Γ = Γ} {p = p} {t = t} [F] [G[u]] (noemb (Bᵣ F G D ⊢F ⊢G A�
       ⊢Γ = wf ⊢F
       [u]′ = irrelevanceTerm′ F≡idF′ [F] ([F′] id ⊢Γ) [u]
       [f∘u] = irrelevanceTerm″ idG′ᵤ≡Gᵤ idf∘u≡f∘u
-                                ([G′] id ⊢Γ [u]′) [G[u]] ([f]₁ id ⊢Γ [u]′)
+                                ([G′] id ⊢Γ [u]′) [G[u]] ([f]₁ id ⊢Γ [u]′ ≈-refl)
       ⊢u = escapeTerm [F] [u]
       d′ = PE.subst (λ x → Γ ⊢ t ⇒* f ∷ x) (PE.sym ΠFG≡ΠF′G′) (redₜ d)
   in  proj₁ (redSubst*Term (app-subst* d′ ⊢u) [G[u]] [f∘u])
@@ -115,10 +115,10 @@ app-congTerm′ {p = p} {n = n} {Γ} {F′} {G′} {t = t} {t′ = t′}
                        [a′]
       [tu≡t′u] = irrelevanceEqTerm″ t∘x≡wkidt∘x t∘x≡wkidt∘x wkidG₁[u]≡G[u]
                                      ([G] id ⊢Γ [u]′) [G[u]]
-                                     ([t≡u] id ⊢Γ [u]′)
+                                     ([t≡u] id ⊢Γ [u]′ ≈-refl)
       [t′u≡t′u′] = irrelevanceEqTerm″ t∘x≡wkidt∘x′ t∘x≡wkidt∘x′ wkidG₁[u]≡G[u]
                                        ([G] id ⊢Γ [u]′) [G[u]]
-                                       ([g] id ⊢Γ [u]′ [u′]′ [u≡u′]′)
+                                       ([g] id ⊢Γ [u]′ [u′]′ [u≡u′]′ ≈-refl)
       d₁ = PE.subst (λ x → Γ ⊢ t ⇒* f ∷ x) (PE.sym ΠFG≡ΠF′G′) d
       d₂ = PE.subst (λ x → Γ ⊢ t′ ⇒* g ∷ x) (PE.sym ΠFG≡ΠF′G′) d′
       [tu≡fu] = proj₂ (redSubst*Term (app-subst* d₁ (escapeTerm [F] [a]))

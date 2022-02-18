@@ -336,15 +336,17 @@ module LogRel (l : TypeLevel) (rec : ∀ {l′} → l′ < l → LogRelKit) wher
       ∃ λ f → Γ ⊢ t :⇒*: f ∷ Π p , q ▷ F ▹ G
             × Function f
             × Γ ⊢ f ≅ f ∷ Π p , q ▷ F ▹ G
-            × (∀ {m} {ρ : Wk m ℓ} {Δ : Con Term m} {a b}
+            × (∀ {m} {ρ : Wk m ℓ} {Δ : Con Term m} {a b} {p′ : Mod}
               ([ρ] : ρ ∷ Δ ⊆ Γ) (⊢Δ : ⊢ Δ)
               ([a] : Δ ⊩¹ a ∷ U.wk ρ F / [F] [ρ] ⊢Δ)
               ([b] : Δ ⊩¹ b ∷ U.wk ρ F / [F] [ρ] ⊢Δ)
               ([a≡b] : Δ ⊩¹ a ≡ b ∷ U.wk ρ F / [F] [ρ] ⊢Δ)
-              → Δ ⊩¹ U.wk ρ f ∘ p ▷ a ≡ U.wk ρ f ∘ p ▷ b ∷ U.wk (lift ρ) G [ a ] / [G] [ρ] ⊢Δ [a])
-            × (∀ {m} {ρ : Wk m ℓ} {Δ : Con Term m} {a} → ([ρ] : ρ ∷ Δ ⊆ Γ) (⊢Δ : ⊢ Δ)
+              → p ≈ p′
+              → Δ ⊩¹ U.wk ρ f ∘ p′ ▷ a ≡ U.wk ρ f ∘ p′ ▷ b ∷ U.wk (lift ρ) G [ a ] / [G] [ρ] ⊢Δ [a])
+            × (∀ {m} {ρ : Wk m ℓ} {Δ : Con Term m} {a} {p′ : Mod} → ([ρ] : ρ ∷ Δ ⊆ Γ) (⊢Δ : ⊢ Δ)
               → ([a] : Δ ⊩¹ a ∷ U.wk ρ F / [F] [ρ] ⊢Δ)
-              → Δ ⊩¹ U.wk ρ f ∘ p ▷ a ∷ U.wk (lift ρ) G [ a ] / [G] [ρ] ⊢Δ [a])
+              → p ≈ p′
+              → Δ ⊩¹ U.wk ρ f ∘ p′ ▷ a ∷ U.wk (lift ρ) G [ a ] / [G] [ρ] ⊢Δ [a])
               {- NOTE(WN): Last 2 fields could be refactored to a single forall.
                            But touching this definition is painful, so only do it
                            if you have to change it anyway. -}
@@ -361,9 +363,9 @@ module LogRel (l : TypeLevel) (rec : ∀ {l′} → l′ < l → LogRelKit) wher
                × Γ ⊢ f ≅ g ∷ Π p , q ▷ F ▹ G
                × Γ ⊩¹Π t ∷ A / [A]
                × Γ ⊩¹Π u ∷ A / [A]
-               × (∀ {m} {ρ : Wk m ℓ} {Δ : Con Term m} {a} ([ρ] : ρ ∷ Δ ⊆ Γ) (⊢Δ : ⊢ Δ)
-                 ([a] : Δ ⊩¹ a ∷ U.wk ρ F / [F] [ρ] ⊢Δ)
-                 → Δ ⊩¹ U.wk ρ f ∘ p ▷ a ≡ U.wk ρ g ∘ p ▷ a ∷ U.wk (lift ρ) G [ a ] / [G] [ρ] ⊢Δ [a])
+               × (∀ {m} {ρ : Wk m ℓ} {Δ : Con Term m} {a} {p′ : Mod} ([ρ] : ρ ∷ Δ ⊆ Γ) (⊢Δ : ⊢ Δ)
+                 ([a] : Δ ⊩¹ a ∷ U.wk ρ F / [F] [ρ] ⊢Δ) → p ≈ p′
+                 → Δ ⊩¹ U.wk ρ f ∘ p′ ▷ a ≡ U.wk ρ g ∘ p′ ▷ a ∷ U.wk (lift ρ) G [ a ] / [G] [ρ] ⊢Δ [a])
     -- Issue: Same as above.
 
 
