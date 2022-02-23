@@ -1,16 +1,21 @@
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --safe #-}
 
-module Definition.Typed.Consequences.Equality (M : Set) where
+open import Tools.Relation
+
+module Definition.Typed.Consequences.Equality {a ℓ} (M′ : Setoid a ℓ) where
+
+open Setoid M′ using () renaming (Carrier to M)
 
 open import Definition.Untyped M
-open import Definition.Typed M
-open import Definition.Typed.Properties M
-open import Definition.Typed.EqRelInstance M
-open import Definition.LogicalRelation M
-open import Definition.LogicalRelation.Irrelevance M
-open import Definition.LogicalRelation.ShapeView M
-open import Definition.LogicalRelation.Fundamental.Reducibility M
+open import Definition.Typed M′
+open import Definition.Typed.Properties M′
+open import Definition.Typed.EqRelInstance M′
+open import Definition.LogicalRelation M′
+open import Definition.LogicalRelation.Irrelevance M′
+open import Definition.LogicalRelation.ShapeView M′
+open import Definition.LogicalRelation.Fundamental.Reducibility M′
 
+open import Tools.Level
 open import Tools.Nat
 open import Tools.Product
 import Tools.PropositionalEquality as PE
@@ -23,7 +28,7 @@ private
 U≡A′ : ∀ {A l} ([U] : Γ ⊩⟨ l ⟩U)
     → Γ ⊩⟨ l ⟩ U ≡ A / (U-intr [U])
     → A PE.≡ U
-U≡A′ (noemb [U]) [U≡A] = [U≡A]
+U≡A′ (noemb [U]) (lift A≡U) = A≡U
 U≡A′ (emb 0<1 [U]) [U≡A] = U≡A′ [U] [U≡A]
 
 -- If A is judgmentally equal to U, then A is propositionally equal to U.
@@ -105,9 +110,9 @@ ne≡A {A} neK ne≡A whnfA | [ne] , [A] , [ne≡A] =
 B≡A′ : ∀ {A F G l} W ([W] : Γ ⊩⟨ l ⟩B⟨ W ⟩ ⟦ W ⟧ F ▹ G)
     → Γ ⊩⟨ l ⟩ ⟦ W ⟧ F ▹ G ≡ A / (B-intr W [W])
     → Whnf A
-    → ∃₂ λ H E → A PE.≡ ⟦ W ⟧ H ▹ E
-B≡A′ W (noemb [W]) (B₌ F′ G′ D′ A≡B [F≡F′] [G≡G′]) whnfA =
-  F′ , G′ , whnfRed* D′ whnfA
+    → ∃₃ λ W′ H E → A PE.≡ ⟦ W′ ⟧ H ▹ E
+B≡A′ W (noemb [W]) (B₌ F′ G′ W′ D′ W≋W′ A≡B [F≡F′] [G≡G′]) whnfA =
+  W′ , F′ , G′ , whnfRed* D′ whnfA
 B≡A′ W (emb 0<1 [W]) [W≡A] whnfA = B≡A′ W [W] [W≡A] whnfA
 
 Π≡A′ : ∀ {Γ : Con Term n} {A F G l p q} → _
@@ -120,7 +125,7 @@ B≡A′ W (emb 0<1 [W]) [W≡A] whnfA = B≡A′ W [W] [W≡A] whnfA
 B≡A : ∀ {A F G} W
     → Γ ⊢ ⟦ W ⟧ F ▹ G ≡ A
     → Whnf A
-    → ∃₂ λ H E → A PE.≡ ⟦ W ⟧ H ▹ E
+    → ∃₃ λ W′ H E → A PE.≡ ⟦ W′ ⟧ H ▹ E
 B≡A {A} W W≡A whnfA with reducibleEq W≡A
 B≡A {A} W W≡A whnfA | [W] , [A] , [W≡A] =
   B≡A′ W (B-elim W [W]) (irrelevanceEq [W] (B-intr W (B-elim W [W])) [W≡A]) whnfA

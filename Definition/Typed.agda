@@ -192,10 +192,11 @@ mutual
                   → Γ ⊢ f ∘ p ▷ a ≡ g ∘ p′ ▷ b ∷ G [ a ]
     β-red         : ∀ {a t F G}
                   → Γ     ⊢ F
+                  → Γ ∙ F ⊢ G
                   → Γ ∙ F ⊢ t ∷ G
                   → Γ     ⊢ a ∷ F
-                  → p PE.≡ q
-                  → Γ     ⊢ (lam q t) ∘ p ▷ a ≡ t [ a ] ∷ G [ a ]
+                  → p ≈ p′
+                  → Γ     ⊢ (lam p t) ∘ p′ ▷ a ≡ t [ a ] ∷ G [ a ]
     η-eq          : ∀ {f g F G}
                   → Γ     ⊢ F
                   → Γ     ⊢ f ∷ Π p , q ▷ F ▹ G
@@ -281,10 +282,11 @@ data _⊢_⇒_∷_ (Γ : Con Term n) : Term n → Term n → Term n → Set (ℓ
                  → Γ ⊢ t ∘ p ▷ a ⇒ u ∘ p ▷ a ∷ B [ a ]
   β-red          : ∀ {A B a t}
                  → Γ     ⊢ A
+                 → Γ ∙ A ⊢ B
                  → Γ ∙ A ⊢ t ∷ B
                  → Γ     ⊢ a ∷ A
-                 → p PE.≡ q
-                 → Γ     ⊢ (lam q t) ∘ p ▷ a ⇒ t [ a ] ∷ B [ a ]
+                 → p ≈ p′
+                 → Γ     ⊢ (lam p t) ∘ p′ ▷ a ⇒ t [ a ] ∷ B [ a ]
   fst-subst      : ∀ {t t' F G}
                  → Γ ⊢ F
                  → Γ ∙ F ⊢ G

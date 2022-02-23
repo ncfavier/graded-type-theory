@@ -262,7 +262,7 @@ wkTerm {ρ = ρ} [ρ] ⊢Δ (ne′ K D neK K≡K) (neₜ k d nf) =
 wkTerm {ρ = ρ} [ρ] ⊢Δ (Πᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext) (Πₜ f d funcF f≡f [f] [f]₁) =
   Πₜ (U.wk ρ f) (wkRed:*:Term [ρ] ⊢Δ d) (wkFunction ρ funcF)
      (≅ₜ-wk [ρ] ⊢Δ f≡f)
-     (λ {_} {ρ₁} [ρ₁] ⊢Δ₁ [a] [b] [a≡b] p≈p′ →
+     (λ {_} {ρ₁} [ρ₁] ⊢Δ₁ [a] [b] [a≡b] p≈p₁ p≈p₂ →
         let F-compEq = wk-comp ρ₁ ρ F
             G-compEq = wk-comp-subst ρ₁ ρ G
             [F]₁ = [F] ([ρ₁] •ₜ [ρ]) ⊢Δ₁
@@ -276,7 +276,7 @@ wkTerm {ρ = ρ} [ρ] ⊢Δ (Πᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext) (Π�
                                 (PE.cong (λ x → x ∘ _ ▷ _) (PE.sym (wk-comp ρ₁ ρ _)))
                                 G-compEq
                                 [G]₁ [G]₂
-                                ([f] ([ρ₁] •ₜ [ρ]) ⊢Δ₁ [a]′ [b]′ [a≡b]′ p≈p′))
+                                ([f] ([ρ₁] •ₜ [ρ]) ⊢Δ₁ [a]′ [b]′ [a≡b]′ p≈p₁ p≈p₂))
      (λ {_} {ρ₁} [ρ₁] ⊢Δ₁ [a] p≈p′ →
         let [F]₁ = [F] ([ρ₁] •ₜ [ρ]) ⊢Δ₁
             [F]₂ = irrelevance′ (PE.sym (wk-comp ρ₁ ρ F)) [F]₁
@@ -345,17 +345,17 @@ wkEqTerm {ρ  = ρ} [ρ] ⊢Δ (Πᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext)
   in  Πₜ₌ (U.wk ρ f) (U.wk ρ g) (wkRed:*:Term [ρ] ⊢Δ d) (wkRed:*:Term [ρ] ⊢Δ d′)
           (wkFunction ρ funcF) (wkFunction ρ funcG)
           (≅ₜ-wk [ρ] ⊢Δ f≡g) (wkTerm [ρ] ⊢Δ [A] [t]) (wkTerm [ρ] ⊢Δ [A] [u])
-          (λ {_} {ρ₁} [ρ₁] ⊢Δ₁ [a] p≈p′ →
+          (λ {_} {ρ₁} [ρ₁] ⊢Δ₁ [a] p≈p₁ p≈p₂ →
              let [F]₁ = [F] ([ρ₁] •ₜ [ρ]) ⊢Δ₁
                  [F]₂ = irrelevance′ (PE.sym (wk-comp ρ₁ ρ F)) [F]₁
                  [a]′ = irrelevanceTerm′ (wk-comp ρ₁ ρ F) [F]₂ [F]₁ [a]
                  [G]₁ = [G] ([ρ₁] •ₜ [ρ]) ⊢Δ₁ [a]′
                  [G]₂ = irrelevance′ (wk-comp-subst ρ₁ ρ G) [G]₁
              in  irrelevanceEqTerm″ (PE.cong (λ y → y ∘ _ ▷ _) (PE.sym (wk-comp ρ₁ ρ _)))
-                                     (PE.cong (λ y → y ∘ _ ▷ _) (PE.sym (wk-comp ρ₁ ρ _)))
-                                     (wk-comp-subst ρ₁ ρ G)
-                                     [G]₁ [G]₂
-                                     ([f≡g] ([ρ₁] •ₜ [ρ]) ⊢Δ₁ [a]′ p≈p′))
+                                    (PE.cong (λ y → y ∘ _ ▷ _) (PE.sym (wk-comp ρ₁ ρ _)))
+                                    (wk-comp-subst ρ₁ ρ G)
+                                    [G]₁ [G]₂
+                                    ([f≡g] ([ρ₁] •ₜ [ρ]) ⊢Δ₁ [a]′ p≈p₁ p≈p₂))
 wkEqTerm {ρ = ρ} [ρ] ⊢Δ [A]@(Σᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext)
                     (Σₜ₌ p r d d′ pProd rProd p≅r [t] [u] [fstp] [fstr] [fst≡] [snd≡]) =
   let [A] = Σᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext

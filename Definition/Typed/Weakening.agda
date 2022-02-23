@@ -170,13 +170,14 @@ mutual
     PE.subst (λ x → _ ⊢ _ ≡ _ ∷ x)
              (PE.sym (wk-β G))
              (app-cong (wkEqTerm ρ ⊢Δ f≡g) (wkEqTerm ρ ⊢Δ a≡b) p≈p′)
-  wkEqTerm ρ ⊢Δ (β-red {a = a} {t = t} {G = G} F ⊢t ⊢a x) =
+  wkEqTerm ρ ⊢Δ (β-red {a = a} {t = t} {G = G} F ⊢G ⊢t ⊢a x) =
     let ρF = wk ρ ⊢Δ F
+        ⊢ρG = wk (lift ρ) (⊢Δ ∙ ρF) ⊢G
     in  PE.subst (λ x → _ ⊢ _ ≡ _ ∷ x)
                  (PE.sym (wk-β G))
                  (PE.subst (λ x → _ ⊢ U.wk _ ((lam _ t) ∘ _ ▷ a) ≡ x ∷ _)
                            (PE.sym (wk-β t))
-                           (β-red ρF (wkTerm (lift ρ) (⊢Δ ∙ ρF) ⊢t)
+                           (β-red ρF ⊢ρG (wkTerm (lift ρ) (⊢Δ ∙ ρF) ⊢t)
                                      (wkTerm ρ ⊢Δ ⊢a) x))
   wkEqTerm ρ ⊢Δ (η-eq F f g f0≡g0) =
     let ρF = wk ρ ⊢Δ F
@@ -287,12 +288,13 @@ mutual
   wkRedTerm ρ ⊢Δ (app-subst {B = B} t⇒u a) =
     PE.subst (λ x → _ ⊢ _ ⇒ _ ∷ x) (PE.sym (wk-β B))
              (app-subst (wkRedTerm ρ ⊢Δ t⇒u) (wkTerm ρ ⊢Δ a))
-  wkRedTerm ρ ⊢Δ (β-red {A = A} {B = B} {a = a} {t = t} ⊢A ⊢t ⊢a p≡q) =
+  wkRedTerm ρ ⊢Δ (β-red {A = A} {B = B} {a = a} {t = t} ⊢A ⊢B ⊢t ⊢a p≡q) =
     let ⊢ρA = wk ρ ⊢Δ ⊢A
+        ⊢ρB = wk (lift ρ) (⊢Δ ∙ ⊢ρA) ⊢B
     in  PE.subst (λ x → _ ⊢ _ ⇒ _ ∷ x) (PE.sym (wk-β B))
                  (PE.subst (λ x → _ ⊢ U.wk _ ((lam _ t) ∘ _ ▷ a) ⇒ x ∷ _)
                            (PE.sym (wk-β t))
-                           (β-red ⊢ρA (wkTerm (lift ρ) (⊢Δ ∙ ⊢ρA) ⊢t)
+                           (β-red ⊢ρA ⊢ρB (wkTerm (lift ρ) (⊢Δ ∙ ⊢ρA) ⊢t)
                                       (wkTerm ρ ⊢Δ ⊢a) p≡q))
   wkRedTerm ρ ⊢Δ (fst-subst ⊢F ⊢G t⇒) =
     let ρF = wk ρ ⊢Δ ⊢F

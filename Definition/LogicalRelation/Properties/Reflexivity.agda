@@ -71,7 +71,7 @@ reflEqTerm (ne′ K D neK K≡K) (neₜ k d (neNfₜ neK₁ ⊢k k≡k)) =
   neₜ₌ k k d d (neNfₜ₌ neK₁ neK₁ k≡k)
 reflEqTerm (Bᵣ′ BΠ! F G D ⊢F ⊢G A≡A [F] [G] G-ext) [t]@(Πₜ f d funcF f≡f [f] [f]₁) =
   Πₜ₌ f f d d funcF funcF f≡f [t] [t]
-      (λ ρ ⊢Δ [a] p≈p′ → [f] ρ ⊢Δ [a] [a] (reflEqTerm ([F] ρ ⊢Δ) [a]) p≈p′)
+      (λ ρ ⊢Δ [a] p≈p₁ p≈p₂ → [f] ρ ⊢Δ [a] [a] (reflEqTerm ([F] ρ ⊢Δ) [a]) p≈p₁ p≈p₂)
 reflEqTerm (Bᵣ′ BΣ! F G D ⊢F ⊢G A≡A [F] [G] G-ext) [t]@(Σₜ p d pProd p≅p [fst] [snd]) =
   Σₜ₌ p p d d pProd pProd p≅p [t] [t] [fst] [fst]
     (reflEqTerm ([F] id (wf ⊢F)) [fst])

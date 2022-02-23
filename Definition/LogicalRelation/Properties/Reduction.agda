@@ -100,11 +100,12 @@ redSubst*Term {Γ = Γ} {A = A} {t} {u} {l} t⇒u (Πᵣ′ F G D ⊢F ⊢G A≡
                   [u]@(Πₜ f [d]@([ ⊢t , ⊢u , d ]) funcF f≡f [f] [f]₁) =
   let A≡ΠFG = subset* (red D)
       t⇒u′  = conv* t⇒u A≡ΠFG
-      [d′] = [ conv (redFirst*Term t⇒u) A≡ΠFG , ⊢u , conv* t⇒u A≡ΠFG ⇨∷* d ]
+      [d′] = [ conv (redFirst*Term t⇒u) A≡ΠFG , ⊢u , t⇒u′ ⇨∷* d ]
       [u′] = Πₜ f [d′] funcF f≡f [f] [f]₁
   in  [u′]
   ,   Πₜ₌ f f [d′] [d] funcF funcF f≡f [u′] [u]
-          (λ [ρ] ⊢Δ [a] p≈p′ → reflEqTerm ([G] [ρ] ⊢Δ [a]) ([f]₁ [ρ] ⊢Δ [a] p≈p′))
+          (λ [ρ] ⊢Δ [a] p≈p₁ p≈p₂ →
+            [f] [ρ] ⊢Δ [a] [a] (reflEqTerm ([F] [ρ] ⊢Δ) [a]) p≈p₁ p≈p₂)
 redSubst*Term {Γ = Γ} {A} {t} {u} {l} t⇒u (Σᵣ′ F G D ⊢F ⊢G A≡A [F] [G] G-ext)
                   [u]@(Σₜ p [d]@([ ⊢t , ⊢u , d ]) pProd p≅p [fst] [snd]) =
   let A≡ΣFG = subset* (red D)

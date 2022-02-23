@@ -61,7 +61,7 @@ wfEqTerm (trans t≡u u≡r) = wfEqTerm t≡u
 wfEqTerm (conv t≡u A≡B) = wfEqTerm t≡u
 wfEqTerm (Π-cong F F≡H G≡E _ _) = wfEqTerm F≡H
 wfEqTerm (app-cong f≡g a≡b p≈p′) = wfEqTerm f≡g
-wfEqTerm (β-red F t a p≡q) = wfTerm a
+wfEqTerm (β-red F G t a p≡q) = wfTerm a
 wfEqTerm (η-eq F f g f0≡g0) = wfTerm f
 wfEqTerm (suc-cong n) = wfEqTerm n
 wfEqTerm (natrec-cong _ F≡F′ z≡z′ s≡s′ n≡n′ _ _) = wfEqTerm z≡z′
@@ -95,7 +95,7 @@ subsetTerm (natrec-suc n F z s) = natrec-suc n F z s
 subsetTerm (Emptyrec-subst A n⇒n′) =
   Emptyrec-cong (refl A) (subsetTerm n⇒n′) ≈-refl
 subsetTerm (app-subst t⇒u a) = app-cong (subsetTerm t⇒u) (refl a) (Setoid.refl M′)
-subsetTerm (β-red A t a p≡q) = β-red A t a p≡q
+subsetTerm (β-red A B t a p≈p′) = β-red A B t a p≈p′
 subsetTerm (conv t⇒u A≡B) = conv (subsetTerm t⇒u) A≡B
 subsetTerm (fst-subst F G x) = fst-cong F G (subsetTerm x)
 subsetTerm (snd-subst F G x) = snd-cong F G (subsetTerm x)
@@ -119,7 +119,8 @@ subset* (A⇒A′ ⇨ A′⇒*B) = trans (subset A⇒A′) (subset* A′⇒*B)
 redFirstTerm :{Γ : Con Term n} → Γ ⊢ t ⇒ u ∷ A → Γ ⊢ t ∷ A
 redFirstTerm (conv t⇒u A≡B) = conv (redFirstTerm t⇒u) A≡B
 redFirstTerm (app-subst t⇒u a) = (redFirstTerm t⇒u) ∘ⱼ a
-redFirstTerm (β-red {p} A t a PE.refl) = _∘ⱼ_ {q = p} (lamⱼ A t) a
+redFirstTerm (β-red {p} A B t a p≈p′) =
+  _∘ⱼ_ {q = p} (conv (lamⱼ A t) (Π-cong A (refl A) (refl B) p≈p′ ≈-refl)) a
 redFirstTerm (natrec-subst F z s n⇒n′) = natrecⱼ F z s (redFirstTerm n⇒n′)
 redFirstTerm (natrec-zero F z s) = natrecⱼ F z s (zeroⱼ (wfTerm z))
 redFirstTerm (natrec-suc n F z s) = natrecⱼ F z s (sucⱼ n)
@@ -156,7 +157,7 @@ noNe (Emptyrecⱼ A ⊢e) (Emptyrecₙ neT) = noNe ⊢e neT
 neRedTerm : (d : Γ ⊢ t ⇒ u ∷ A) (n : Neutral t) → ⊥
 neRedTerm (conv d x) n = neRedTerm d n
 neRedTerm (app-subst d x) (∘ₙ n) = neRedTerm d n
-neRedTerm (β-red x x₁ x₂ _) (∘ₙ ())
+neRedTerm (β-red x _ x₁ x₂ _) (∘ₙ ())
 neRedTerm (natrec-subst x x₁ x₂ d) (natrecₙ n₁) = neRedTerm d n₁
 neRedTerm (natrec-zero x x₁ x₂) (natrecₙ ())
 neRedTerm (natrec-suc x x₁ x₂ x₃) (natrecₙ ())
@@ -174,7 +175,7 @@ neRed (univ x) N = neRedTerm x N
 whnfRedTerm : (d : Γ ⊢ t ⇒ u ∷ A) (w : Whnf t) → ⊥
 whnfRedTerm (conv d x) w = whnfRedTerm d w
 whnfRedTerm (app-subst d x) (ne (∘ₙ x₁)) = neRedTerm d x₁
-whnfRedTerm (β-red x x₁ x₂ _) (ne (∘ₙ ()))
+whnfRedTerm (β-red x _ x₁ x₂ _) (ne (∘ₙ ()))
 whnfRedTerm (natrec-subst x x₁ x₂ d) (ne (natrecₙ x₃)) = neRedTerm d x₃
 whnfRedTerm (natrec-zero x x₁ x₂) (ne (natrecₙ ()))
 whnfRedTerm (natrec-suc x x₁ x₂ x₃) (ne (natrecₙ ()))
@@ -213,7 +214,7 @@ whrDetTerm : (d : Γ ⊢ t ⇒ u ∷ A) (d′ : Γ ⊢ t ⇒ u′ ∷ A′) → 
 whrDetTerm (conv d x) d′ = whrDetTerm d d′
 whrDetTerm d (conv d′ x₁) = whrDetTerm d d′
 whrDetTerm (app-subst d x) (app-subst d′ x₁) rewrite whrDetTerm d d′ = PE.refl
-whrDetTerm (β-red x x₁ x₂ p≡q) (β-red x₃ x₄ x₅ p≡q₁) = PE.refl
+whrDetTerm (β-red x _ x₁ x₂ p≡q) (β-red x₃ _ x₄ x₅ p≡q₁) = PE.refl
 whrDetTerm (fst-subst _ _ x) (fst-subst _ _ y) rewrite whrDetTerm x y = PE.refl
 whrDetTerm (snd-subst _ _ x) (snd-subst _ _ y) rewrite whrDetTerm x y = PE.refl
 whrDetTerm (Σ-β₁ F G x x₁ x₂) (Σ-β₁ F₁ G₁ x₃ x₄ x₅) = PE.refl
@@ -223,8 +224,8 @@ whrDetTerm (natrec-zero x x₁ x₂) (natrec-zero x₃ x₄ x₅) = PE.refl
 whrDetTerm (natrec-suc x x₁ x₂ x₃) (natrec-suc x₄ x₅ x₆ x₇) = PE.refl
 whrDetTerm (Emptyrec-subst x d) (Emptyrec-subst x₂ d′) rewrite whrDetTerm d d′ = PE.refl
 
-whrDetTerm (app-subst d x) (β-red x₁ x₂ x₃ p≡q) = ⊥-elim (whnfRedTerm d lamₙ)
-whrDetTerm (β-red x x₁ x₂ p≡q) (app-subst d x₃) = ⊥-elim (whnfRedTerm d lamₙ)
+whrDetTerm (app-subst d x) (β-red x₁ _ x₂ x₃ p≡q) = ⊥-elim (whnfRedTerm d lamₙ)
+whrDetTerm (β-red x _ x₁ x₂ p≡q) (app-subst d x₃) = ⊥-elim (whnfRedTerm d lamₙ)
 whrDetTerm (natrec-subst x x₁ x₂ d) (natrec-zero x₃ x₄ x₅) = ⊥-elim (whnfRedTerm d zeroₙ)
 whrDetTerm (natrec-subst x x₁ x₂ d) (natrec-suc x₃ x₄ x₅ x₆) = ⊥-elim (whnfRedTerm d sucₙ)
 whrDetTerm (natrec-zero x x₁ x₂) (natrec-subst x₃ x₄ x₅ d′) = ⊥-elim (whnfRedTerm d′ zeroₙ)
@@ -302,7 +303,7 @@ UnotInA[t,u] eq u u′ (conv t x) = UnotInA[t,u] eq u u′ t
 redU*Term′ : U′ PE.≡ U → Γ ⊢ A ⇒ U′ ∷ B → ⊥
 redU*Term′ U′≡U (conv A⇒U x) = redU*Term′ U′≡U A⇒U
 redU*Term′ () (app-subst A⇒U x)
-redU*Term′ U′≡U (β-red x x₁ x₂ p≡q) = UnotInA[t] U′≡U x₂ x₁
+redU*Term′ U′≡U (β-red x _ x₁ x₂ p≡q) = UnotInA[t] U′≡U x₂ x₁
 redU*Term′ () (natrec-subst x x₁ x₂ A⇒U)
 redU*Term′ PE.refl (natrec-zero x x₁ x₂) = UnotInA x₁
 redU*Term′ U′≡U (natrec-suc x x₁ x₂ x₃) = UnotInA[t,u] U′≡U x (natrecⱼ x₁ x₂ x₃ x) x₃
