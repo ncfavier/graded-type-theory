@@ -5,6 +5,8 @@
 
 module Tools.PropositionalEquality where
 
+open import Tools.Level
+
 -- We reexport Agda's builtin equality type.
 
 open import Tools.Empty public
@@ -28,6 +30,6 @@ cong₄ f refl refl refl refl = refl
 
 -- Three substitutions simultaneously.
 
-subst₃ : ∀ {ℓ} {A B C : Set ℓ} {a a′ b b′ c c′} (F : A → B → C → Set ℓ)
+subst₃ : ∀ {ℓ ℓ′ ℓ″ ℓ‴} {A : Set ℓ} {B : Set ℓ′} {C : Set ℓ″} {a a′ b b′ c c′} (F : A → B → C → Set ℓ‴)
        → a ≡ a′ → b ≡ b′ → c ≡ c′ → F a b c → F a′ b′ c′
 subst₃ F refl refl refl f = f

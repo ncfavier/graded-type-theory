@@ -17,7 +17,7 @@ open import Tools.Nat
 
 private
   variable
-    p q r p′ q′ r′ : M
+    p q r p′ q′ r′ p₁ p₂ : M
     n n′ : Nat
     Γ : Con Term n
     Δ : Con Term n′
@@ -174,7 +174,9 @@ record EqRelSet : Set (lsuc (ℓ ⊔ ℓ′)) where
            → Γ ⊢ g ∷ Π p , q ▷ F ▹ G
            → Function f
            → Function g
-           → Γ ∙ F ⊢ wk1 f ∘ p ▷ var x0 ≅ wk1 g ∘ p ▷ var x0 ∷ G
+           → p ≈ p₁
+           → p ≈ p₂
+           → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 ≅ wk1 g ∘ p₂ ▷ var x0 ∷ G
            → Γ ⊢ f ≅ g ∷ Π p , q ▷ F ▹ G
 
     -- η for product types
@@ -196,8 +198,9 @@ record EqRelSet : Set (lsuc (ℓ ⊔ ℓ′)) where
     ~-app : ∀ {a b f g F G}
           → Γ ⊢ f ~ g ∷ Π p , q ▷ F ▹ G
           → Γ ⊢ a ≅ b ∷ F
-          → p ≈ p′
-          → Γ ⊢ f ∘ p ▷ a ~ g ∘ p′ ▷ b ∷ G [ a ]
+          → p ≈ p₁
+          → p ≈ p₂
+          → Γ ⊢ f ∘ p₁ ▷ a ~ g ∘ p₂ ▷ b ∷ G [ a ]
 
     -- Product projections congruence
     ~-fst : ∀ {p r F G}

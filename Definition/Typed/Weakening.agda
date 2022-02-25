@@ -166,10 +166,10 @@ mutual
     in  Σ-cong ρF (wkEqTerm ρ ⊢Δ F≡H)
                   (wkEqTerm (lift ρ) (⊢Δ ∙ ρF) G≡E)
                   q≈q′
-  wkEqTerm ρ ⊢Δ (app-cong {G = G} f≡g a≡b p≈p′) =
+  wkEqTerm ρ ⊢Δ (app-cong {G = G} f≡g a≡b p≈p₁ p≈p₂) =
     PE.subst (λ x → _ ⊢ _ ≡ _ ∷ x)
              (PE.sym (wk-β G))
-             (app-cong (wkEqTerm ρ ⊢Δ f≡g) (wkEqTerm ρ ⊢Δ a≡b) p≈p′)
+             (app-cong (wkEqTerm ρ ⊢Δ f≡g) (wkEqTerm ρ ⊢Δ a≡b) p≈p₁ p≈p₂)
   wkEqTerm ρ ⊢Δ (β-red {a = a} {t = t} {G = G} F ⊢G ⊢t ⊢a x) =
     let ρF = wk ρ ⊢Δ F
         ⊢ρG = wk (lift ρ) (⊢Δ ∙ ρF) ⊢G
@@ -179,10 +179,11 @@ mutual
                            (PE.sym (wk-β t))
                            (β-red ρF ⊢ρG (wkTerm (lift ρ) (⊢Δ ∙ ρF) ⊢t)
                                      (wkTerm ρ ⊢Δ ⊢a) x))
-  wkEqTerm ρ ⊢Δ (η-eq F f g f0≡g0) =
+  wkEqTerm ρ ⊢Δ (η-eq F f g p≈p₁ p≈p₂ f0≡g0) =
     let ρF = wk ρ ⊢Δ F
     in  η-eq ρF (wkTerm ρ ⊢Δ f)
                 (wkTerm ρ ⊢Δ g)
+                p≈p₁ p≈p₂
                 (PE.subst (λ t → _ ⊢ t ∘ _ ▷ _ ≡ _ ∷ _)
                           (PE.sym (wk1-wk≡lift-wk1 _ _))
                           (PE.subst (λ t → _ ⊢ _ ≡ t ∘ _ ▷ _ ∷ _)

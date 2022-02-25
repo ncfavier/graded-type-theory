@@ -28,7 +28,7 @@ private
     a b f g t u v : Term n
     G E : Term (1+ n)
     x : Fin n
-    p q r p′ q′ r′ : M
+    p q r p′ q′ r′ p₁ p₂ : M
 
 
 -- Well-typed variables
@@ -188,8 +188,9 @@ mutual
     app-cong      : ∀ {a b f g F G}
                   → Γ ⊢ f ≡ g ∷ Π p , q ▷ F ▹ G
                   → Γ ⊢ a ≡ b ∷ F
-                  → p ≈ p′
-                  → Γ ⊢ f ∘ p ▷ a ≡ g ∘ p′ ▷ b ∷ G [ a ]
+                  → p ≈ p₁
+                  → p ≈ p₂
+                  → Γ ⊢ f ∘ p₁ ▷ a ≡ g ∘ p₂ ▷ b ∷ G [ a ]
     β-red         : ∀ {a t F G}
                   → Γ     ⊢ F
                   → Γ ∙ F ⊢ G
@@ -201,7 +202,9 @@ mutual
                   → Γ     ⊢ F
                   → Γ     ⊢ f ∷ Π p , q ▷ F ▹ G
                   → Γ     ⊢ g ∷ Π p , q ▷ F ▹ G
-                  → Γ ∙ F ⊢ wk1 f ∘ p ▷ var x0 ≡ wk1 g ∘ p ▷ var x0 ∷ G
+                  → p ≈ p₁
+                  → p ≈ p₂
+                  → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 ≡ wk1 g ∘ p₂ ▷ var x0 ∷ G
                   → Γ     ⊢ f ≡ g ∷ Π p , q ▷ F ▹ G
     fst-cong      : ∀ {t t' F G}
                   → Γ ⊢ F

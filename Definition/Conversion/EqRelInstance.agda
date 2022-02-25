@@ -1,28 +1,32 @@
 {-# OPTIONS --without-K  #-}
 
-module Definition.Conversion.EqRelInstance (M : Set) where
+open import Tools.Relation
+
+module Definition.Conversion.EqRelInstance {a ℓ} (M′ : Setoid a ℓ) where
+
+open Setoid M′ using () renaming (Carrier to M)
 
 open import Definition.Untyped M hiding (_∷_)
-open import Definition.Typed M
-open import Definition.Typed.Properties M
-open import Definition.Typed.Weakening M using (_∷_⊆_; wkEq)
-open import Definition.Conversion M
-open import Definition.Conversion.Reduction M
-open import Definition.Conversion.Universe M
-open import Definition.Conversion.Stability M
-open import Definition.Conversion.Soundness M
-open import Definition.Conversion.Lift M
-open import Definition.Conversion.Conversion M
-open import Definition.Conversion.Symmetry M
-open import Definition.Conversion.Transitivity M
-open import Definition.Conversion.Weakening M
-open import Definition.Typed.EqualityRelation M
-open import Definition.Typed.Consequences.Syntactic M
-open import Definition.Typed.Consequences.Substitution M
-open import Definition.Typed.Consequences.Injectivity M
-open import Definition.Typed.Consequences.Equality M
-open import Definition.Typed.Consequences.Reduction M
-open import Definition.Typed.Consequences.Inversion M
+open import Definition.Typed M′
+open import Definition.Typed.Properties M′
+open import Definition.Typed.Weakening M′ using (_∷_⊆_; wkEq)
+open import Definition.Conversion M′
+open import Definition.Conversion.Reduction M′
+open import Definition.Conversion.Universe M′
+open import Definition.Conversion.Stability M′
+open import Definition.Conversion.Soundness M′
+open import Definition.Conversion.Lift M′
+open import Definition.Conversion.Conversion M′
+open import Definition.Conversion.Symmetry M′
+open import Definition.Conversion.Transitivity M′
+open import Definition.Conversion.Weakening M′
+open import Definition.Typed.EqualityRelation M′
+open import Definition.Typed.Consequences.Syntactic M′
+open import Definition.Typed.Consequences.Substitution M′
+open import Definition.Typed.Consequences.Injectivity M′
+open import Definition.Typed.Consequences.Equality M′
+open import Definition.Typed.Consequences.Reduction M′
+open import Definition.Typed.Consequences.Inversion M′
 
 open import Tools.Fin
 open import Tools.Nat

@@ -1,11 +1,10 @@
 {-# OPTIONS --without-K --safe #-}
 
-open import Tools.Level
 open import Tools.Relation
 
-module Definition.Conversion.Whnf (M′ : Setoid ℓ₀ ℓ₀) where
+module Definition.Conversion.Whnf {a ℓ} (M′ : Setoid a ℓ) where
 
-open Setoid M′ renaming (Carrier to M)
+open Setoid M′ using () renaming (Carrier to M)
 
 open import Definition.Untyped M hiding (_∷_)
 open import Definition.Typed M′
@@ -25,8 +24,8 @@ mutual
        → Γ ⊢ t ~ u ↑ A
        → Neutral t × Neutral u
   ne~↑ (var-refl x₁ x≡y) = var _ , var _
-  ne~↑ (app-cong x x₁ _) = let _ , q , w = ne~↓ x
-                           in  ∘ₙ q , ∘ₙ w
+  ne~↑ (app-cong x x₁ _ _) = let _ , q , w = ne~↓ x
+                             in  ∘ₙ q , ∘ₙ w
   ne~↑ (fst-cong x) =
     let _ , pNe , rNe = ne~↓ x
     in  fstₙ pNe , fstₙ rNe
@@ -74,6 +73,6 @@ whnfConv↓Term (ne-ins t u x x₁) =
 whnfConv↓Term (univ x x₁ x₂) = Uₙ , whnfConv↓ x₂
 whnfConv↓Term (zero-refl x) = ℕₙ , zeroₙ , zeroₙ
 whnfConv↓Term (suc-cong x) = ℕₙ , sucₙ , sucₙ
-whnfConv↓Term (η-eq x₁ x₂ y y₁ x₃) = Πₙ , functionWhnf y , functionWhnf y₁
+whnfConv↓Term (η-eq x₁ x₂ y y₁ p≈p₁ p≈p₂ x₃) = Πₙ , functionWhnf y , functionWhnf y₁
 whnfConv↓Term (Σ-η _ _ pProd rProd _ _) = Σₙ , productWhnf pProd , productWhnf rProd
 whnfConv↓Term (η-unit _ _ tWhnf uWhnf) = Unitₙ , tWhnf , uWhnf

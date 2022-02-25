@@ -33,7 +33,7 @@ private
     a₀ b₀ g h k l t u v : Term n
     G E : Term (1+ n)
     x y : Fin n
-    p p′ q q′ r r′ : M
+    p p′ p₁ p₂ q q′ r r′ : M
 
 mutual
   -- Neutral equality.
@@ -45,8 +45,9 @@ mutual
 
     app-cong      : Γ ⊢ k ~ l ↓ Π p , q ▷ F ▹ G
                   → Γ ⊢ t [conv↑] v ∷ F
-                  → p ≈ p′
-                  → Γ ⊢ k ∘ p ▷ t ~ l ∘ p′ ▷ v ↑ G [ t ]
+                  → p ≈ p₁
+                  → p ≈ p₂
+                  → Γ ⊢ k ∘ p₁ ▷ t ~ l ∘ p₂ ▷ v ↑ G [ t ]
 
     fst-cong      : Γ ⊢ k ~ l ↓ Σ p ▷ F ▹ G
                   → Γ ⊢ fst k ~ fst l ↑ F
@@ -169,7 +170,9 @@ mutual
               → Γ ⊢ g ∷ Π p , q ▷ F ▹ G
               → Function f
               → Function g
-              → Γ ∙ F ⊢ wk1 f ∘ p ▷ var x0 [conv↑] wk1 g ∘ p ▷ var x0 ∷ G
+              → p ≈ p₁
+              → p ≈ p₂
+              → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 [conv↑] wk1 g ∘ p₂ ▷ var x0 ∷ G
               → Γ ⊢ f [conv↓] g ∷ Π p , q ▷ F ▹ G
 
     Σ-η       : Γ ⊢ k ∷ Σ p ▷ F ▹ G

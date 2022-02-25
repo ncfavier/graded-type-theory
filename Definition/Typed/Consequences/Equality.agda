@@ -10,6 +10,7 @@ open import Definition.Untyped M
 open import Definition.Typed M′
 open import Definition.Typed.Properties M′
 open import Definition.Typed.EqRelInstance M′
+open import Definition.Typed.Consequences.Inequality M′
 open import Definition.LogicalRelation M′
 open import Definition.LogicalRelation.Irrelevance M′
 open import Definition.LogicalRelation.ShapeView M′
@@ -130,7 +131,11 @@ B≡A {A} W W≡A whnfA with reducibleEq W≡A
 B≡A {A} W W≡A whnfA | [W] , [A] , [W≡A] =
   B≡A′ W (B-elim W [W]) (irrelevanceEq [W] (B-intr W (B-elim W [W])) [W≡A]) whnfA
 
-Π≡A : ∀ {Γ : Con Term n} {A F G p q} → _
-Π≡A {Γ = Γ} {A} {F} {G} {p} {q} = B≡A {Γ = Γ} {A} {F} {G} (BΠ p q)
-Σ≡A : ∀ {Γ : Con Term n} {A F G q} → _
-Σ≡A {Γ = Γ} {A} {F} {G} {q} = B≡A {Γ = Γ} {A} {F} {G} (BΣ q)
+Π≡A : ∀ {Γ : Con Term n} {A F G p q} → Γ ⊢ ⟦ BΠ p q ⟧ F ▹ G ≡ A → Whnf A → ∃₄ λ p′ q′ H E → A PE.≡ ⟦ BΠ p′ q′ ⟧ H ▹ E
+Π≡A {Γ = Γ} {A} {F} {G} {p} {q} x y with B≡A {Γ = Γ} {A} {F} {G} (BΠ p q) x y
+... | BΠ p₁ q₁ , H , E , A≡ΠHE = p₁ , q₁ , H , E , A≡ΠHE
+... | BΣ q₁ , H , E , PE.refl = PE.⊥-elim (Π≢Σ x)
+Σ≡A : ∀ {Γ : Con Term n} {A F G q} → Γ ⊢ ⟦ BΣ q ⟧ F ▹ G ≡ A → Whnf A → ∃₃ λ q′ H E → A PE.≡ ⟦ BΣ q′ ⟧ H ▹ E
+Σ≡A {Γ = Γ} {A} {F} {G} {q} x y with B≡A {Γ = Γ} {A} {F} {G} (BΣ q) x y
+... | BΠ p q₁ , H , E , PE.refl = PE.⊥-elim (Π≢Σ (sym x))
+... | BΣ q₁ , H , E , A≡ΣHE = q₁ , H , E , A≡ΣHE
