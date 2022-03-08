@@ -4,7 +4,7 @@ open import Tools.Relation
 
 module Definition.Conversion.Decidable {a ℓ′} (M″ : DecSetoid a ℓ′) where
 
-open DecSetoid M″ using (_≈_; _≟_) renaming (Carrier to M; setoid to M′; sym to ≈-sym; trans to ≈-trans)
+open DecSetoid M″ using (_≈_; _≟_) renaming (Carrier to M; setoid to M′; sym to ≈-sym; trans to ≈-trans; refl to ≈-refl)
 
 open import Definition.Untyped M hiding (_∷_)
 open import Definition.Typed M′
@@ -13,6 +13,7 @@ open import Definition.Conversion M′
 open import Definition.Conversion.Whnf M′
 open import Definition.Conversion.Soundness M′
 open import Definition.Conversion.Symmetry M′
+open import Definition.Conversion.Transitivity M′
 open import Definition.Conversion.Stability M′
 open import Definition.Conversion.Conversion M′
 open import Definition.Typed.Consequences.Syntactic M′
@@ -37,6 +38,7 @@ private
     ℓ : Nat
     Γ Δ : Con Term ℓ
     p p₁ p₂ q : M
+
 
 -- Algorithmic equality of variables infers propositional equality.
 strongVarEq : ∀ {m n A} → Γ ⊢ var n ~ var m ↑ A → n PE.≡ m
@@ -69,9 +71,9 @@ dec~↑-app k₂ k₃ k~k₁ p≈p₁ p≈p₂ (no ¬p) =
       in  ¬p (convConvTerm x₁ (sym F≡F₂)) })
 
 -- Helper function for decidability for neutrals of natural number type.
-decConv↓Term-ℕ-ins : ∀ {t u}
+decConv↓Term-ℕ-ins : ∀ {t u t′}
                     → Γ ⊢ t [conv↓] u ∷ ℕ
-                    → Γ ⊢ t ~ t ↓ ℕ
+                    → Γ ⊢ t ~ t′ ↓ ℕ
                     → Γ ⊢ t ~ u ↓ ℕ
 decConv↓Term-ℕ-ins (ℕ-ins x) t~t = x
 decConv↓Term-ℕ-ins (ne-ins x x₁ () x₃) t~t
@@ -79,9 +81,9 @@ decConv↓Term-ℕ-ins (zero-refl x) ([~] A D whnfB ())
 decConv↓Term-ℕ-ins (suc-cong x) ([~] A D whnfB ())
 
 -- Helper function for decidability for neutrals of empty type.
-decConv↓Term-Empty-ins : ∀ {t u}
+decConv↓Term-Empty-ins : ∀ {t u t′}
                     → Γ ⊢ t [conv↓] u ∷ Empty
-                    → Γ ⊢ t ~ t ↓ Empty
+                    → Γ ⊢ t ~ t′ ↓ Empty
                     → Γ ⊢ t ~ u ↓ Empty
 decConv↓Term-Empty-ins (Empty-ins x) t~t = x
 decConv↓Term-Empty-ins (ne-ins x x₁ () x₃) t~t
@@ -97,13 +99,13 @@ decConv↓Term-ne-ins neA (ne-ins x x₁ x₂ x₃) = _ , x₃
 decConv↓Term-ne-ins () (univ x x₁ x₂)
 decConv↓Term-ne-ins () (zero-refl x)
 decConv↓Term-ne-ins () (suc-cong x)
-decConv↓Term-ne-ins () (η-eq x₁ x₂ x₃ x₄ x₅ x₆ x₇)
+decConv↓Term-ne-ins () (η-eq x₁ x₂ x₃ x₄ x₅)
 
 -- Helper function for decidability for impossibility of terms not being equal
 -- as neutrals when they are equal as terms and the first is a neutral.
-decConv↓Term-ℕ : ∀ {t u}
+decConv↓Term-ℕ : ∀ {t u t′}
                 → Γ ⊢ t [conv↓] u ∷ ℕ
-                → Γ ⊢ t ~ t ↓ ℕ
+                → Γ ⊢ t ~ t′ ↓ ℕ
                 → ¬ (Γ ⊢ t ~ u ↓ ℕ)
                 → ⊥
 decConv↓Term-ℕ (ℕ-ins x) t~t ¬u~u = ¬u~u x
@@ -112,8 +114,8 @@ decConv↓Term-ℕ (zero-refl x) ([~] A D whnfB ()) ¬u~u
 decConv↓Term-ℕ (suc-cong x) ([~] A D whnfB ()) ¬u~u
 
 -- Helper function for extensional equality of Unit.
-decConv↓Term-Unit : ∀ {t u}
-              → Γ ⊢ t [conv↓] t ∷ Unit → Γ ⊢ u [conv↓] u ∷ Unit
+decConv↓Term-Unit : ∀ {t u t′ u′}
+              → Γ ⊢ t [conv↓] t′ ∷ Unit → Γ ⊢ u [conv↓] u′ ∷ Unit
               → Dec (Γ ⊢ t [conv↓] u ∷ Unit)
 decConv↓Term-Unit tConv uConv =
   let t≡t = soundnessConv↓Term tConv
@@ -126,11 +128,11 @@ decConv↓Term-Unit tConv uConv =
 
 mutual
   -- Decidability of algorithmic equality of neutrals.
-  dec~↑ : ∀ {k l R T}
-        → Γ ⊢ k ~ k ↑ R → Γ ⊢ l ~ l ↑ T
+  dec~↑ : ∀ {k l R T k′ l′}
+        → Γ ⊢ k ~ k′ ↑ R → Γ ⊢ l ~ l′ ↑ T
         → Dec (∃ λ A → Γ ⊢ k ~ l ↑ A)
   dec~↑ (var-refl {n} x₂ x≡y) (var-refl {m} x₃ x≡y₁) with n ≟ⱽ m
-  ... | yes PE.refl = yes (_ , var-refl x₂ x≡y₁)
+  ... | yes PE.refl = yes (_ , (var-refl x₂ PE.refl))
   ... | no ¬p = no (λ { (A , k~l) → ¬p (strongVarEq k~l) })
   dec~↑ (var-refl x₁ x≡y) (app-cong x₂ x₃ x₄ x₅) = no (λ { (_ , ()) })
   dec~↑ (var-refl x₁ x≡y) (fst-cong x₂) = no (λ { (_ , ()) })
@@ -251,8 +253,8 @@ mutual
   dec~↑′ Γ≡Δ k~k l~l = dec~↑ k~k (stability~↑ (symConEq Γ≡Δ) l~l)
 
   -- Decidability of algorithmic equality of neutrals with types in WHNF.
-  dec~↓ : ∀ {k l R T}
-        → Γ ⊢ k ~ k ↓ R → Γ ⊢ l ~ l ↓ T
+  dec~↓ : ∀ {k l R T k′ l′}
+        → Γ ⊢ k ~ k′ ↓ R → Γ ⊢ l ~ l′ ↓ T
         → Dec (∃ λ A → Γ ⊢ k ~ l ↓ A)
   dec~↓ ([~] A D whnfB k~l) ([~] A₁ D₁ whnfB₁ k~l₁) with dec~↑ k~l k~l₁
   dec~↓ ([~] A D whnfB k~l) ([~] A₁ D₁ whnfB₁ k~l₁) | yes (B , k~l₂) =
@@ -263,34 +265,33 @@ mutual
     no (λ { (A₂ , [~] A₃ D₂ whnfB₂ k~l₂) → ¬p (A₃ , k~l₂) })
 
   -- Decidability of algorithmic equality of types.
-  decConv↑ : ∀ {A B}
-           → Γ ⊢ A [conv↑] A → Γ ⊢ B [conv↑] B
+  decConv↑ : ∀ {A B A′ B′}
+           → Γ ⊢ A [conv↑] A′ → Γ ⊢ B [conv↑] B′
            → Dec (Γ ⊢ A [conv↑] B)
   decConv↑ ([↑] A′ B′ D D′ whnfA′ whnfB′ A′<>B′)
                ([↑] A″ B″ D₁ D″ whnfA″ whnfB″ A′<>B″)
-           rewrite whrDet* (D , whnfA′) (D′ , whnfB′)
-                 | whrDet* (D₁ , whnfA″) (D″ , whnfB″)
+           -- rewrite whrDet* (D , whnfA′) ({!D′!} , whnfB′)
+           --       | whrDet* (D₁ , whnfA″) ({!D″!} , whnfB″)
            with decConv↓ A′<>B′ A′<>B″
   decConv↑ ([↑] A′ B′ D D′ whnfA′ whnfB′ A′<>B′)
                ([↑] A″ B″ D₁ D″ whnfA″ whnfB″ A′<>B″) | yes p =
-    yes ([↑] B′ B″ D′ D″ whnfB′ whnfB″ p)
+    yes ([↑] A′ A″ D D₁ whnfA′ whnfA″ p)
   decConv↑ ([↑] A′ B′ D D′ whnfA′ whnfB′ A′<>B′)
                ([↑] A″ B″ D₁ D″ whnfA″ whnfB″ A′<>B″) | no ¬p =
     no (λ { ([↑] A‴ B‴ D₂ D‴ whnfA‴ whnfB‴ A′<>B‴) →
-        let A‴≡B′  = whrDet* (D₂ , whnfA‴) (D′ , whnfB′)
-            B‴≡B″ = whrDet* (D‴ , whnfB‴)
-                                (D″ , whnfB″)
+        let A‴≡B′ = whrDet* (D₂ , whnfA‴) (D , whnfA′)
+            B‴≡B″ = whrDet* (D‴ , whnfB‴) (D₁ , whnfA″)
         in  ¬p (PE.subst₂ (λ x y → _ ⊢ x [conv↓] y) A‴≡B′ B‴≡B″ A′<>B‴) })
 
-  decConv↑′ : ∀ {A B}
+  decConv↑′ : ∀ {A B A′ B′}
             → ⊢ Γ ≡ Δ
-            → Γ ⊢ A [conv↑] A → Δ ⊢ B [conv↑] B
+            → Γ ⊢ A [conv↑] A′ → Δ ⊢ B [conv↑] B′
             → Dec (Γ ⊢ A [conv↑] B)
   decConv↑′ Γ≡Δ A B = decConv↑ A (stabilityConv↑ (symConEq Γ≡Δ) B)
 
   -- Decidability of algorithmic equality of types in WHNF.
-  decConv↓ : ∀ {A B}
-           → Γ ⊢ A [conv↓] A → Γ ⊢ B [conv↓] B
+  decConv↓ : ∀ {A B A′ B′}
+           → Γ ⊢ A [conv↓] A′ → Γ ⊢ B [conv↓] B′
            → Dec (Γ ⊢ A [conv↓] B)
   -- True cases
   decConv↓ (U-refl x) (U-refl x₁) = yes (U-refl x)
@@ -308,8 +309,7 @@ mutual
         A≡U = U≡A ⊢U≡A
         k~l′ = PE.subst (λ x → _ ⊢ _ ~ _ ↓ x) A≡U k~l
     in  yes (ne k~l′)
-  decConv↓ (ne x) (ne x₁) | no ¬p =
-    no (λ x₂ → ¬p (U , decConv↓-ne x₂ x))
+  decConv↓ (ne x) (ne x₁) | no ¬p = no (λ x₂ → ¬p (U , (decConv↓-ne x₂ x)))
 
   decConv↓ (Π-cong {p = p′} {q = q′} x x₁ x₂ eq₁ eq₂) (Π-cong {p = p″} {q = q″} x₃ x₄ x₅ eq₃ eq₄)
            with decConv↑ x₁ x₄
@@ -399,46 +399,36 @@ mutual
                in  ⊥-elim (IE.Σ≢ne neK (soundnessConv↓ x₄)))
 
   -- Helper function for decidability of neutral types.
-  decConv↓-ne : ∀ {A B}
+  decConv↓-ne : ∀ {A B A′}
               → Γ ⊢ A [conv↓] B
-              → Γ ⊢ A ~ A ↓ U
+              → Γ ⊢ A ~ A′ ↓ U
               → Γ ⊢ A ~ B ↓ U
-  decConv↓-ne (U-refl x) A~A = A~A
-  decConv↓-ne (ℕ-refl x) A~A = A~A
-  decConv↓-ne (Empty-refl x) A~A = A~A
+  decConv↓-ne (U-refl x) ()
+  decConv↓-ne (ℕ-refl x) ()
+  decConv↓-ne (Empty-refl x) ()
   decConv↓-ne (ne x) A~A = x
   decConv↓-ne (Π-cong x x₁ x₂ _ _) ([~] A D whnfB ())
 
   -- Decidability of algorithmic equality of terms.
-  decConv↑Term : ∀ {t u A}
-               → Γ ⊢ t [conv↑] t ∷ A → Γ ⊢ u [conv↑] u ∷ A
+  decConv↑Term : ∀ {t u A t′ u′}
+               → Γ ⊢ t [conv↑] t′ ∷ A → Γ ⊢ u [conv↑] u′ ∷ A
                → Dec (Γ ⊢ t [conv↑] u ∷ A)
   decConv↑Term ([↑]ₜ B t′ u′ D d d′ whnfB whnft′ whnfu′ t<>u)
                ([↑]ₜ B₁ t″ u″ D₁ d₁ d″ whnfB₁ whnft″ whnfu″ t<>u₁)
                rewrite whrDet* (D , whnfB) (D₁ , whnfB₁)
-                     | whrDet*Term  (d , whnft′) (d′ , whnfu′)
-                     | whrDet*Term  (d₁ , whnft″) (d″ , whnfu″)
-               with decConv↓Term t<>u t<>u₁
+                 with decConv↓Term t<>u t<>u₁
   decConv↑Term ([↑]ₜ B t′ u′ D d d′ whnfB whnft′ whnfu′ t<>u)
                ([↑]ₜ B₁ t″ u″ D₁ d₁ d″ whnfB₁ whnft″ whnfu″ t<>u₁)
-               | yes p =
-    yes ([↑]ₜ B₁ u′ u″ D₁
-                  d′ d″ whnfB₁ whnfu′ whnfu″ p)
+               | yes p = yes ([↑]ₜ B₁ t′ t″ D₁ d d₁ whnfB₁ whnft′ whnft″ p)
   decConv↑Term ([↑]ₜ B t′ u′ D d d′ whnfB whnft′ whnfu′ t<>u)
                ([↑]ₜ B₁ t″ u″ D₁ d₁ d″ whnfB₁ whnft″ whnfu″ t<>u₁)
                | no ¬p =
     no (λ { ([↑]ₜ B₂ t‴ u‴ D₂ d₂ d‴ whnfB₂ whnft‴ whnfu‴ t<>u₂) →
-        let B₂≡B₁ = whrDet* (D₂ , whnfB₂)
-                             (D₁ , whnfB₁)
+        let B₂≡B₁ = whrDet* (D₂ , whnfB₂) (D₁ , whnfB₁)
             t‴≡u′ = whrDet*Term (d₂ , whnft‴)
-                              (PE.subst (λ x → _ ⊢ _ ⇒* _ ∷ x) (PE.sym B₂≡B₁) d′
-                              , whnfu′)
+                                (PE.subst (λ x → _ ⊢ _ ⇒* _ ∷ x) (PE.sym B₂≡B₁) d , whnft′)
             u‴≡u″ = whrDet*Term (d‴ , whnfu‴)
-                               (PE.subst (λ x → _ ⊢ _ ⇒* _ ∷ x)
-                                         (PE.sym B₂≡B₁)
-                                         d″
-                               , whnfu″)
-            qwe = PE.subst (λ x → _ ⊢ _ [conv↓] x ∷ _) u‴≡u″ t<>u₂
+                                (PE.subst (λ x → _ ⊢ _ ⇒* _ ∷ x) (PE.sym B₂≡B₁) d₁ , whnft″)
         in  ¬p (PE.subst₃ (λ x y z → _ ⊢ x [conv↓] y ∷ z)
                           t‴≡u′ u‴≡u″ B₂≡B₁ t<>u₂)})
 
@@ -449,8 +439,8 @@ mutual
   decConv↑Term′ Γ≡Δ t u = decConv↑Term t (stabilityConv↑Term (symConEq Γ≡Δ) u)
 
   -- Decidability of algorithmic equality of terms in WHNF.
-  decConv↓Term : ∀ {t u A}
-               → Γ ⊢ t [conv↓] t ∷ A → Γ ⊢ u [conv↓] u ∷ A
+  decConv↓Term : ∀ {t u A t′ u′}
+               → Γ ⊢ t [conv↓] t′ ∷ A → Γ ⊢ u [conv↓] u′ ∷ A
                → Dec (Γ ⊢ t [conv↓] u ∷ A)
   -- True cases
   decConv↓Term (zero-refl x) (zero-refl x₁) = yes (zero-refl x)
@@ -484,13 +474,13 @@ mutual
   decConv↓Term (ne-ins x x₁ x₂ x₃) (ne-ins x₄ x₅ x₆ x₇)
                with dec~↓ x₃ x₇
   decConv↓Term (ne-ins x x₁ x₂ x₃) (ne-ins x₄ x₅ x₆ x₇) | yes (A , k~l) =
-    yes (ne-ins x₁ x₄ x₆ k~l)
+    yes (ne-ins x x₄ x₆ k~l)
   decConv↓Term (ne-ins x x₁ x₂ x₃) (ne-ins x₄ x₅ x₆ x₇) | no ¬p =
     no (λ x₈ → ¬p (decConv↓Term-ne-ins x₆ x₈))
   decConv↓Term (univ x x₁ x₂) (univ x₃ x₄ x₅)
                with decConv↓  x₂ x₅
   decConv↓Term (univ x x₁ x₂) (univ x₃ x₄ x₅) | yes p =
-    yes (univ x₁ x₃ p)
+    yes (univ x x₃ p)
   decConv↓Term (univ x x₁ x₂) (univ x₃ x₄ x₅) | no ¬p =
     no (λ { (ne-ins x₆ x₇ () x₉)
           ; (univ x₆ x₇ x₈) → ¬p x₈ })
@@ -512,17 +502,22 @@ mutual
   ... | no ¬Q = no (λ { (Σ-η _ _ _ _ _ Q) → ¬Q Q } )
   decConv↓Term (Σ-η _ _ _ _ _ _) (Σ-η _ _ _ _ _ _)
     | no ¬P = no (λ { (Σ-η _ _ _ _ P _) → ¬P P } )
-  decConv↓Term (η-eq x₁ x₂ x₃ x₄ x₅) (η-eq x₇ x₈ x₉ x₁₀ x₁₁)
-               with decConv↑Term x₅ x₁₁
-  decConv↓Term (η-eq x₁ x₂ x₃ x₄ x₅) (η-eq x₇ x₈ x₉ x₁₀ x₁₁) | yes p =
-    yes (η-eq x₂ x₇ x₄ x₁₀ p)
-  decConv↓Term (η-eq x₁ x₂ x₃ x₄ x₅) (η-eq x₇ x₈ x₉ x₁₀ x₁₁) | no ¬p =
-    no (λ { (ne-ins x₁₂ x₁₃ () x₁₅)
-          ; (η-eq x₁₃ x₁₄ x₁₅ x₁₆ x₁₇) → ¬p x₁₇ })
+  decConv↓Term (η-eq {p = p} {f = t} x₁ x₂ x₃ x₄ x₅) (η-eq {f = u} x₇ x₈ x₉ x₁₀ x₁₁)
+    with decConv↑Term (x₅ ≈-refl ≈-refl) (x₁₁ ≈-refl ≈-refl)
+  ... | yes P = yes (η-eq x₁ x₇ x₃ x₉ (λ x x₆ →
+    let ⊢F , ⊢G = syntacticΠ (syntacticTerm x₁)
+        G≡G = refl ⊢G
+    in  transConv↑Term G≡G (x₅ x ≈-refl)
+                       (transConv↑Term G≡G (symConvTerm (x₅ ≈-refl ≈-refl))
+                       (transConv↑Term G≡G P
+                       (transConv↑Term G≡G (x₁₁ ≈-refl x₆)
+                       (symConvTerm (x₁₁ x₆ x₆)))))))
+  ... | no ¬P = no (λ { (ne-ins x₁₂ x₁₃ () x₁₅)
+                      ; (η-eq x₁₃ x₁₄ x₁₅ x₁₆ x₁₇) → ¬P (x₁₇ ≈-refl ≈-refl) })
 
   -- False cases
   decConv↓Term  (ℕ-ins x) (zero-refl x₁) =
-    no (λ x₂ → decConv↓Term-ℕ x₂ x (λ { ([~] A D whnfB ()) }))
+    no (λ x₂ → decConv↓Term-ℕ x₂ x λ { ([~] A D whnfB ()) })
   decConv↓Term  (ℕ-ins x) (suc-cong x₁) =
     no (λ x₂ → decConv↓Term-ℕ x₂ x (λ { ([~] A D whnfB ()) }))
   decConv↓Term  (zero-refl x) (ℕ-ins x₁) =
@@ -535,10 +530,10 @@ mutual
     no (λ { (ℕ-ins ([~] A D whnfB ())) ; (ne-ins x₂ x₃ () x₅) })
 
   -- Decidability of algorithmic equality of terms of equal types.
-  decConv↑TermConv : ∀ {t u A B}
+  decConv↑TermConv : ∀ {t u A B t′ u′}
                 → Γ ⊢ A ≡ B
-                → Γ ⊢ t [conv↑] t ∷ A
-                → Γ ⊢ u [conv↑] u ∷ B
+                → Γ ⊢ t [conv↑] t′ ∷ A
+                → Γ ⊢ u [conv↑] u′ ∷ B
                 → Dec (Γ ⊢ t [conv↑] u ∷ A)
   decConv↑TermConv A≡B t u =
     decConv↑Term t (convConvTerm u (sym A≡B))

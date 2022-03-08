@@ -70,13 +70,13 @@ mutual
     in  zero-refl ⊢Δ
   convConv↓Term Γ≡Δ A≡B whnfB (suc-cong x) rewrite ℕ≡A A≡B whnfB =
     suc-cong (stabilityConv↑Term Γ≡Δ x)
-  convConv↓Term Γ≡Δ A≡B whnfB (η-eq x₁ x₂ y y₁ p≈p₁ p≈p₂ x₃) with Π≡A A≡B whnfB
-  convConv↓Term Γ≡Δ A≡B whnfB (η-eq x₁ x₂ y y₁ p′≈p₁ p′≈p₂ x₃) | p , q , F′ , G′ , PE.refl =
+  convConv↓Term Γ≡Δ A≡B whnfB (η-eq x₁ x₂ y y₁ x₃) with Π≡A A≡B whnfB
+  convConv↓Term Γ≡Δ A≡B whnfB (η-eq x₁ x₂ y y₁ x₃) | p , q , F′ , G′ , PE.refl =
     let F≡F′ , G≡G′ , p′≈p , _ = injectivity A≡B
     in  η-eq (stabilityTerm Γ≡Δ (conv x₁ A≡B))
              (stabilityTerm Γ≡Δ (conv x₂ A≡B))
-             y y₁ (≈-trans (≈-sym p′≈p) p′≈p₁) (≈-trans (≈-sym p′≈p) p′≈p₂)
-             (convConv↑Term (Γ≡Δ ∙ F≡F′) G≡G′ x₃)
+             y y₁
+             λ x x₄ → convConv↑Term (Γ≡Δ ∙ F≡F′) G≡G′ (x₃ (≈-trans p′≈p x) (≈-trans p′≈p x₄))
   convConv↓Term Γ≡Δ A≡B whnfB (Σ-η ⊢p ⊢r pProd rProd fstConv sndConv)
     with Σ≡A A≡B whnfB
   ... | q , F , G , PE.refl =

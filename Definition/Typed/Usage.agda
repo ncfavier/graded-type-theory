@@ -13,6 +13,7 @@ open Setoid M′ renaming (Carrier to M)
 
 open import Definition.Modality.Context 𝕄
 open import Definition.Modality.Context.Properties 𝕄
+open import Definition.Modality.Properties 𝕄
 open import Definition.Modality.Substitution.Properties 𝕄
 open import Definition.Modality.Usage 𝕄
 open import Definition.Modality.Usage.Inversion 𝕄
@@ -41,11 +42,11 @@ usagePresTerm : γ ▸ t → Γ ⊢ t ⇒ u ∷ A → γ ▸ u
 usagePresTerm γ▸t (conv t⇒u x) = usagePresTerm γ▸t t⇒u
 usagePresTerm γ▸t (app-subst t⇒u x) with inv-usage-app γ▸t
 ... | invUsageApp δ▸t η▸a γ≤δ+pη = sub ((usagePresTerm δ▸t t⇒u) ∘ₘ η▸a) γ≤δ+pη
-usagePresTerm γ▸λta (β-red x x₁ x₂ refl) with inv-usage-app γ▸λta
+usagePresTerm γ▸λta (β-red x x₁ x₂ x₃ x₄) with inv-usage-app γ▸λta
 ... | invUsageApp δ▸λt η▸a γ≤δ′+pη with inv-usage-lam δ▸λt
 ... | invUsageLam δ▸t δ′≤δ = sub
   (sgSubstₘ-lemma δ▸t η▸a)
-  (≤ᶜ-trans γ≤δ′+pη (+ᶜ-monotoneˡ δ′≤δ))
+  (≤ᶜ-trans γ≤δ′+pη (+ᶜ-monotone δ′≤δ (·ᶜ-monotoneˡ (≤-reflexive (≈-sym x₄)))))
 usagePresTerm γ▸t (fst-subst x x₁ t⇒u) with inv-usage-fst γ▸t
 ... | invUsageProj 𝟘▸t γ≤𝟘 = sub (fstₘ (usagePresTerm 𝟘▸t t⇒u)) γ≤𝟘
 usagePresTerm γ▸t (snd-subst x x₁ t⇒u) with inv-usage-snd γ▸t

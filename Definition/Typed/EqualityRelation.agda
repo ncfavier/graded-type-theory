@@ -174,9 +174,10 @@ record EqRelSet : Set (lsuc (ℓ ⊔ ℓ′)) where
            → Γ ⊢ g ∷ Π p , q ▷ F ▹ G
            → Function f
            → Function g
-           → p ≈ p₁
-           → p ≈ p₂
-           → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 ≅ wk1 g ∘ p₂ ▷ var x0 ∷ G
+           → (∀ {p₁ p₂}
+              → p ≈ p₁
+              → p ≈ p₂
+              → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 ≅ wk1 g ∘ p₂ ▷ var x0 ∷ G)
            → Γ ⊢ f ≅ g ∷ Π p , q ▷ F ▹ G
 
     -- η for product types

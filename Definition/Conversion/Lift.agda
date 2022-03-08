@@ -85,13 +85,12 @@ mutual
         var0 = neuTerm ([F] (step id) (⊢Γ ∙ ⊢F)) (var x0) (var (⊢Γ ∙ ⊢F) here)
                        (refl (var (⊢Γ ∙ ⊢F) here))
         0≡0 = lift~toConv↑′ ([F] (step id) (⊢Γ ∙ ⊢F)) (var-refl (var (⊢Γ ∙ ⊢F) here) PE.refl)
-        k∘0≡l∘0 = lift~toConv↑′ ([G] (step id) (⊢Γ ∙ ⊢F) var0)
-                                (app-cong (wk~↓ (step id) (⊢Γ ∙ ⊢F) ([~] A D₂ Πₙ k~l))
-                                          0≡0 ≈-refl ≈-refl)
-    in  η-eq ⊢t ⊢u (ne neT) (ne neU) ≈-refl ≈-refl
-             (PE.subst (λ x → _ ⊢ _ [conv↑] _ ∷ x)
-                       (wkSingleSubstId _)
-                       k∘0≡l∘0)
+    in  η-eq ⊢t ⊢u (ne neT) (ne neU)
+             (λ a b → PE.subst (λ x → _ ⊢ _ [conv↑] _ ∷ x)
+                               (wkSingleSubstId _)
+                               (lift~toConv↑′ ([G] (step id) (⊢Γ ∙ ⊢F) var0)
+                                              (app-cong (wk~↓ (step id) (⊢Γ ∙ ⊢F) ([~] A D₂ Πₙ k~l))
+                                                        0≡0 a b)))
   lift~toConv↓′ (Σᵣ′ F G D ⊢F ⊢G Σ≡Σ [F] [G] G-ext) D₁ ([~] A″ D₂ whnfA t~u)
                 rewrite PE.sym (whrDet* (red D , Σₙ) (D₁ , whnfA)) {- Σ F ▹ G ≡ A -} =
     let neT , neU = ne~↑ t~u

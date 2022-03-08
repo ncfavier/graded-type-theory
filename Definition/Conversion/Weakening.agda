@@ -112,17 +112,16 @@ mutual
     univ (wkTerm ρ ⊢Δ x) (wkTerm ρ ⊢Δ x₁) (wkConv↓ ρ ⊢Δ x₂)
   wkConv↓Term ρ ⊢Δ (zero-refl x) = zero-refl ⊢Δ
   wkConv↓Term ρ ⊢Δ (suc-cong t<>u) = suc-cong (wkConv↑Term ρ ⊢Δ t<>u)
-  wkConv↓Term {ρ = ρ} {Δ = Δ} [ρ] ⊢Δ (η-eq {F = F} {G = G} x₁ x₂ y y₁ p≈p₁ p≈p₂ t<>u) =
+  wkConv↓Term {ρ = ρ} {Δ = Δ} [ρ] ⊢Δ (η-eq {F = F} {G = G} x₁ x₂ y y₁ t<>u) =
     let ⊢F , _ = syntacticΠ (syntacticTerm x₁)
         ⊢ρF = wk [ρ] ⊢Δ ⊢F
     in  η-eq (wkTerm [ρ] ⊢Δ x₁) (wkTerm [ρ] ⊢Δ x₂)
              (wkFunction ρ y) (wkFunction ρ y₁)
-             p≈p₁ p≈p₂
-             (PE.subst₃ (λ x y z → Δ ∙ U.wk ρ F ⊢ x [conv↑] y ∷ z)
-                        (PE.cong₃ _∘_▷_ (PE.sym (wk1-wk≡lift-wk1 _ _)) PE.refl PE.refl)
-                        (PE.cong₃ _∘_▷_ (PE.sym (wk1-wk≡lift-wk1 _ _)) PE.refl PE.refl)
-                        PE.refl
-                        (wkConv↑Term (lift [ρ]) (⊢Δ ∙ ⊢ρF) t<>u))
+             λ x x₃ → (PE.subst₃ (λ x y z → Δ ∙ U.wk ρ F ⊢ x [conv↑] y ∷ z)
+                                 (PE.cong₃ _∘_▷_ (PE.sym (wk1-wk≡lift-wk1 _ _)) PE.refl PE.refl)
+                                 (PE.cong₃ _∘_▷_ (PE.sym (wk1-wk≡lift-wk1 _ _)) PE.refl PE.refl)
+                                 PE.refl
+                                 (wkConv↑Term (lift [ρ]) (⊢Δ ∙ ⊢ρF) (t<>u x x₃)))
   wkConv↓Term {ρ = ρ} [ρ] ⊢Δ (Σ-η {G = G} ⊢p ⊢r pProd rProd fstConv sndConv) =
     Σ-η (wkTerm [ρ] ⊢Δ ⊢p)
         (wkTerm [ρ] ⊢Δ ⊢r)

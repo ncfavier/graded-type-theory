@@ -170,9 +170,10 @@ mutual
               → Γ ⊢ g ∷ Π p , q ▷ F ▹ G
               → Function f
               → Function g
-              → p ≈ p₁
-              → p ≈ p₂
-              → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 [conv↑] wk1 g ∘ p₂ ▷ var x0 ∷ G
+              → (∀ {p₁ p₂}
+                 → p ≈ p₁
+                 → p ≈ p₂
+                 → Γ ∙ F ⊢ wk1 f ∘ p₁ ▷ var x0 [conv↑] wk1 g ∘ p₂ ▷ var x0 ∷ G)
               → Γ ⊢ f [conv↓] g ∷ Π p , q ▷ F ▹ G
 
     Σ-η       : Γ ⊢ k ∷ Σ p ▷ F ▹ G

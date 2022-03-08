@@ -232,10 +232,10 @@ mutual
     let _ , ⊢Δ , _ = contextConvSubst Γ≡Δ
     in  zero-refl ⊢Δ
   stabilityConv↓Term Γ≡Δ (suc-cong t<>u) = suc-cong (stabilityConv↑Term Γ≡Δ t<>u)
-  stabilityConv↓Term Γ≡Δ (η-eq x x₁ y y₁ p≈p₁ p≈p₂ t<>u) =
+  stabilityConv↓Term Γ≡Δ (η-eq x x₁ y y₁ t<>u) =
     let ⊢F , ⊢G = syntacticΠ (syntacticTerm x)
     in  η-eq (stabilityTerm Γ≡Δ x) (stabilityTerm Γ≡Δ x₁)
-             y y₁ p≈p₁ p≈p₂ (stabilityConv↑Term (Γ≡Δ ∙ refl ⊢F) t<>u)
+             y y₁ λ x₂ x₃ → stabilityConv↑Term (Γ≡Δ ∙ (refl ⊢F)) (t<>u x₂ x₃)
   stabilityConv↓Term Γ≡Δ (Σ-η ⊢p ⊢r pProd rProd fstConv sndConv) =
     Σ-η (stabilityTerm Γ≡Δ ⊢p) (stabilityTerm Γ≡Δ ⊢r)
         pProd rProd

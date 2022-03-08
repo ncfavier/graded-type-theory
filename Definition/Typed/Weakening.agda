@@ -179,16 +179,14 @@ mutual
                            (PE.sym (wk-β t))
                            (β-red ρF ⊢ρG (wkTerm (lift ρ) (⊢Δ ∙ ρF) ⊢t)
                                      (wkTerm ρ ⊢Δ ⊢a) x))
-  wkEqTerm ρ ⊢Δ (η-eq F f g p≈p₁ p≈p₂ f0≡g0) =
+  wkEqTerm ρ ⊢Δ (η-eq F f g f0≡g0) =
     let ρF = wk ρ ⊢Δ F
     in  η-eq ρF (wkTerm ρ ⊢Δ f)
                 (wkTerm ρ ⊢Δ g)
-                p≈p₁ p≈p₂
-                (PE.subst (λ t → _ ⊢ t ∘ _ ▷ _ ≡ _ ∷ _)
-                          (PE.sym (wk1-wk≡lift-wk1 _ _))
-                          (PE.subst (λ t → _ ⊢ _ ≡ t ∘ _ ▷ _ ∷ _)
-                                    (PE.sym (wk1-wk≡lift-wk1 _ _))
-                                    (wkEqTerm (lift ρ) (⊢Δ ∙ ρF) f0≡g0)))
+                λ x x₁ → PE.subst₂ (λ t u → _ ⊢ t ∘ _ ▷ _ ≡ u ∘ _ ▷ _ ∷ _)
+                                  (PE.sym (wk1-wk≡lift-wk1 _ _))
+                                  (PE.sym (wk1-wk≡lift-wk1 _ _))
+                                  (wkEqTerm (lift ρ) (⊢Δ ∙ ρF) (f0≡g0 x x₁))
   wkEqTerm ρ ⊢Δ (fst-cong ⊢F ⊢G t≡t') =
     let ρF = wk ρ ⊢Δ ⊢F
         ρG = wk (lift ρ) (⊢Δ ∙ ρF) ⊢G
