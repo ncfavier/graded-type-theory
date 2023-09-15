@@ -1,7 +1,8 @@
 name: graded-type-theory
-depend: standard-library
+depend: standard-library cubical
 include: .
 flags:
   --without-K
+  --cubical-compatible
   --safe
   -WnoUnsupportedIndexedMatch

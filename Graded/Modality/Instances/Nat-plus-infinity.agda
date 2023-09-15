@@ -173,6 +173,11 @@ m ≤ n = m ≡ m ∧ n
 +-decreasingˡ {m = ⌞ _ ⌟} {n = ∞}     = refl
 +-decreasingˡ {m = ⌞ _ ⌟} {n = ⌞ n ⌟} = ⌞⌟-antitone (N.m≤m+n _ n)
 
++-decreasingʳ : m + n ≤ n
++-decreasingʳ {⌞ m ⌟} {⌞ n ⌟} = ⌞⌟-antitone (N.m≤n+m n m)
++-decreasingʳ {⌞ _ ⌟} {∞} = refl
++-decreasingʳ {∞} {_} = refl
+
 -- One of the two characteristic properties of the star operator of a
 -- star semiring.
 

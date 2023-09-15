@@ -13,7 +13,7 @@ open import Tools.Relation
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using
   (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂;
-   isEquivalence; setoid)
+   isEquivalence; setoid; isMagma)
   public
 
 -- Non-dependent congruence rules.

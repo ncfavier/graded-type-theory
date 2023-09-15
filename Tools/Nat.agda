@@ -23,7 +23,7 @@ open Data.Nat.Properties
          ⊓-assoc; ⊓-comm;
          +-distribˡ-⊔; *-distribˡ-+; *-distribˡ-⊔; ⊓-distribʳ-⊔;
          ⊔-absorbs-⊓; ⊓-absorbs-⊔;
-         m≤m+n; n≤1+n)
+         m≤m+n; m≤n+m; n≤1+n)
   public
 open import Data.Nat.Show using (show) public
 
