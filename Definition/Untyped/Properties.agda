@@ -23,14 +23,13 @@ private
   variable
     ℓ m n : Nat
     x₁ x₂ : Fin _
-    A A₁ A₂ B₁ B₂ t t₁ t₂ u u₁ u₂ v v₁ v₂ w₁ w₂ : Term _
+    A A₁ A₂ B₁ B₂ l₁ l₂ t t₁ t₂ u u₁ u₂ v v₁ v₂ w₁ w₂ : Term _
     ρ ρ′ : Wk m n
     η : Wk n ℓ
     σ σ₁ σ₂ σ′ : Subst m n
     p p₁ p₂ q q₁ q₂ r r₁ r₂ : M
     s s₁ s₂ : Strength
     b₁ b₂ : BinderMode
-    l₁ l₂ : Universe-level
 
 ------------------------------------------------------------------------
 -- Properties of toTerm and fromTerm.
@@ -42,7 +41,12 @@ opaque
 
   toTerm∘fromTerm : (t : Term n) → toTerm (fromTerm t) ≡ t
   toTerm∘fromTerm (var x) = refl
-  toTerm∘fromTerm (U l) = refl
+  toTerm∘fromTerm Level = refl
+  toTerm∘fromTerm zeroᵘ = refl
+  toTerm∘fromTerm (sucᵘ l) = cong sucᵘ (toTerm∘fromTerm l)
+  toTerm∘fromTerm (l₁ ⊔ᵘ l₂) =
+    cong₂ _⊔ᵘ_ (toTerm∘fromTerm l₁) (toTerm∘fromTerm l₂)
+  toTerm∘fromTerm (U l) = cong U (toTerm∘fromTerm l)
   toTerm∘fromTerm (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B) =
     cong₂ (ΠΣ⟨ b ⟩ p , q ▷_▹_) (toTerm∘fromTerm A) (toTerm∘fromTerm B)
   toTerm∘fromTerm (lam p t) =
@@ -65,10 +69,10 @@ opaque
   toTerm∘fromTerm (natrec p q r A z s n) =
     cong₄ (natrec p q r) (toTerm∘fromTerm A) (toTerm∘fromTerm z)
       (toTerm∘fromTerm s) (toTerm∘fromTerm n)
-  toTerm∘fromTerm (Unit s l) = refl
-  toTerm∘fromTerm (star s l) = refl
-  toTerm∘fromTerm (unitrec l p q A t u) =
-    cong₃ (unitrec l p q) (toTerm∘fromTerm A)
+  toTerm∘fromTerm (Unit s l) = cong (Unit s) (toTerm∘fromTerm l)
+  toTerm∘fromTerm (star s l) = cong (star s) (toTerm∘fromTerm l)
+  toTerm∘fromTerm (unitrec p q l A t u) =
+    cong₄ (unitrec p q) (toTerm∘fromTerm l) (toTerm∘fromTerm A)
       (toTerm∘fromTerm t) (toTerm∘fromTerm u)
   toTerm∘fromTerm Empty = refl
   toTerm∘fromTerm (emptyrec p A t) =
@@ -94,7 +98,15 @@ opaque
 
   fromTerm∘toTerm : (t : Term′ n) → fromTerm (toTerm t) ≡ t
   fromTerm∘toTerm (var x) = refl
-  fromTerm∘toTerm (gen (Ukind l) []) = refl
+  fromTerm∘toTerm (gen Levelkind []) = refl
+  fromTerm∘toTerm (gen Zeroᵘkind []) = refl
+  fromTerm∘toTerm (gen Sucᵘkind (l ∷ₜ [])) =
+    cong (λ l → gen Sucᵘkind (l ∷ₜ [])) (fromTerm∘toTerm l)
+  fromTerm∘toTerm (gen Maxᵘkind (l₁ ∷ₜ l₂ ∷ₜ [])) =
+    cong₂ (λ l₁ l₂ → gen Maxᵘkind (l₁ ∷ₜ l₂ ∷ₜ []))
+      (fromTerm∘toTerm l₁) (fromTerm∘toTerm l₂)
+  fromTerm∘toTerm (gen Ukind (l ∷ₜ [])) =
+    cong (λ l → gen Ukind (l ∷ₜ [])) (fromTerm∘toTerm l)
   fromTerm∘toTerm (gen (Binderkind b p q) (A ∷ₜ B ∷ₜ [])) =
     cong₂ (λ A B → gen (Binderkind b p q) (A ∷ₜ B ∷ₜ []))
       (fromTerm∘toTerm A) (fromTerm∘toTerm B)
@@ -121,11 +133,14 @@ opaque
     cong₄ (λ A z s n → gen (Natreckind p q r) (A ∷ₜ z ∷ₜ s ∷ₜ n ∷ₜ []))
       (fromTerm∘toTerm A) (fromTerm∘toTerm z)
       (fromTerm∘toTerm s) (fromTerm∘toTerm n)
-  fromTerm∘toTerm (gen (Unitkind s l) []) = refl
-  fromTerm∘toTerm (gen (Starkind s l) []) = refl
-  fromTerm∘toTerm (gen (Unitreckind l p q) (A ∷ₜ t ∷ₜ u ∷ₜ [])) =
-    cong₃ (λ A t u → gen (Unitreckind l p q) (A ∷ₜ t ∷ₜ u ∷ₜ []))
-      (fromTerm∘toTerm A) (fromTerm∘toTerm t) (fromTerm∘toTerm u)
+  fromTerm∘toTerm (gen (Unitkind s) (l ∷ₜ [])) =
+    cong (λ l → gen (Unitkind s) (l ∷ₜ [])) (fromTerm∘toTerm l)
+  fromTerm∘toTerm (gen (Starkind s) (l ∷ₜ [])) =
+    cong (λ l → gen (Starkind s) (l ∷ₜ [])) (fromTerm∘toTerm l)
+  fromTerm∘toTerm (gen (Unitreckind p q) (l ∷ₜ A ∷ₜ t ∷ₜ u ∷ₜ [])) =
+    cong₄ (λ l A t u → gen (Unitreckind p q) (l ∷ₜ A ∷ₜ t ∷ₜ u ∷ₜ []))
+      (fromTerm∘toTerm l) (fromTerm∘toTerm A)
+      (fromTerm∘toTerm t) (fromTerm∘toTerm u)
   fromTerm∘toTerm (gen Emptykind []) = refl
   fromTerm∘toTerm (gen (Emptyreckind p) (A ∷ₜ t ∷ₜ [])) =
     cong₂ (λ A t → gen (Emptyreckind p) (A ∷ₜ t ∷ₜ []))
@@ -158,7 +173,11 @@ opaque
 
   wk≡wk′ : ∀ t → wk ρ t ≡ toTerm (wk′ ρ (fromTerm t))
   wk≡wk′ (var x) = refl
-  wk≡wk′ (U x) = refl
+  wk≡wk′ Level = refl
+  wk≡wk′ zeroᵘ = refl
+  wk≡wk′ (sucᵘ l) = cong sucᵘ (wk≡wk′ l)
+  wk≡wk′ (l₁ ⊔ᵘ l₂) = cong₂ _⊔ᵘ_ (wk≡wk′ l₁) (wk≡wk′ l₂)
+  wk≡wk′ (U l) = cong U (wk≡wk′ l)
   wk≡wk′ (ΠΣ⟨ b ⟩ p , q ▷ t ▹ t₁) =
     cong₂ (ΠΣ⟨ b ⟩ p , q ▷_▹_) (wk≡wk′ t) (wk≡wk′ t₁)
   wk≡wk′ (lam p t) = cong (lam p) (wk≡wk′ t)
@@ -173,10 +192,10 @@ opaque
   wk≡wk′ (suc t) = cong suc (wk≡wk′ t)
   wk≡wk′ (natrec p q r t t₁ t₂ t₃) =
     cong₄ (natrec p q r) (wk≡wk′ t) (wk≡wk′ t₁) (wk≡wk′ t₂) (wk≡wk′ t₃)
-  wk≡wk′ (Unit x x₁) = refl
-  wk≡wk′ (star x x₁) = refl
-  wk≡wk′ (unitrec x p q t t₁ t₂) =
-    cong₃ (unitrec x p q) (wk≡wk′ t) (wk≡wk′ t₁) (wk≡wk′ t₂)
+  wk≡wk′ (Unit x l) = cong (Unit x) (wk≡wk′ l)
+  wk≡wk′ (star x l) = cong (star x) (wk≡wk′ l)
+  wk≡wk′ (unitrec p q l t t₁ t₂) =
+    cong₄ (unitrec p q) (wk≡wk′ l) (wk≡wk′ t) (wk≡wk′ t₁) (wk≡wk′ t₂)
   wk≡wk′ Empty = refl
   wk≡wk′ (emptyrec p t t₁) =
     cong₂ (emptyrec p) (wk≡wk′ t) (wk≡wk′ t₁)
@@ -337,12 +356,17 @@ opaque
 
 opaque
 
-  -- Relating substitution of terms with susbtitution of the alternative
+  -- Relating substitution of terms with substitution of the alternative
   -- term representation.
 
   subst≡subst′ : ∀ t → t [ σ ] ≡ toTerm (fromTerm t [ σ ]′)
   subst≡subst′ (var x) = sym (toTerm∘fromTerm _)
-  subst≡subst′ (U x) = refl
+  subst≡subst′ Level = refl
+  subst≡subst′ zeroᵘ = refl
+  subst≡subst′ (sucᵘ l) = cong sucᵘ (subst≡subst′ l)
+  subst≡subst′ (l₁ ⊔ᵘ l₂) =
+    cong₂ _⊔ᵘ_ (subst≡subst′ l₁) (subst≡subst′ l₂)
+  subst≡subst′ (U l) = cong U (subst≡subst′ l)
   subst≡subst′ (ΠΣ⟨ b ⟩ p , q ▷ t ▹ t₁) =
     cong₂ (ΠΣ⟨ b ⟩ p , q ▷_▹_) (subst≡subst′ t) (subst≡subst′ t₁)
   subst≡subst′ (lam p t) = cong (lam p) (subst≡subst′ t)
@@ -361,10 +385,10 @@ opaque
   subst≡subst′ (natrec p q r t t₁ t₂ t₃) =
     cong₄ (natrec p q r) (subst≡subst′ t)
       (subst≡subst′ t₁) (subst≡subst′ t₂) (subst≡subst′ t₃)
-  subst≡subst′ (Unit x x₁) = refl
-  subst≡subst′ (star x x₁) = refl
-  subst≡subst′ (unitrec x p q t t₁ t₂) =
-    cong₃ (unitrec x p q) (subst≡subst′ t)
+  subst≡subst′ (Unit x l) = cong (Unit x) (subst≡subst′ l)
+  subst≡subst′ (star x l) = cong (star x) (subst≡subst′ l)
+  subst≡subst′ (unitrec p q l t t₁ t₂) =
+    cong₄ (unitrec p q) (subst≡subst′ l) (subst≡subst′ t)
       (subst≡subst′ t₁) (subst≡subst′ t₂)
   subst≡subst′ Empty = refl
   subst≡subst′ (emptyrec p t t₁) =
@@ -1553,7 +1577,11 @@ opaque
       (yes n) → yes (sucₙ n)
       (no ¬n) → no (λ { (sucₙ n) → ¬n n})
   isNumeral? (var x) = no (λ ())
-  isNumeral? (U _) = no (λ ())
+  isNumeral? Level = no (λ ())
+  isNumeral? zeroᵘ = no (λ ())
+  isNumeral? (sucᵘ _) = no (λ ())
+  isNumeral? (_ ⊔ᵘ _) = no (λ ())
+  isNumeral? (U n) = no (λ ())
   isNumeral? ℕ = no λ ()
   isNumeral? Empty = no λ ()
   isNumeral? Unit! = no λ ()
@@ -1694,7 +1722,7 @@ Unit-PE-injectivity refl = refl , refl
 -- The constructor unitrec is injective.
 
 unitrec-PE-injectivity :
-  unitrec l₁ p₁ q₁ A₁ t₁ u₁ PE.≡ unitrec l₂ p₂ q₂ A₂ t₂ u₂ →
+  unitrec p₁ q₁ l₁ A₁ t₁ u₁ PE.≡ unitrec p₂ q₂ l₂ A₂ t₂ u₂ →
   l₁ PE.≡ l₂ × p₁ PE.≡ p₂ × q₁ PE.≡ q₂ × A₁ PE.≡ A₂ × t₁ PE.≡ t₂ ×
   u₁ PE.≡ u₂
 unitrec-PE-injectivity PE.refl =

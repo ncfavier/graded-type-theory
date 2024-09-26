@@ -149,11 +149,15 @@ opaque
   infix 4 _≟ᵘ_
 
   _≟ᵘ_ : Decidable (_≡_ {A = Universe-level})
-  _≟ᵘ_ = _≟_
+  0+ l₁ ≟ᵘ 0+ l₂ = map (cong 0+_) (λ { refl → refl }) (l₁ ≟ l₂)
+  0+ l₁ ≟ᵘ ω+ l₂ = no (λ ())
+  ω+ l₁ ≟ᵘ 0+ l₂ = no (λ ())
+  ω+ l₁ ≟ᵘ ω+ l₂ = map (cong ω+_) (λ { refl → refl }) (l₁ ≟ l₂)
 
 ------------------------------------------------------------------------
 -- Properties related to _≤ᵘ_ and _<ᵘ_
 
+{-
 opaque
 
   -- The level 0 is the lowest level.
@@ -195,10 +199,12 @@ opaque
 
   <ᵘ→≤ᵘ : l₁ <ᵘ l₂ → l₁ ≤ᵘ l₂
   <ᵘ→≤ᵘ = <′→≤′
+-}
 
 ------------------------------------------------------------------------
 -- Properties related to _⊔ᵘ_
 
+{-
 opaque
 
   -- The level l₁ is bounded by the maximum of l₁ and l₂.
@@ -233,6 +239,7 @@ opaque
 
   ⊔ᵘ-idem : l ⊔ᵘ l ≡ l
   ⊔ᵘ-idem = ⊔-idem _
+-}
 
 ------------------------------------------------------------------------
 -- Other properties

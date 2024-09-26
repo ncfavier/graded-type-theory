@@ -23,11 +23,11 @@ open import Definition.Untyped M
 
 private variable
   p p₁ p₂ q q₁ q₂ r   : M
-  n l                 : Nat
+  n                   : Nat
   b                   : BinderMode
   s                   : Strength
   ρ                   : Wk _ _
-  A B E F G H t u v w : Term _
+  A B E F G H l t u v w : Term _
 
 ------------------------------------------------------------------------
 -- Neutral terms
@@ -44,7 +44,7 @@ data Neutral : Term n → Set a where
   prodrecₙ  : Neutral t   → Neutral (prodrec r p q A t u)
   emptyrecₙ : Neutral t   → Neutral (emptyrec p A t)
   unitrecₙ  : ¬ Unitʷ-η →
-              Neutral t   → Neutral (unitrec l p q A t u)
+              Neutral t   → Neutral (unitrec p q l A t u)
   Jₙ        : Neutral w   → Neutral (J p q A t B u v w)
   Kₙ        : Neutral v   → Neutral (K p A t B u v)
   []-congₙ  : Neutral v   → Neutral ([]-cong s A t u v)
@@ -419,7 +419,7 @@ opaque
   -- An inversion lemma for unitrec.
 
   inv-ne-unitrec :
-    Neutral (unitrec l p q A t u) → ¬ Unitʷ-η × Neutral t
+    Neutral (unitrec p q l A t u) → ¬ Unitʷ-η × Neutral t
   inv-ne-unitrec (unitrecₙ not-ok n) = not-ok , n
 
 opaque
@@ -493,7 +493,7 @@ opaque
   -- An inversion lemma for unitrec.
 
   inv-whnf-unitrec :
-    Whnf (unitrec l p q A t u) → ¬ Unitʷ-η × Neutral t
+    Whnf (unitrec p q l A t u) → ¬ Unitʷ-η × Neutral t
   inv-whnf-unitrec (ne n) = inv-ne-unitrec n
 
 opaque
@@ -530,7 +530,7 @@ data NeutralAt (x : Fin n) : Term n → Set a where
   prodrecₙ  : NeutralAt x t   → NeutralAt x (prodrec r p q A t u)
   emptyrecₙ : NeutralAt x t   → NeutralAt x (emptyrec p A t)
   unitrecₙ  : ¬ Unitʷ-η →
-              NeutralAt x t   → NeutralAt x (unitrec l p q A t u)
+              NeutralAt x t   → NeutralAt x (unitrec p q l A t u)
   Jₙ        : NeutralAt x w   → NeutralAt x (J p q A t B u v w)
   Kₙ        : NeutralAt x v   → NeutralAt x (K p A t B u v)
   []-congₙ  : NeutralAt x v   → NeutralAt x ([]-cong s A t u v)
