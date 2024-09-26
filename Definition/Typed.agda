@@ -29,10 +29,10 @@ infixl 24 _∙_
 
 private
   variable
-    n l l₁ l₂ : Nat
+    n : Nat
     Γ : Con Term _
     A A₁ A₂ A′ B B₁ B₂ C E F F′ G H : Term _
-    a f g n′ s s′ t t₁ t₂ t′ u u₁ u₂ u′ v v₁ v₂ v′ w w₁ w₂ w′ z z′ :
+    a f g l l₁ l₂ n′ s s′ t t₁ t₂ t′ u u₁ u₂ u′ v v₁ v₂ v′ w w₁ w₂ w′ z z′ :
       Term _
     σ σ′ : Subst _ _
     x : Fin _
@@ -56,7 +56,9 @@ mutual
 
   -- Well-formed type
   data _⊢_ (Γ : Con Term n) : Term n → Set ℓ where
-    Uⱼ     : ⊢ Γ → Γ ⊢ U l
+    ULevelⱼ : ⊢ Γ → Γ ⊢ ULevel
+    Uⱼ     : Γ ⊢ l ∷ ULevel
+           → Γ ⊢ U l
     ℕⱼ     : ⊢ Γ → Γ ⊢ ℕ
     Emptyⱼ : ⊢ Γ → Γ ⊢ Empty
     Unitⱼ  : ⊢ Γ → Unit-allowed k → Γ ⊢ Unit k
@@ -73,13 +75,13 @@ mutual
   -- Well-formed term of a type
   data _⊢_∷_ (Γ : Con Term n) : Term n → Term n → Set ℓ where
     ΠΣⱼ       : Γ     ⊢ F ∷ U l₁
-              → Γ ∙ F ⊢ G ∷ U l₂
+              → Γ ∙ F ⊢ G ∷ U (wk1 l₂)
               → ΠΣ-allowed b p q
-              → Γ     ⊢ ΠΣ⟨ b ⟩ p , q ▷ F ▹ G ∷ U (l₁ ⊔ l₂)
-    Uⱼ        : ⊢ Γ → Γ ⊢ U l ∷ U (1+ l)
-    ℕⱼ        : ⊢ Γ → Γ ⊢ ℕ ∷ U 0
-    Emptyⱼ    : ⊢ Γ → Γ ⊢ Empty ∷ U 0
-    Unitⱼ     : ⊢ Γ → Unit-allowed k → Γ ⊢ Unit k ∷ U 0
+              → Γ     ⊢ ΠΣ⟨ b ⟩ p , q ▷ F ▹ G ∷ U (Lmax l₁ l₂)
+    Uⱼ        : ⊢ Γ → Γ ⊢ U l ∷ U (Lsuc l)
+    ℕⱼ        : ⊢ Γ → Γ ⊢ ℕ ∷ U Lzero
+    Emptyⱼ    : ⊢ Γ → Γ ⊢ Empty ∷ U Lzero
+    Unitⱼ     : ⊢ Γ → Unit-allowed k → Γ ⊢ Unit k ∷ U Lzero
 
     conv      : Γ ⊢ t ∷ A
               → Γ ⊢ A ≡ B
@@ -177,6 +179,8 @@ mutual
     trans  : Γ ⊢ A ≡ B
            → Γ ⊢ B ≡ C
            → Γ ⊢ A ≡ C
+    U-cong : Γ ⊢ l₁ ≡ l₂ ∷ ULevel
+           → Γ ⊢ U l₁ ≡ U l₂
     ΠΣ-cong
            : Γ     ⊢ F
            → Γ     ⊢ F ≡ H
@@ -203,10 +207,10 @@ mutual
                   → Γ ⊢ t ≡ u ∷ B
     ΠΣ-cong       : Γ     ⊢ F
                   → Γ     ⊢ F ≡ H ∷ U l₁
-                  → Γ ∙ F ⊢ G ≡ E ∷ U l₂
+                  → Γ ∙ F ⊢ G ≡ E ∷ U (wk1 l₂)
                   → ΠΣ-allowed b p q
                   → Γ     ⊢ ΠΣ⟨ b ⟩ p , q ▷ F ▹ G ≡
-                            ΠΣ⟨ b ⟩ p , q ▷ H ▹ E ∷ U (l₁ ⊔ l₂)
+                            ΠΣ⟨ b ⟩ p , q ▷ H ▹ E ∷ U (Lmax l₁ l₂)
     app-cong      : ∀ {b}
                   → Γ ⊢ f ≡ g ∷ Π p , q ▷ F ▹ G
                   → Γ ⊢ a ≡ b ∷ F
@@ -605,9 +609,9 @@ data _⊢ˢ_≡_∷_ {k} (Δ : Con Term k) :
 
 ⟦_⟧ⱼᵤ : (W : BindingType) → ∀ {F G}
      → Γ     ⊢ F ∷ U l₁
-     → Γ ∙ F ⊢ G ∷ U l₂
+     → Γ ∙ F ⊢ G ∷ U (wk1 l₂)
      → BindingType-allowed W
-     → Γ     ⊢ ⟦ W ⟧ F ▹ G ∷ U (l₁ ⊔ l₂)
+     → Γ     ⊢ ⟦ W ⟧ F ▹ G ∷ U (Lmax l₁ l₂)
 ⟦ BΠ _ _   ⟧ⱼᵤ = ΠΣⱼ
 ⟦ BΣ _ _ _ ⟧ⱼᵤ = ΠΣⱼ
 

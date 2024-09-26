@@ -13,7 +13,7 @@ open import Tools.PropositionalEquality
 open import Tools.Sum
 
 private variable
-  l              : Nat
+  l              : Term _
   x              : Fin _
   ρ              : Wk _ _
   A B t t′ u v w : Term _
@@ -36,12 +36,12 @@ subst-var {t = var _} eq = _ , refl , eq
 
 -- Inversion for U.
 
-wk-U : wk ρ t ≡ U l → t ≡ U l
-wk-U {t = U l} refl = refl
+-- wk-U : wk ρ t ≡ U l → t ≡ U l
+-- wk-U {t = U l} refl = refl
 
-subst-U : t [ σ ] ≡ U l → (∃ λ x → t ≡ var x) ⊎ t ≡ U l
-subst-U {t = var _} _ = inj₁ (_ , refl)
-subst-U {t = U _} refl = inj₂ refl
+-- subst-U : t [ σ ] ≡ U l → (∃ λ x → t ≡ var x) ⊎ t ≡ U l
+-- subst-U {t = var _} _ = inj₁ (_ , refl)
+-- subst-U {t = U _} refl = inj₂ refl
 
 -- Inversion for ΠΣ⟨_⟩_,_▷_▹_.
 

@@ -45,7 +45,12 @@ infix 25 _[_]↑²
 -- in the list).
 
 data Kind : (ns : List Nat) → Set a where
-  Ukind : Nat → Kind []
+  ULevelkind : Kind []
+  Lzerokind  : Kind []
+  Lsuckind   : Kind (0 ∷ [])
+  Lmaxkind   : Kind (0 ∷ 0 ∷ [])
+
+  Ukind : Kind (0 ∷ [])
 
   Binderkind : (b : BinderMode) (p q : M) → Kind (0 ∷ 1 ∷ [])
 
@@ -98,7 +103,11 @@ private variable
 -- Π, lam, and natrec are binders.
 
 -- Type constructors.
-pattern U n = gen (Ukind n) []
+pattern ULevel = gen ULevelkind []
+pattern Lzero = gen Lzerokind []
+pattern Lsuc l = gen Lsuckind (l ∷ₜ [])
+pattern Lmax l m = gen Lmaxkind (l ∷ₜ m ∷ₜ [])
+pattern U l = gen Ukind (l ∷ₜ [])
 pattern ℕ = gen Natkind []
 pattern Empty = gen Emptykind []
 pattern Unit! = gen (Unitkind _) []

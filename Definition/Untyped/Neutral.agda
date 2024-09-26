@@ -23,11 +23,11 @@ open import Definition.Untyped M
 
 private variable
   p p₁ p₂ q q₁ q₂ r   : M
-  n l                 : Nat
+  n                   : Nat
   b                   : BinderMode
   s                   : Strength
   ρ                   : Wk _ _
-  A B E F G H t u v w : Term _
+  A B E F G H l t u v w : Term _
 
 ------------------------------------------------------------------------
 -- Neutral terms
