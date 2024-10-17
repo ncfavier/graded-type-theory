@@ -35,6 +35,7 @@ private
   variable
     p q : Mod
     ℓ : Nat
+    l : Universe-level
     Γ Δ : Con Term ℓ
     t t′ u u′ : Term _
     ρ : Wk _ _
@@ -120,10 +121,10 @@ mutual
     inductive
     constructor Levelₜ
     field
-      l : Term ℓ
-      d : Γ ⊢ t :⇒*: l ∷ Level
-      l≡l : Γ ⊢ l ≅ l ∷ Level
-      prop : Level-prop Γ l
+      m : Term ℓ
+      d : Γ ⊢ t :⇒*: m ∷ Level
+      m≡m : Γ ⊢ m ≅ m ∷ Level
+      prop : Level-prop Γ m
 
   -- WHNF property of level terms
   data Level-prop (Γ : Con Term ℓ) : (l : Term ℓ) → Set a where
@@ -131,28 +132,31 @@ mutual
     sucᵘᵣ  : ∀ {l} → Γ ⊩Level l ∷Level → Level-prop Γ (sucᵘ l)
     ne     : ∀ {l} → Γ ⊩neNf l ∷ Level → Level-prop Γ l
 
-⟦_⟧ᵘ : Γ ⊩Level t ∷Level → Universe-level
-⟦_⟧ᵘ′ : Level-prop Γ t → Universe-level
-
-⟦ l ⟧ᵘ = ⟦ l ._⊩Level_∷Level.prop ⟧ᵘ′
-
-⟦ zeroᵘᵣ ⟧ᵘ′ = 0+ 0
-⟦ sucᵘᵣ x ⟧ᵘ′ = 1+ᵘ ⟦ x ⟧ᵘ
-⟦ ne x ⟧ᵘ′ = ω+ 0
-
 mutual
   _⊩_≤ᵘ_ : (Γ : Con Term ℓ) → ∀ {l′} ([l′] : Γ ⊩Level l′ ∷Level) (l : Universe-level) → Set a
   Γ ⊩ [l′] ≤ᵘ l = Γ ⊩ [l′] ._⊩Level_∷Level.prop ≤ᵘ′ l
 
   data _⊩_≤ᵘ′_ (Γ : Con Term ℓ) : ∀ {l′} (prop : Level-prop Γ l′) (l : Universe-level) → Set a where
-    ≤ᵘ-refl : ([t] : Level-prop Γ t) → Γ ⊩ [t] ≤ᵘ′ ⟦ [t] ⟧ᵘ′
-    ≤ᵘ-suc
-      : ∀ {l} ([t] : Level-prop Γ t)
-      → Γ ⊩ [t] ≤ᵘ′ l
-      → Γ ⊩ [t] ≤ᵘ′ 1+ᵘ l
+    ≤ᵘ-ne : ∀ {l l′} ([l′] : Γ ⊩neNf l′ ∷ Level) → Γ ⊩ ne [l′] ≤ᵘ′ l
+    ≤ᵘ-zeroᵘ : ∀ {l} → Γ ⊩ zeroᵘᵣ ≤ᵘ′ l
+    ≤ᵘ-sucᵘ : ∀ {l l′} {[l′] : Γ ⊩Level l′ ∷Level} → Γ ⊩ [l′] ≤ᵘ l → Γ ⊩ sucᵘᵣ [l′] ≤ᵘ′ 1+ l
+    -- ≤ᵘ-refl : ([t] : Level-prop Γ t) → Γ ⊩ [t] ≤ᵘ′ ⟦ [t] ⟧ᵘ′
+    -- ≤ᵘ-suc
+    --   : ∀ {l} ([t] : Level-prop Γ t)
+    --   → Γ ⊩ [t] ≤ᵘ′ l
+    --   → Γ ⊩ [t] ≤ᵘ′ 1+ᵘ l
 
 _⊩_<ᵘ_ : (Γ : Con Term ℓ) → ∀ {l′} ([l′] : Γ ⊩Level l′ ∷Level) (l : Universe-level) → Set a
 Γ ⊩ [l′] <ᵘ l = Γ ⊩ sucᵘᵣ [l′] ≤ᵘ′ l
+
+mutual
+  reflect-level : Γ ⊩Level t ∷Level → Universe-level
+  reflect-level [t] = reflect-level-prop ([t] ._⊩Level_∷Level.prop)
+
+  reflect-level-prop : Level-prop Γ t → Universe-level
+  reflect-level-prop zeroᵘᵣ = 0
+  reflect-level-prop (sucᵘᵣ x) = 1+ (reflect-level x)
+  reflect-level-prop (ne x) = 0
 
 -- mutual
 --   _⊩_<ᵘ_ : (Γ : Con Term ℓ) → ∀ {l′} ([l′] : Γ ⊩Level l′ ∷Level) (l : Universe-level) → Set a
@@ -253,59 +257,64 @@ record _⊩Empty_≡_∷Empty (Γ : Con Term ℓ) (t u : Term ℓ) : Set a where
 
 -- Unit type
 record _⊩Unit⟨_,_⟩_
-  (Γ : Con Term ℓ) (l : Term ℓ) (s : Strength) (A : Term ℓ) :
+  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (A : Term ℓ) :
   Set a where
   no-eta-equality
   pattern
   constructor Unitₜ
   field
-    ⇒*-Unit : Γ ⊢ A :⇒*: Unit s l
+    l′ : Term ℓ
+    [l′] : Γ ⊩Level l′ ∷Level
+    l′<  : Γ ⊩ [l′] ≤ᵘ l
+    ⇒*-Unit : Γ ⊢ A :⇒*: Unit s l′
     ok      : Unit-allowed s
 
 -- Unit type equality
-_⊩Unit⟨_,_⟩_≡_ :
-  Con Term ℓ → Term ℓ → Strength → (_ _ : Term ℓ) → Set a
-Γ ⊩Unit⟨ l , s ⟩ A ≡ B = Γ ⊢ B ⇒* Unit s l
+_⊩Unit⟨_,_⟩_≡_/_ :
+  (Γ : Con Term ℓ) → (l : Universe-level) → (s : Strength) → (A B : Term ℓ) → Γ ⊩Unit⟨ l , s ⟩ A → Set a
+Γ ⊩Unit⟨ l , s ⟩ A ≡ B / [A] = Γ ⊢ B ⇒* Unit s ([A] ._⊩Unit⟨_,_⟩_.l′)
 
 data Unit-prop
-  (Γ : Con Term ℓ) (l : Term ℓ) (s : Strength) :
+  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
   Term ℓ → Set a where
-  starᵣ : Unit-prop Γ l s (star s l)
-  ne : ∀ {n} → Γ ⊩neNf n ∷ Unit s l → Unit-prop Γ l s n
+  starᵣ : Unit-prop Γ l s A [A] (star s ([A] ._⊩Unit⟨_,_⟩_.l′))
+  ne : ∀ {n} → Γ ⊩neNf n ∷ A → Unit-prop Γ l s A [A] n
 
-record _⊩Unit⟨_,_⟩_∷Unit
-  (Γ : Con Term ℓ) (l : Term ℓ) (s : Strength) (t : Term ℓ) :
+record _⊩Unit⟨_,_⟩_∷_/_
+  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (t : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
   Set a where
   inductive
   constructor Unitₜ
   field
     n : Term ℓ
-    d : Γ ⊢ t :⇒*: n ∷ Unit s l
-    n≡n : Γ ⊢ n ≅ n ∷ Unit s l
-    prop : Unit-prop Γ l s n
+    d : Γ ⊢ t :⇒*: n ∷ A
+    n≡n : Γ ⊢ n ≅ n ∷ A
+    prop : Unit-prop Γ l s A [A] n
 
 -- Unit term equality
 
 data [Unitʷ]-prop
-  (Γ : Con Term ℓ) (l : Term ℓ) : (_ _ : Term ℓ) → Set a where
-  starᵣ : [Unitʷ]-prop Γ l (starʷ l) (starʷ l)
-  ne : ∀ {n n′} → Γ ⊩neNf n ≡ n′ ∷ Unitʷ l → [Unitʷ]-prop Γ l n n′
+  (Γ : Con Term ℓ) (l : Universe-level) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , 𝕨 ⟩ A) : (_ _ : Term ℓ) → Set a where
+  starᵣ : [Unitʷ]-prop Γ l A [A] (starʷ ([A] ._⊩Unit⟨_,_⟩_.l′)) (starʷ ([A] ._⊩Unit⟨_,_⟩_.l′))
+  ne : ∀ {n n′} → Γ ⊩neNf n ≡ n′ ∷ A → [Unitʷ]-prop Γ l A [A] n n′
 
-data _⊩Unit⟨_,_⟩_≡_∷Unit
-  (Γ : Con Term ℓ) (l : Term ℓ) : Strength → (_ _ : Term ℓ) → Set a where
+data _⊩Unit⟨_,_⟩_≡_∷_/_
+  (Γ : Con Term ℓ) (l : Universe-level) : (s : Strength) (t u : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) → Set a where
   Unitₜ₌ˢ :
-    Γ ⊢ t ∷ Unit s l →
-    Γ ⊢ u ∷ Unit s l →
+    ∀ {A} {[A]} →
+    Γ ⊢ t ∷ A →
+    Γ ⊢ u ∷ A →
     Unit-with-η s →
-    Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷Unit
+    Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷ A / [A]
   Unitₜ₌ʷ :
+    ∀ {A} {[A]} →
     (k k′ : Term ℓ) →
-    Γ ⊢ t :⇒*: k  ∷ Unitʷ l →
-    Γ ⊢ u :⇒*: k′ ∷ Unitʷ l →
-    Γ ⊢ k ≅ k′ ∷ Unitʷ l →
-    [Unitʷ]-prop Γ l k k′ →
+    Γ ⊢ t :⇒*: k  ∷ A →
+    Γ ⊢ u :⇒*: k′ ∷ A →
+    Γ ⊢ k ≅ k′ ∷ A →
+    [Unitʷ]-prop Γ l A [A] k k′ →
     ¬ Unitʷ-η →
-    Γ ⊩Unit⟨ l , 𝕨 ⟩ t ≡ u ∷Unit
+    Γ ⊩Unit⟨ l , 𝕨 ⟩ t ≡ u ∷ A / [A]
 
 -- Logical relation
 -- Exported interface
@@ -618,7 +627,7 @@ module LogRel
       Uᵣ  : ∀ {A} → Γ ⊩₁U A → Γ ⊩ₗ A
       ℕᵣ  : ∀ {A} → Γ ⊩ℕ A → Γ ⊩ₗ A
       Emptyᵣ : ∀ {A} → Γ ⊩Empty A → Γ ⊩ₗ A
-      Unitᵣ : ∀ {A} {s : Strength} → Γ ⊩Unit⟨ {! l !} , s ⟩ A → Γ ⊩ₗ A
+      Unitᵣ : ∀ {A} {s : Strength} → Γ ⊩Unit⟨ l , s ⟩ A → Γ ⊩ₗ A
       ne  : ∀ {A} → Γ ⊩ne A → Γ ⊩ₗ A
       Bᵣ  : ∀ {A} W → Γ ⊩ₗB⟨ W ⟩ A → Γ ⊩ₗ A
       Idᵣ : ∀ {A} → Γ ⊩ₗId A → Γ ⊩ₗ A
@@ -629,7 +638,7 @@ module LogRel
     Γ ⊩ₗ A ≡ B / Uᵣ D = Γ ⊩₁U≡ B / D ._⊩₁U_.l′
     Γ ⊩ₗ A ≡ B / ℕᵣ D = Γ ⊩ℕ A ≡ B
     Γ ⊩ₗ A ≡ B / Emptyᵣ D = Γ ⊩Empty A ≡ B
-    Γ ⊩ₗ A ≡ B / Unitᵣ {s = s} D = Γ ⊩Unit⟨ {! l !} , s ⟩ A ≡ B
+    Γ ⊩ₗ A ≡ B / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ A ≡ B / D
     Γ ⊩ₗ A ≡ B / ne neA = Γ ⊩ne A ≡ B / neA
     Γ ⊩ₗ A ≡ B / Bᵣ W BA = Γ ⊩ₗB⟨ W ⟩ A ≡ B / BA
     Γ ⊩ₗ A ≡ B / Idᵣ ⊩A = Γ ⊩ₗId A ≡ B / ⊩A
@@ -640,7 +649,7 @@ module LogRel
     Γ ⊩ₗ t ∷ A / Uᵣ p = Γ ⊩₁U t ∷U/ p
     Γ ⊩ₗ t ∷ A / ℕᵣ D = Γ ⊩ℕ t ∷ℕ
     Γ ⊩ₗ t ∷ A / Emptyᵣ D = Γ ⊩Empty t ∷Empty
-    Γ ⊩ₗ t ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ {! l !} , s ⟩ t ∷Unit
+    Γ ⊩ₗ t ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ t ∷ A / D
     Γ ⊩ₗ t ∷ A / ne neA = Γ ⊩ne t ∷ A / neA
     Γ ⊩ₗ t ∷ A / Bᵣ BΠ! ΠA  = Γ ⊩ₗΠ t ∷ A / ΠA
     Γ ⊩ₗ t ∷ A / Bᵣ BΣ! ΣA  = Γ ⊩ₗΣ t ∷ A / ΣA
@@ -652,7 +661,7 @@ module LogRel
     Γ ⊩ₗ t ≡ u ∷ A / Uᵣ p = Γ ⊩₁U t ≡ u ∷U/ p
     Γ ⊩ₗ t ≡ u ∷ A / ℕᵣ D = Γ ⊩ℕ t ≡ u ∷ℕ
     Γ ⊩ₗ t ≡ u ∷ A / Emptyᵣ D = Γ ⊩Empty t ≡ u ∷Empty
-    Γ ⊩ₗ t ≡ u ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ {! l !} , s ⟩ t ≡ u ∷Unit
+    Γ ⊩ₗ t ≡ u ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷ A / D
     Γ ⊩ₗ t ≡ u ∷ A / ne neA = Γ ⊩ne t ≡ u ∷ A / neA
     Γ ⊩ₗ t ≡ u ∷ A / Bᵣ BΠ! ΠA = Γ ⊩ₗΠ t ≡ u ∷ A / ΠA
     Γ ⊩ₗ t ≡ u ∷ A / Bᵣ BΣ! ΣA  = Γ ⊩ₗΣ t ≡ u ∷ A / ΣA
@@ -677,7 +686,7 @@ pattern Πₜ₌ f g d d′ funcF funcG f≡g [f] [g] [f≡g] = f , g , d , d′
 pattern Σₜ p d p≡p pProd prop =  p , d , p≡p , pProd , prop
 pattern Σₜ₌ p r d d′ pProd rProd p≅r [t] [u] prop = p , r , d , d′ , p≅r , [t] , [u] , pProd , rProd , prop
 
-pattern Uᵣ′ a b c = Uᵣ (Uᵣ a b c)
+pattern Uᵣ′ a b c d = Uᵣ (Uᵣ a b c d)
 pattern ne′ a b c d = ne (ne a b c d)
 pattern Bᵣ′ W a b c d e f g h i j = Bᵣ W (Bᵣ a b c d e f g h i j)
 pattern Πᵣ′ a b c d e f g h i j = Bᵣ′ BΠ! a b c d e f g h i j
@@ -687,8 +696,8 @@ mutual
 
   -- A LogRelKit for the first Universe-level.
 
-  -- kit0 : LogRelKit
-  -- kit0 = LogRel.kit (lnat 0) (λ ())
+  kit0 : LogRelKit
+  kit0 = LogRel.kit 0 (λ ())
 
   -- A LogRelKit for the given Universe-level.
 
@@ -700,8 +709,13 @@ mutual
   -- A LogRelKit for m.
 
   kit′ : ∀ {n : Universe-level} {ℓ} {Γ : Con Term ℓ} {m} {[m] : Γ ⊩Level m ∷Level} → Γ ⊩ [m] <ᵘ n → LogRelKit
-  kit′ {.(1+ᵘ ⟦ [m] ⟧ᵘ)} {[m]} (≤ᵘ-refl .(sucᵘᵣ _)) = kit ⟦ [m] ⟧ᵘ
-  kit′ {(n)} (≤ᵘ-suc _ m<n) = kit′ m<n
+  kit′ (≤ᵘ-sucᵘ (≤ᵘ-ne [l′])) = kit0
+  kit′ (≤ᵘ-sucᵘ ≤ᵘ-zeroᵘ) = kit0
+  kit′ (≤ᵘ-sucᵘ (≤ᵘ-sucᵘ {[l′]} x)) = kit′ {[m] = [l′]} (≤ᵘ-sucᵘ x)
+
+  -- kit′ {.(1+ᵘ ⟦ [m] ⟧ᵘ)} {[m]} (≤ᵘ-refl .(sucᵘᵣ _)) = kit ⟦ [m] ⟧ᵘ
+  -- kit′ {(n)} (≤ᵘ-suc _ m<n) = kit′ m<n
+
   -- kit′ {(1+ n)} zeroᵘ-<ᵘ = kit0
   -- kit′ {(1+ n)} (sucᵘ-<ᵘ {[l]} m<n) = kit′ {n} {[m] = [l]} m<n
 
@@ -750,12 +764,11 @@ _⊩⟨_⟩_≡_∷_/_ :
 
 -- A view of parts of _⊩ₗId_∷_/_.
 
-{-
 data ⊩Id∷-view
-  {A : Term ℓ} (⊩A : Γ ⊩′⟨ {! l !} ⟩Id A) :
+  {A : Term ℓ} (⊩A : Γ ⊩′⟨ l ⟩Id A) :
   ∀ t → Identity t → Set a where
   rflᵣ : let open _⊩ₗId_ ⊩A in
-         Γ ⊩⟨ {! l !} ⟩ lhs ≡ rhs ∷ Ty / ⊩Ty →
+         Γ ⊩⟨ l ⟩ lhs ≡ rhs ∷ Ty / ⊩Ty →
          ⊩Id∷-view ⊩A rfl rflₙ
   ne   : let open _⊩ₗId_ ⊩A in
          (u-n : Neutral u) →
@@ -765,8 +778,8 @@ data ⊩Id∷-view
 -- The view is inhabited for well-formed identity terms.
 
 ⊩Id∷-view-inhabited :
-  ∀ {A} {⊩A : Γ ⊩′⟨ {! l !} ⟩Id A}
-  ((u , _ , u-id , _) : Γ ⊩⟨ {! l !} ⟩ t ∷ A / Idᵣ ⊩A) →
+  ∀ {A} {⊩A : Γ ⊩′⟨ l ⟩Id A}
+  ((u , _ , u-id , _) : Γ ⊩⟨ l ⟩ t ∷ A / Idᵣ ⊩A) →
   ⊩Id∷-view ⊩A u u-id
 ⊩Id∷-view-inhabited = λ where
   (_ , _ , rflₙ , lhs≡rhs) → rflᵣ lhs≡rhs
@@ -775,9 +788,9 @@ data ⊩Id∷-view
 -- A view of parts of _⊩ₗId_≡_∷_/_.
 
 data ⊩Id≡∷-view
-  {Γ : Con Term ℓ} (lhs rhs {Ty} : Term ℓ) (⊩Ty : Γ ⊩⟨ {! l !} ⟩ Ty) :
+  {Γ : Con Term ℓ} (lhs rhs {Ty} : Term ℓ) (⊩Ty : Γ ⊩⟨ l ⟩ Ty) :
   ∀ t → Identity t → ∀ u → Identity u → Set a where
-  rfl₌ : (lhs≡rhs : Γ ⊩⟨ {! l !} ⟩ lhs ≡ rhs ∷ Ty / ⊩Ty) →
+  rfl₌ : (lhs≡rhs : Γ ⊩⟨ l ⟩ lhs ≡ rhs ∷ Ty / ⊩Ty) →
          ⊩Id≡∷-view lhs rhs ⊩Ty rfl rflₙ rfl rflₙ
   ne   : (t′-n : Neutral t′) (u′-n : Neutral u′) →
          Γ ⊢ t′ ~ u′ ∷ Id Ty lhs rhs →
@@ -788,10 +801,10 @@ data ⊩Id≡∷-view
 
 ⊩Id≡∷-view-inhabited :
   ∀ {A} {Γ : Con Term ℓ}
-  (⊩A : Γ ⊩′⟨ {! l !} ⟩Id A) →
+  (⊩A : Γ ⊩′⟨ l ⟩Id A) →
   let open _⊩ₗId_ ⊩A in
   ((t′ , u′ , _ , _ , t′-id , u′-id , _) :
-   Γ ⊩⟨ {! l !} ⟩ t ≡ u ∷ A / Idᵣ ⊩A) →
+   Γ ⊩⟨ l ⟩ t ≡ u ∷ A / Idᵣ ⊩A) →
   ⊩Id≡∷-view lhs rhs ⊩Ty t′ t′-id u′ u′-id
 ⊩Id≡∷-view-inhabited _ = λ where
   (_ , _ , _ , _ , rflₙ , rflₙ , lhs≡rhs) →
@@ -804,10 +817,10 @@ data ⊩Id≡∷-view
 -- A kind of constructor for _⊩ₗId_≡_∷_/_.
 
 ⊩Id≡∷ :
-  ∀ {A} {Γ : Con Term ℓ} {⊩A : Γ ⊩′⟨ {! l !} ⟩Id A} →
+  ∀ {A} {Γ : Con Term ℓ} {⊩A : Γ ⊩′⟨ l ⟩Id A} →
   let open _⊩ₗId_ ⊩A in
-  ((t′ , _ , t′-id , _) : Γ ⊩⟨ {! l !} ⟩ t ∷ A / Idᵣ ⊩A)
-  ((u′ , _ , u′-id , _) : Γ ⊩⟨ {! l !} ⟩ u ∷ A / Idᵣ ⊩A) →
+  ((t′ , _ , t′-id , _) : Γ ⊩⟨ l ⟩ t ∷ A / Idᵣ ⊩A)
+  ((u′ , _ , u′-id , _) : Γ ⊩⟨ l ⟩ u ∷ A / Idᵣ ⊩A) →
   Identity-rec t′-id
     (Identity-rec u′-id
        (Lift _ ⊤)
@@ -815,7 +828,7 @@ data ⊩Id≡∷-view
     (Identity-rec u′-id
        (Lift _ ⊥)
        (Γ ⊢ t′ ~ u′ ∷ Id Ty lhs rhs)) →
-  Γ ⊩⟨ {! l !} ⟩ t ≡ u ∷ A / Idᵣ ⊩A
+  Γ ⊩⟨ l ⟩ t ≡ u ∷ A / Idᵣ ⊩A
 ⊩Id≡∷ ⊩t@(t′ , t⇒*t′ , t′-id , _) ⊩u@(u′ , u⇒*u′ , u′-id , _) rest =
     t′ , u′ , t⇒*t′ , u⇒*u′ , t′-id , u′-id
   , (case ⊩Id∷-view-inhabited ⊩t of λ where
@@ -830,11 +843,11 @@ data ⊩Id≡∷-view
 
 ⊩Id≡∷⁻¹ :
   ∀ {A} {Γ : Con Term ℓ}
-  (⊩A : Γ ⊩′⟨ {! l !} ⟩Id A) →
+  (⊩A : Γ ⊩′⟨ l ⟩Id A) →
   let open _⊩ₗId_ ⊩A in
-  Γ ⊩⟨ {! l !} ⟩ t ≡ u ∷ A / Idᵣ ⊩A →
-  ∃ λ (⊩t@(t′ , _ , t′-id , _) : Γ ⊩⟨ {! l !} ⟩ t ∷ A / Idᵣ ⊩A) →
-  ∃ λ (⊩u@(u′ , _ , u′-id , _) : Γ ⊩⟨ {! l !} ⟩ u ∷ A / Idᵣ ⊩A) →
+  Γ ⊩⟨ l ⟩ t ≡ u ∷ A / Idᵣ ⊩A →
+  ∃ λ (⊩t@(t′ , _ , t′-id , _) : Γ ⊩⟨ l ⟩ t ∷ A / Idᵣ ⊩A) →
+  ∃ λ (⊩u@(u′ , _ , u′-id , _) : Γ ⊩⟨ l ⟩ u ∷ A / Idᵣ ⊩A) →
   Identity-rec t′-id
     (Identity-rec u′-id
        (Lift _ ⊤)
@@ -852,4 +865,3 @@ data ⊩Id≡∷-view
         (t′ , t⇒*t′ , t′-id , ~-trans t′~u′ (~-sym t′~u′))
       , (u′ , u⇒*u′ , u′-id , ~-trans (~-sym t′~u′) t′~u′)
       , t′~u′
--}

@@ -36,13 +36,14 @@ open import Tools.Unit
 private variable
   l l₁ l₂ n : Nat
   Γ         : Con Term _
-  A B       : Term _
+  A B t     : Term _
+  [t]       : Γ ⊩Level t ∷Level
 
 -- A variant of _⊩⟨_⟩_.
 
 infix 4 _⊩<⟨_⟩_
 
-_⊩<⟨_⟩_ : Con Term n → l₁ <ᵘ l₂ → Term n → Set a
+_⊩<⟨_⟩_ : ∀ (Γ : Con Term n) {t} {[t] : Γ ⊩Level t ∷Level} → Γ ⊩ [t] <ᵘ l → Term n → Set a
 Γ ⊩<⟨ p ⟩ A = LogRelKit._⊩_ (kit′ p) Γ A
 
 -- A variant of _⊩⟨_⟩_≡_/_.
@@ -50,16 +51,18 @@ _⊩<⟨_⟩_ : Con Term n → l₁ <ᵘ l₂ → Term n → Set a
 infix 4 _⊩<⟨_⟩_≡_/_
 
 _⊩<⟨_⟩_≡_/_ :
-  (Γ : Con Term n) (p : l₁ <ᵘ l₂) (A _ : Term n) → Γ ⊩<⟨ p ⟩ A → Set a
+  ∀ (Γ : Con Term n) {t} {[t] : Γ ⊩Level t ∷Level} → (p : Γ ⊩ [t] <ᵘ l) (A _ : Term n) → Γ ⊩<⟨ p ⟩ A → Set a
 Γ ⊩<⟨ p ⟩ A ≡ B / ⊩A = LogRelKit._⊩_≡_/_ (kit′ p) Γ A B ⊩A
 
 -- If p : l₁ <ᵘ l₂, then Γ ⊩<⟨ p ⟩ A is logically equivalent to
 -- Γ ⊩⟨ l₁ ⟩ A.
 
-⊩<⇔⊩ : (p : l₁ <ᵘ l₂) → Γ ⊩<⟨ p ⟩ A ⇔ Γ ⊩⟨ l₁ ⟩ A
-⊩<⇔⊩ ≤ᵘ-refl     = id⇔
-⊩<⇔⊩ (≤ᵘ-step p) = ⊩<⇔⊩ p
+⊩<⇔⊩ : (p : Γ ⊩ [t] <ᵘ l) → Γ ⊩<⟨ p ⟩ A ⇔ Γ ⊩⟨ reflect-level [t] ⟩ A
+⊩<⇔⊩ (≤ᵘ-sucᵘ p) = {! ⊩<⇔⊩ p  !}
+-- ⊩<⇔⊩ ≤ᵘ-refl     = {!id⇔!}
+-- ⊩<⇔⊩ (≤ᵘ-step p) = {!⊩<⇔⊩ p!}
 
+{-
 -- If p : l₁ <ᵘ l₂ and ⊩A : Γ ⊩<⟨ p ⟩ A, then Γ ⊩<⟨ p ⟩ A ≡ B / ⊩A is
 -- logically equivalent to Γ ⊩⟨ l₁ ⟩ A ≡ B / ⊩<⇔⊩ p .proj₁ ⊩A.
 
@@ -122,3 +125,4 @@ opaque
   irrelevance-⊩<≡ ≤ᵘ-refl     (≤ᵘ-step q) = irrelevance-⊩<≡ ≤ᵘ-refl q
   irrelevance-⊩<≡ (≤ᵘ-step p) (≤ᵘ-step q) =
     irrelevance-⊩<≡ (≤ᵘ-step p) q
+-}

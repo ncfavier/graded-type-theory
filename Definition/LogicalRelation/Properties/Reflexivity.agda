@@ -32,9 +32,9 @@ open import Tools.Sum using (inj₁; inj₂)
 private
   variable
     n : Nat
-    l′ l : Universe-level
     A B t : Term _
     Γ : Con Term n
+    l l′ : Universe-level
 
 reflNatural-prop : ∀ {n}
                  → Natural-prop Γ n
@@ -50,9 +50,9 @@ reflEmpty-prop : ∀ {n}
                  → [Empty]-prop Γ n n
 reflEmpty-prop (ne (neNfₜ neK ⊢k k≡k)) = ne (neNfₜ₌ neK neK k≡k)
 
-reflUnitʷ-prop : ∀ {t}
-               → Unit-prop Γ l 𝕨 t
-               → [Unitʷ]-prop Γ l t t
+reflUnitʷ-prop : ∀ {t A [A]}
+               → Unit-prop Γ l 𝕨 A [A] t
+               → [Unitʷ]-prop Γ l A [A] t t
 reflUnitʷ-prop starᵣ = starᵣ
 reflUnitʷ-prop (ne (neNfₜ neK ⊢k k≡k)) = ne (neNfₜ₌ neK neK k≡k)
 
@@ -70,14 +70,17 @@ private
   -- A lemma used below.
 
   reflEq-⊩< :
-    (p : l′ <ᵘ l) (⊩A : Γ ⊩<⟨ p ⟩ A) → Γ ⊩⟨ l ⟩ A ≡ A / emb p ⊩A
-  reflEq-⊩< ≤ᵘ-refl     = reflEq
-  reflEq-⊩< (≤ᵘ-step p) = reflEq-⊩< p
+    ∀ {t} {[t] : Γ ⊩Level t ∷Level} (p : Γ ⊩ [t] <ᵘ l) (⊩A : Γ ⊩<⟨ p ⟩ A) → Γ ⊩⟨ l ⟩ A ≡ A / emb p ⊩A
+  reflEq-⊩< (≤ᵘ-sucᵘ (≤ᵘ-ne [l′])) = {!   !}
+  reflEq-⊩< (≤ᵘ-sucᵘ ≤ᵘ-zeroᵘ) = {! reflEq  !}
+  reflEq-⊩< (≤ᵘ-sucᵘ (≤ᵘ-sucᵘ x)) = reflEq-⊩< (≤ᵘ-sucᵘ x)
+  -- reflEq-⊩< ≤ᵘ-refl     = reflEq
+  -- reflEq-⊩< (≤ᵘ-step p) = reflEq-⊩< p
 
-reflEq (Uᵣ′ l′ l< ⊢Γ) = ⊢Γ
+reflEq (Uᵣ′ l′ _ l< ⊢Γ) = ⊢Γ
 reflEq (ℕᵣ D) = red D
 reflEq (Emptyᵣ D) = red D
-reflEq (Unitᵣ (Unitₜ D _)) = red D
+reflEq (Unitᵣ (Unitₜ _ _ _ D _)) = red D
 reflEq (ne′ _ [ ⊢A , ⊢B , D ] neK K≡K) =
    ne₌ _ [ ⊢A , ⊢B , D ] neK K≡K
 reflEq (Bᵣ′ _ _ _ D _ _ A≡A [F] [G] _ _) =
@@ -96,7 +99,7 @@ reflEq (Idᵣ ⊩A) = record
   open _⊩ₗId_ ⊩A
 reflEq (emb p [A]) = reflEq-⊩< p [A]
 
-reflEqTerm (Uᵣ′ _ p _) (Uₜ A d A-type A≅A ⊩A) =
+reflEqTerm (Uᵣ′ _ _ p _) (Uₜ A d A-type A≅A ⊩A) =
   Uₜ₌ A A d d A-type A-type A≅A ⊩A ⊩A (reflEq-⊩< p ⊩A)
 reflEqTerm (ℕᵣ D) (ℕₜ n [ ⊢t , ⊢u , d ] t≡t prop) =
   ℕₜ₌ n n [ ⊢t , ⊢u , d ] [ ⊢t , ⊢u , d ] t≡t
@@ -135,10 +138,12 @@ reflEqTerm (Idᵣ _) ⊩t =
     (case ⊩Id∷-view-inhabited ⊩t of λ where
        (rflᵣ _)     → _
        (ne _ t′~t′) → t′~t′)
-reflEqTerm (emb p ⊩A) ⊩t = reflEqTerm-⊩< p ⊩A ⊩t
+reflEqTerm (emb p ⊩A) ⊩t = {!reflEqTerm-⊩< p ⊩A ⊩t!}
   where
+  {-
   reflEqTerm-⊩< :
     (p : l′ <ᵘ l) (⊩A : Γ ⊩<⟨ p ⟩ A) →
     Γ ⊩⟨ l ⟩ t ∷ A / emb p ⊩A → Γ ⊩⟨ l ⟩ t ≡ t ∷ A / emb p ⊩A
   reflEqTerm-⊩< ≤ᵘ-refl     ⊩A = reflEqTerm ⊩A
   reflEqTerm-⊩< (≤ᵘ-step p) ⊩A = reflEqTerm-⊩< p ⊩A
+  -}

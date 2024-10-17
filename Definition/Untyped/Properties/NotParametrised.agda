@@ -149,10 +149,11 @@ opaque
   infix 4 _≟ᵘ_
 
   _≟ᵘ_ : Decidable (_≡_ {A = Universe-level})
-  0+ l₁ ≟ᵘ 0+ l₂ = map (cong 0+_) (λ { refl → refl }) (l₁ ≟ l₂)
-  0+ l₁ ≟ᵘ ω+ l₂ = no (λ ())
-  ω+ l₁ ≟ᵘ 0+ l₂ = no (λ ())
-  ω+ l₁ ≟ᵘ ω+ l₂ = map (cong ω+_) (λ { refl → refl }) (l₁ ≟ l₂)
+  _≟ᵘ_ = ?
+  -- 0+ l₁ ≟ᵘ 0+ l₂ = map (cong 0+_) (λ { refl → refl }) (l₁ ≟ l₂)
+  -- 0+ l₁ ≟ᵘ ω+0 = no (λ ())
+  -- ω+0 ≟ᵘ 0+ l₂ = no (λ ())
+  -- ω+0 ≟ᵘ ω+0 = yes refl
 
 ------------------------------------------------------------------------
 -- Properties related to _≤ᵘ_ and _<ᵘ_

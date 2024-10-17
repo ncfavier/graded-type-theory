@@ -111,16 +111,12 @@ wk₀ {n = 1+ n} = step wk₀
 
 -- Universe levels.
 
--- Universe-level : Set
--- Universe-level = Nat
+Universe-level : Set
+Universe-level = Nat
 
-data Universe-level : Set where
-  0+_ : Nat → Universe-level
-  ω+_ : Nat → Universe-level
-
-1+ᵘ : Universe-level → Universe-level
-1+ᵘ (0+ n) = 0+ (1+ n)
-1+ᵘ (ω+ n) = ω+ (1+ n)
+-- data Universe-level : Set where
+--   0+_ : Nat → Universe-level
+--   ω+0 : Universe-level
 
 -- The maximum of two universe levels.
 
