@@ -107,6 +107,9 @@ record Equality-relations
            → Γ ⊢ a′ ≅ b′ ∷ B
            → Γ ⊢ a  ≅ b  ∷ A
 
+    -- Level type reflexivity
+    ≅-Levelrefl : ⊢ Γ → Γ ⊢ Level ≅ Level
+
     -- Universe type reflexivity
     ≅-Urefl   : Γ ⊢ l ∷ Level → Γ ⊢ U l ≅ U l ∷ U (sucᵘ l)
 

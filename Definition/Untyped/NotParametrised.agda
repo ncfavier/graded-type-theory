@@ -134,7 +134,6 @@ Universe-level = Nat
 
 -- Ordering of universe levels.
 
-{-
 infix 4 _≤ᵘ_
 
 _≤ᵘ_ : (_ _ : Universe-level) → Set
@@ -150,4 +149,3 @@ infix 4 _<ᵘ_
 
 _<ᵘ_ : (_ _ : Universe-level) → Set
 i <ᵘ j = i <′ j
--}

@@ -71,6 +71,7 @@ noClosedNe ([]-congₙ net) = noClosedNe net
 data Whnf {n : Nat} : Term n → Set a where
 
   -- Type constructors are whnfs.
+  Levelₙ : Whnf Level
   Uₙ     : Whnf (U l)
   ΠΣₙ    : Whnf (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B)
   ℕₙ     : Whnf ℕ
@@ -79,6 +80,9 @@ data Whnf {n : Nat} : Term n → Set a where
   Idₙ    : Whnf (Id A t u)
 
   -- Introductions are whnfs.
+  zeroᵘₙ : Whnf zeroᵘ
+  sucᵘₙ : Whnf (sucᵘ t)
+  ⊔ᵘₙ   : Whnf (t ⊔ᵘ u)
   lamₙ  : Whnf (lam p t)
   zeroₙ : Whnf zero
   sucₙ  : Whnf (suc t)
@@ -94,6 +98,9 @@ data Whnf {n : Nat} : Term n → Set a where
 
 -- Different whnfs are trivially distinguished by propositional equality.
 -- (The following statements are sometimes called "no-confusion theorems".)
+
+Level≢ne : Neutral A → Level PE.≢ A
+Level≢ne () PE.refl
 
 U≢ne : Neutral A → U l PE.≢ A
 U≢ne () PE.refl
@@ -117,6 +124,14 @@ B≢ne (BΣ m p q) () PE.refl
 
 Id≢ne : Neutral B → Id A t u PE.≢ B
 Id≢ne () PE.refl
+
+Level≢B : ∀ W → Level PE.≢ ⟦ W ⟧ F ▹ G
+Level≢B (BΠ p q) ()
+Level≢B (BΣ m p q) ()
+
+Level≢ΠΣ : ∀ b → Level PE.≢ ΠΣ⟨ b ⟩ p , q ▷ F ▹ G
+Level≢ΠΣ BMΠ ()
+Level≢ΠΣ (BMΣ s) ()
 
 U≢B : ∀ W → U l PE.≢ ⟦ W ⟧ F ▹ G
 U≢B (BΠ p q) ()
@@ -192,10 +207,11 @@ data Natural {n : Nat} : Term n → Set a where
   ne    : Neutral t → Natural t
 
 
--- A type in WHNF is either a universe, a Π-type, a Σ-type, ℕ, Empty,
+-- A type in WHNF is either a universe, a Π-type, a Σ-type, Level, ℕ, Empty,
 -- a unit type, an identity type, or neutral.
 
 data Type {n : Nat} : Term n → Set a where
+  Levelₙ :             Type Level
   Uₙ     :             Type (U l)
   ΠΣₙ    :             Type (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B)
   ℕₙ     :             Type ℕ
@@ -251,6 +267,7 @@ naturalWhnf zeroₙ  = zeroₙ
 naturalWhnf (ne x) = ne x
 
 typeWhnf : Type A → Whnf A
+typeWhnf Levelₙ = Levelₙ
 typeWhnf Uₙ     = Uₙ
 typeWhnf ΠΣₙ    = ΠΣₙ
 typeWhnf ℕₙ     = ℕₙ
@@ -334,6 +351,7 @@ wkNatural ρ zeroₙ  = zeroₙ
 wkNatural ρ (ne x) = ne (wkNeutral ρ x)
 
 wkType : ∀ ρ → Type t → Type {n = n} (wk ρ t)
+wkType ρ Levelₙ = Levelₙ
 wkType ρ Uₙ     = Uₙ
 wkType ρ ΠΣₙ    = ΠΣₙ
 wkType ρ ℕₙ     = ℕₙ
@@ -355,12 +373,16 @@ wkIdentity rflₙ   = rflₙ
 wkIdentity (ne n) = ne (wkNeutral _ n)
 
 wkWhnf : ∀ ρ → Whnf t → Whnf {n = n} (wk ρ t)
+wkWhnf ρ Levelₙ  = Levelₙ
 wkWhnf ρ Uₙ      = Uₙ
 wkWhnf ρ ΠΣₙ     = ΠΣₙ
 wkWhnf ρ ℕₙ      = ℕₙ
 wkWhnf ρ Emptyₙ  = Emptyₙ
 wkWhnf ρ Unitₙ   = Unitₙ
 wkWhnf ρ Idₙ     = Idₙ
+wkWhnf ρ zeroᵘₙ  = zeroᵘₙ
+wkWhnf ρ sucᵘₙ   = sucᵘₙ
+wkWhnf ρ ⊔ᵘₙ     = ⊔ᵘₙ
 wkWhnf ρ lamₙ    = lamₙ
 wkWhnf ρ prodₙ   = prodₙ
 wkWhnf ρ zeroₙ   = zeroₙ
