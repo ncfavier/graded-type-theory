@@ -84,7 +84,7 @@ private
   reflEq-⊩< (≤ᵘ-step p) = reflEq-⊩< p
 
 reflEq (Levelᵣ D) = red D
-reflEq (Uᵣ′ l′ l′< k [k] k≤ ⊢Γ) = ⊢Γ
+reflEq (Uᵣ′ k [k] k< ⊢Γ) = ⊢Γ
 reflEq (ℕᵣ D) = red D
 reflEq (Emptyᵣ D) = red D
 reflEq (Unitᵣ (Unitₜ _ _ _ D _)) = red D
@@ -108,8 +108,8 @@ reflEq (emb p [A]) = reflEq-⊩< p [A]
 
 reflEqTerm (Levelᵣ D) (Levelₜ k d k≡k prop) =
   Levelₜ₌ k k d d k≡k (reflLevel-prop prop)
-reflEqTerm (Uᵣ′ _ p _ _ _ _) (Uₜ A d A-type A≅A ⊩A) =
-  Uₜ₌ A A d d A-type A-type A≅A ⊩A ⊩A (reflEq-⊩< p ⊩A)
+reflEqTerm (Uᵣ′ k [k] k< ⊢Γ) (Uₜ A d A-type A≅A ⊩A) =
+  Uₜ₌ A A d d A-type A-type A≅A ⊩A ⊩A (reflEq-⊩< k< ⊩A)
 reflEqTerm (ℕᵣ D) (ℕₜ n [ ⊢t , ⊢u , d ] t≡t prop) =
   ℕₜ₌ n n [ ⊢t , ⊢u , d ] [ ⊢t , ⊢u , d ] t≡t
       (reflNatural-prop prop)

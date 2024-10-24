@@ -136,7 +136,7 @@ U-elim ⊩U = U-elim′ (id (escape ⊩U)) ⊩U
 ℕ-elim′ : ∀ {A l} → Γ ⊢ A ⇒* ℕ → Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩ℕ A
 ℕ-elim′ D (Levelᵣ D′) with whrDet* (D , ℕₙ) (red D′ , Levelₙ)
 ... | ()
-ℕ-elim′ D (Uᵣ′ l′ l< k [k] k≤ D') with whrDet* (D , ℕₙ) (red  D' , Uₙ)
+ℕ-elim′ D (Uᵣ′ _ _ _ D') with whrDet* (D , ℕₙ) (red  D' , Uₙ)
 ... | ()
 ℕ-elim′ D (ℕᵣ D′) = noemb D′
 ℕ-elim′ D (ne′ _ D′ neK K≡K) =
@@ -160,7 +160,7 @@ U-elim ⊩U = U-elim′ (id (escape ⊩U)) ⊩U
 Empty-elim′ : ∀ {A l} → Γ ⊢ A ⇒* Empty → Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩Empty A
 Empty-elim′ D (Levelᵣ D′) with whrDet* (D , Emptyₙ) (red D′ , Levelₙ)
 ... | ()
-Empty-elim′ D (Uᵣ′ l′ l< _ _ _ D') with whrDet* (D , Emptyₙ) (red  D' , Uₙ)
+Empty-elim′ D (Uᵣ′ _ _ _ D') with whrDet* (D , Emptyₙ) (red  D' , Uₙ)
 ... | ()
 Empty-elim′ D (Emptyᵣ D′) = noemb D′
 Empty-elim′ D (Unitᵣ (Unitₜ _ _ _ D′ _))
@@ -185,11 +185,11 @@ Empty-elim [Empty] = Empty-elim′ (id (escape [Empty])) [Empty]
 Unit-elim′ : Γ ⊢ A ⇒* Unit s t → Γ ⊩⟨ l′ ⟩ A → Γ ⊩⟨ l′ ⟩Unit⟨ s ⟩ A
 Unit-elim′ D (Levelᵣ D′) with whrDet* (D , Unitₙ) (red D′ , Levelₙ)
 ... | ()
-Unit-elim′ D (Uᵣ′ l′ l< _ _ _ D') with whrDet* (D , Unitₙ) (red  D' , Uₙ)
+Unit-elim′ D (Uᵣ′ _ _ _ D') with whrDet* (D , Unitₙ) (red  D' , Uₙ)
 ... | ()
-Unit-elim′ D (Unitᵣ (Unitₜ k [k] k≤ D′ ok))
+Unit-elim′ D (Unitᵣ (Unitₜ k [k] k< D′ ok))
   with whrDet* (red D′ , Unitₙ) (D , Unitₙ)
-... | PE.refl = noemb (Unitₜ k [k] k≤ D′ ok)
+... | PE.refl = noemb (Unitₜ k [k] k< D′ ok)
 Unit-elim′ D (Emptyᵣ D′) with whrDet* (D , Unitₙ) (red D′ , Emptyₙ)
 ... | ()
 Unit-elim′ D (ne′ _ D′ neK K≡K) =
@@ -211,7 +211,7 @@ Unit-elim [Unit] = Unit-elim′ (id (escape [Unit])) [Unit]
 ne-elim′ : ∀ {A l K} → Γ ⊢ A ⇒* K → Neutral K → Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩ne A
 ne-elim′ D neK (Levelᵣ D′) =
   ⊥-elim (Level≢ne neK (whrDet* (red D′ , Levelₙ) (D , ne neK)))
-ne-elim′ D neK (Uᵣ′ l′ l< _ _ _ D') =
+ne-elim′ D neK (Uᵣ′ _ _ _ D') =
   ⊥-elim (U≢ne neK (whrDet* (red D' , Uₙ) (D , ne neK)))
 ne-elim′ D neK (ℕᵣ D′) = ⊥-elim (ℕ≢ne neK (whrDet* (red D′ , ℕₙ) (D , ne neK)))
 ne-elim′ D neK (Emptyᵣ D′) = ⊥-elim (Empty≢ne neK (whrDet* (red D′ , Emptyₙ) (D , ne neK)))
@@ -232,7 +232,7 @@ ne-elim neK [K] = ne-elim′ (id (escape [K])) neK [K]
 
 B-elim′ : ∀ {A F G l} W → Γ ⊢ A ⇒* ⟦ W ⟧ F ▹ G → Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩B⟨ W ⟩ A
 B-elim′ W D (Levelᵣ D') = ⊥-elim (Level≢B W (whrDet* (red D' , Levelₙ) (D ,  ⟦ W ⟧ₙ)))
-B-elim′ W D (Uᵣ′ l′ l< _ _ _ D') = ⊥-elim (U≢B W (whrDet* (red D' , Uₙ) (D ,  ⟦ W ⟧ₙ)))
+B-elim′ W D (Uᵣ′ _ _ _ D') = ⊥-elim (U≢B W (whrDet* (red D' , Uₙ) (D ,  ⟦ W ⟧ₙ)))
 B-elim′ W D (ℕᵣ D′) =
   ⊥-elim (ℕ≢B W (whrDet* (red D′ , ℕₙ) (D , ⟦ W ⟧ₙ)))
 B-elim′ W D (Emptyᵣ D′) =
@@ -275,7 +275,7 @@ B-elim W [Π] = B-elim′ W (id (escape [Π])) [Π]
 Id-elim′ : Γ ⊢ A ⇒* Id B t u → Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩Id A
 Id-elim′ ⇒*Id (Levelᵣ D') with whrDet* (⇒*Id , Idₙ) (red D' , Levelₙ)
 ... | ()
-Id-elim′ ⇒*Id (Uᵣ′ _ _ _ _ _ D') with whrDet* (⇒*Id , Idₙ) (red  D' , Uₙ)
+Id-elim′ ⇒*Id (Uᵣ′ _ _ _ D') with whrDet* (⇒*Id , Idₙ) (red  D' , Uₙ)
 ... | ()
 Id-elim′ ⇒*Id (ℕᵣ ⇒*ℕ) =
   case whrDet* (red ⇒*ℕ , ℕₙ) (⇒*Id , Idₙ) of λ ()
@@ -383,7 +383,7 @@ goodCases {Γ} {A} {B} (emb p _) ⊩B A≡B = embᵥ₁ p (lemma p A≡B)
 
 -- Refutable cases
 -- Level ≡ _
-goodCases (Levelᵣ _) (Uᵣ′ _ _ _ _ _ D') D with whrDet* (D , Levelₙ) (red D' , Uₙ)
+goodCases (Levelᵣ _) (Uᵣ′ _ _ _ D') D with whrDet* (D , Levelₙ) (red D' , Uₙ)
 ... | ()
 goodCases (Levelᵣ _) (ℕᵣ D') D with whrDet* (D , Levelₙ) (red D' , ℕₙ)
 ... | ()
@@ -407,9 +407,9 @@ goodCases (Uᵣ _) (Emptyᵣ D') [ _ , _ , D ] with whrDet* (D , Uₙ) (red D' ,
 ... | ()
 goodCases (Uᵣ _) (Unitᵣ (Unitₜ _ _ _ D' _)) [ _ , _ , D ] with whrDet* (D , Uₙ) (red D' , Unitₙ)
 ... | ()
-goodCases (Uᵣ′ _ _ _ _ _ ⊢Γ) (ne′ _ D' neK K≡K) [ _ , _ , D ] =
+goodCases (Uᵣ′ _ _ _ ⊢Γ) (ne′ _ D' neK K≡K) [ _ , _ , D ] =
   ⊥-elim (U≢ne neK (whrDet* ( D , Uₙ ) ( red D' , ne neK)))
-goodCases (Uᵣ′ _ _ _ _ _ _) (Bᵣ′ W _ _ D' _ _ _ _ _ _ _) [ _ , _ , D ] =
+goodCases (Uᵣ′ _ _ _ _) (Bᵣ′ W _ _ D' _ _ _ _ _ _ _) [ _ , _ , D ] =
   ⊥-elim (U≢B W (whrDet* ( D , Uₙ ) ( red D' , ⟦ W ⟧ₙ )))
 goodCases (Uᵣ _) (Idᵣ ⊩B) [ _ , _ , D ] =
   case whrDet* (D , Uₙ) (red (_⊩ₗId_.⇒*Id ⊩B) , Idₙ) of λ ()
@@ -417,7 +417,7 @@ goodCases (Uᵣ _) (Idᵣ ⊩B) [ _ , _ , D ] =
 -- ℕ ≡ _
 goodCases (ℕᵣ _) (Levelᵣ D') D with whrDet* (D , ℕₙ) (red  D' , Levelₙ)
 ... | ()
-goodCases (ℕᵣ _) (Uᵣ (Uᵣ _ _ _ _ _ D')) D with whrDet* (D , ℕₙ) (red  D' , Uₙ)
+goodCases (ℕᵣ _) (Uᵣ′ _ _ _ D') D with whrDet* (D , ℕₙ) (red  D' , Uₙ)
 ... | ()
 goodCases (ℕᵣ _) (Emptyᵣ D') D with whrDet* (D , ℕₙ) (red D' , Emptyₙ)
 ... | ()
@@ -434,7 +434,7 @@ goodCases (ℕᵣ _) (Idᵣ ⊩B) ⇒*ℕ =
 -- Empty ≢ _
 goodCases (Emptyᵣ _) (Levelᵣ D') D with whrDet* (D , Emptyₙ) (red D' , Levelₙ)
 ... | ()
-goodCases (Emptyᵣ _) (Uᵣ (Uᵣ _ _ _ _ _ D')) D with whrDet* (D , Emptyₙ) (red  D' , Uₙ)
+goodCases (Emptyᵣ _) (Uᵣ′ _ _ _ D') D with whrDet* (D , Emptyₙ) (red  D' , Uₙ)
 ... | ()
 goodCases (Emptyᵣ _) (Unitᵣ (Unitₜ _ _ _ D' _)) D
   with whrDet* (red D' , Unitₙ) (D , Emptyₙ)
@@ -451,7 +451,7 @@ goodCases (Emptyᵣ _) (Idᵣ ⊩B) ⇒*Empty =
 -- Unit ≡ _
 goodCases (Unitᵣ _) (Levelᵣ D') D with whrDet* (D , Unitₙ) (red D' , Levelₙ)
 ... | ()
-goodCases (Unitᵣ _) (Uᵣ (Uᵣ _ _ _ _ _ D')) D with whrDet* (D , Unitₙ) (red  D' , Uₙ)
+goodCases (Unitᵣ _) (Uᵣ′ _ _ _ D') D with whrDet* (D , Unitₙ) (red  D' , Uₙ)
 ... | ()
 goodCases (Unitᵣ _) (Emptyᵣ D') D with whrDet* (red D' , Emptyₙ) (D , Unitₙ)
 ... | ()
@@ -467,7 +467,7 @@ goodCases (Unitᵣ _) (Idᵣ ⊩B) ⇒*Unit =
 -- ne ≡ _
 goodCases (ne′ _ D neK K≡K) (Levelᵣ D') (ne₌ M D′ neM K≡M) =
   ⊥-elim (Level≢ne neM (whrDet* (red D' , Levelₙ) (red D′ , ne neM)))
-goodCases (ne′ _ D neK K≡K) (Uᵣ (Uᵣ _ _ _ _ _ D')) (ne₌ M D′ neM K≡M) =
+goodCases (ne′ _ D neK K≡K) (Uᵣ′ _ _ _ D') (ne₌ M D′ neM K≡M) =
   ⊥-elim (U≢ne neM (whrDet* (red D' , Uₙ) (red D′ , ne neM)))
 goodCases (ne′ _ D neK K≡K) (ℕᵣ D₁) (ne₌ M D′ neM K≡M) =
   ⊥-elim (ℕ≢ne neM (whrDet* (red D₁ , ℕₙ) (red D′ , ne neM)))
@@ -486,7 +486,7 @@ goodCases (ne _) (Idᵣ ⊩B) A≡B =
 -- B ≡ _
 goodCases (Bᵣ W x) (Levelᵣ D') (B₌ F′ G′ D′ A≡B [F≡F′] [G≡G′]) =
   ⊥-elim (Level≢B W (whrDet* (red D' , Levelₙ) (red D′ , ⟦ W ⟧ₙ)))
-goodCases (Bᵣ W x) (Uᵣ (Uᵣ _ _ _ _ _ D')) (B₌ F′ G′ D′ A≡B [F≡F′] [G≡G′]) =
+goodCases (Bᵣ W x) (Uᵣ′ _ _ _ D') (B₌ F′ G′ D′ A≡B [F≡F′] [G≡G′]) =
   ⊥-elim (U≢B W (whrDet* (red D' , Uₙ) (red D′ , ⟦ W ⟧ₙ)))
 goodCases (Bᵣ W x) (ℕᵣ D₁) (B₌ F′ G′ D′ A≡B [F≡F′] [G≡G′]) =
   ⊥-elim (ℕ≢B W (whrDet* (red D₁ , ℕₙ) (red D′ , ⟦ W ⟧ₙ)))
@@ -514,7 +514,7 @@ goodCases (Bᵣ _ _) (Idᵣ ⊩B) A≡B =
 goodCases (Idᵣ _) (Levelᵣ D') A≡B =
   case whrDet* (red (_⊩ₗId_≡_/_.⇒*Id′ A≡B) , Idₙ) (red D' , Levelₙ)
   of λ ()
-goodCases (Idᵣ _) (Uᵣ (Uᵣ _ _ _ _ _ D')) A≡B =
+goodCases (Idᵣ _) (Uᵣ′ _ _ _ D') A≡B =
   case whrDet* (red (_⊩ₗId_≡_/_.⇒*Id′ A≡B) , Idₙ) (red D' , Uₙ)
   of λ ()
 goodCases (Idᵣ _) (ℕᵣ ⇒*ℕ) A≡B =
@@ -609,7 +609,7 @@ combine          A≡B  (embᵥ₂ p B≡C) = embᵥ₃ p (combine A≡B B≡C)
 
 -- Refutable cases
 -- Level ≡ _
-combine (Levelᵥ LevelA LevelB) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) with whrDet* (red LevelB , Levelₙ) (red ⇒*U , Uₙ)
+combine (Levelᵥ LevelA LevelB) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) with whrDet* (red LevelB , Levelₙ) (red ⇒*U , Uₙ)
 ... | ()
 combine (Levelᵥ LevelA LevelB) (ℕᵥ ℕA ℕB) with whrDet* (red LevelB , Levelₙ) (red ℕA , ℕₙ)
 ... | ()
@@ -625,25 +625,25 @@ combine (Levelᵥ LevelA LevelB) (Idᵥ ⊩B′ _) =
   case whrDet* (red LevelB , Levelₙ) (red (_⊩ₗId_.⇒*Id ⊩B′) , Idₙ) of λ ()
 
 -- U ≡ _
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (Levelᵥ LevelA LevelB) with whrDet* (red ⇒*U , Uₙ) (red LevelA , Levelₙ)
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (Levelᵥ LevelA LevelB) with whrDet* (red ⇒*U , Uₙ) (red LevelA , Levelₙ)
 ... | ()
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (ℕᵥ ℕA ℕB) with whrDet* (red ⇒*U , Uₙ) (red ℕA , ℕₙ)
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (ℕᵥ ℕA ℕB) with whrDet* (red ⇒*U , Uₙ) (red ℕA , ℕₙ)
 ... | ()
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (Emptyᵥ EA EB) with whrDet* (red ⇒*U , Uₙ) (red EA , Emptyₙ)
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (Emptyᵥ EA EB) with whrDet* (red ⇒*U , Uₙ) (red EA , Emptyₙ)
 ... | ()
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (Unitᵥ (Unitₜ _ _ _ UnA _) UnB) with whrDet* (red ⇒*U , Uₙ) (red UnA , Unitₙ)
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (Unitᵥ (Unitₜ _ _ _ UnA _) UnB) with whrDet* (red ⇒*U , Uₙ) (red UnA , Unitₙ)
 ... | ()
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (ne (ne _ D neK K≡K) neB) =
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (ne (ne _ D neK K≡K) neB) =
   ⊥-elim (U≢ne neK (whrDet* (red ⇒*U , Uₙ) (red D , ne neK)))
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (Bᵥ W (Bᵣ _ _ D _ _ _ _ _ _ _) _) =
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (Bᵥ W (Bᵣ _ _ D _ _ _ _ _ _ _) _) =
   ⊥-elim (U≢B W (whrDet* (red ⇒*U , Uₙ) (red D , ⟦ W ⟧ₙ)))
-combine (Uᵥ UA (Uᵣ _ _ _ _ _ ⇒*U)) (Idᵥ ⊩B′ _) =
+combine (Uᵥ UA (Uᵣ _ _ _ ⇒*U)) (Idᵥ ⊩B′ _) =
   case whrDet* (red ⇒*U , Uₙ) (red (_⊩ₗId_.⇒*Id ⊩B′) , Idₙ) of λ ()
 
 -- ℕ ≡ _
 combine (ℕᵥ ℕA ℕB) (Levelᵥ LevelA LevelB) with whrDet* (red ℕB , ℕₙ)  (red LevelA , Levelₙ)
 ... | ()
-combine (ℕᵥ ℕA ℕB) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) with whrDet* (red ℕB , ℕₙ)  (red ⇒*U , Uₙ)
+combine (ℕᵥ ℕA ℕB) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) with whrDet* (red ℕB , ℕₙ)  (red ⇒*U , Uₙ)
 ... | ()
 combine (ℕᵥ ℕA ℕB) (Emptyᵥ EmptyA EmptyB) with whrDet* (red ℕB , ℕₙ) (red EmptyA , Emptyₙ)
 ... | ()
@@ -660,7 +660,7 @@ combine (ℕᵥ _ ⊩B) (Idᵥ ⊩B′ _) =
 -- Empty ≡ _
 combine (Emptyᵥ EmptyA EmptyB) (Levelᵥ LevelA LevelB) with whrDet* (red EmptyB , Emptyₙ)  (red LevelA , Levelₙ)
 ... | ()
-combine (Emptyᵥ EmptyA EmptyB) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) with whrDet* (red EmptyB , Emptyₙ)  (red ⇒*U , Uₙ)
+combine (Emptyᵥ EmptyA EmptyB) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) with whrDet* (red EmptyB , Emptyₙ)  (red ⇒*U , Uₙ)
 ... | ()
 combine (Emptyᵥ EmptyA EmptyB) (ℕᵥ ℕA ℕB) with whrDet* (red EmptyB , Emptyₙ) (red ℕA , ℕₙ)
 ... | ()
@@ -678,7 +678,7 @@ combine (Emptyᵥ _ ⊩B) (Idᵥ ⊩B′ _) =
 -- Unit ≡ _
 combine (Unitᵥ UnitA (Unitₜ _ _ _ UnitB _)) (Levelᵥ LevelA LevelB) with whrDet* (red UnitB , Unitₙ)  (red LevelA , Levelₙ)
 ... | ()
-combine (Unitᵥ UnitA (Unitₜ _ _ _ UnitB _)) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) with whrDet* (red UnitB , Unitₙ)  (red ⇒*U , Uₙ)
+combine (Unitᵥ UnitA (Unitₜ _ _ _ UnitB _)) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) with whrDet* (red UnitB , Unitₙ)  (red ⇒*U , Uₙ)
 ... | ()
 combine (Unitᵥ UnitA (Unitₜ _ _ _ UnitB _)) (ℕᵥ ℕA ℕB)
   with whrDet* (red UnitB , Unitₙ) (red ℕA , ℕₙ)
@@ -700,7 +700,7 @@ combine (Unitᵥ _ ⊩B) (Idᵥ ⊩B′ _) =
 -- ne ≡ _
 combine (ne neA (ne _ D neK K≡K)) (Levelᵥ LevelA LevelB) =
   ⊥-elim (Level≢ne neK (whrDet* (red LevelA , Levelₙ) (red D , ne neK)))
-combine (ne neA (ne _ D neK K≡K)) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) =
+combine (ne neA (ne _ D neK K≡K)) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) =
   ⊥-elim (U≢ne neK (whrDet* (red ⇒*U , Uₙ) (red D , ne neK)))
 combine (ne neA (ne _ D neK K≡K)) (ℕᵥ ℕA ℕB) =
   ⊥-elim (ℕ≢ne neK (whrDet* (red ℕA , ℕₙ) (red D , ne neK)))
@@ -719,7 +719,7 @@ combine (ne _ ⊩B) (Idᵥ ⊩B′ _) =
 -- Π/Σ ≡ _
 combine (Bᵥ W _ (Bᵣ _ _ D _ _ _ _ _ _ _)) (Levelᵥ LevelA LevelB) =
   ⊥-elim (Level≢B W (whrDet* (red LevelA , Levelₙ) (red D , ⟦ W ⟧ₙ)))
-combine (Bᵥ W _ (Bᵣ _ _ D _ _ _ _ _ _ _)) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) =
+combine (Bᵥ W _ (Bᵣ _ _ D _ _ _ _ _ _ _)) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) =
   ⊥-elim (U≢B W (whrDet* (red ⇒*U , Uₙ) (red D , ⟦ W ⟧ₙ)))
 combine (Bᵥ W _ (Bᵣ _ _ D _ _ _ _ _ _ _)) (ℕᵥ ℕA _) =
   ⊥-elim (ℕ≢B W (whrDet* (red ℕA , ℕₙ) (red D , ⟦ W ⟧ₙ)))
@@ -746,7 +746,7 @@ combine (Bᵥ _ _ ⊩B) (Idᵥ ⊩B′ _) =
 -- Id ≡ _
 combine (Idᵥ _ ⊩B) (Levelᵥ LevelA LevelB) =
   case whrDet* (red (_⊩ₗId_.⇒*Id ⊩B) , Idₙ) (red LevelA , Levelₙ) of λ ()
-combine (Idᵥ _ ⊩B) (Uᵥ (Uᵣ _ _ _ _ _ ⇒*U) UB) =
+combine (Idᵥ _ ⊩B) (Uᵥ (Uᵣ _ _ _ ⇒*U) UB) =
   case whrDet* (red (_⊩ₗId_.⇒*Id ⊩B) , Idₙ) (red ⇒*U , Uₙ) of λ ()
 combine (Idᵥ _ ⊩B) (ℕᵥ ⊩B′ _) =
   case whrDet* (red (_⊩ₗId_.⇒*Id ⊩B) , Idₙ) (red ⊩B′ , ℕₙ) of λ ()

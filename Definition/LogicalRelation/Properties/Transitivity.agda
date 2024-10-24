@@ -22,12 +22,12 @@ open import Definition.Untyped.Properties M
 open import Definition.Typed R
 open import Definition.Typed.Properties R
 import Definition.Typed.Weakening R as Weak
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.ShapeView R
-open import Definition.LogicalRelation.Irrelevance R
-open import Definition.LogicalRelation.Properties.Conversion R
-open import Definition.LogicalRelation.Properties.Symmetry R
-open import Definition.LogicalRelation.Properties.Whnf R
+open import Definition.LogicalRelation R {{eqrel}}
+open import Definition.LogicalRelation.ShapeView R {{eqrel}}
+open import Definition.LogicalRelation.Irrelevance R {{eqrel}}
+open import Definition.LogicalRelation.Properties.Conversion R {{eqrel}}
+open import Definition.LogicalRelation.Properties.Symmetry R {{eqrel}}
+open import Definition.LogicalRelation.Properties.Whnf R {{eqrel}}
 
 open import Tools.Empty
 open import Tools.Function
@@ -50,6 +50,27 @@ transEqTermNe : ∀ {n n′ n″ A}
               → Γ ⊩neNf n  ≡ n″ ∷ A
 transEqTermNe (neNfₜ₌ neK neM k≡m) (neNfₜ₌ neK₁ neM₁ k≡m₁) =
   neNfₜ₌ neK neM₁ (~-trans k≡m k≡m₁)
+
+mutual
+  transEqTermLevel : ∀ {n n′ n″}
+               → Γ ⊩Level n  ≡ n′ ∷Level
+               → Γ ⊩Level n′ ≡ n″ ∷Level
+               → Γ ⊩Level n  ≡ n″ ∷Level
+  transEqTermLevel (Levelₜ₌ k _ d d′ t≡u prop) (Levelₜ₌ _ k″ d₁ d″ t≡u₁ prop₁)
+    with whrDet*Term (redₜ d₁ , proj₁ (lsplit prop₁)) (redₜ d′ , proj₂ (lsplit prop))
+  ... | PE.refl = Levelₜ₌ k k″ d d″ (≅ₜ-trans t≡u t≡u₁) (transLevel-prop prop prop₁)
+
+  transLevel-prop : ∀ {k k′ k″}
+                    → [Level]-prop Γ k k′
+                    → [Level]-prop Γ k′ k″
+                    → [Level]-prop Γ k k″
+  transLevel-prop (sucᵘᵣ x) (sucᵘᵣ x₁) = sucᵘᵣ (transEqTermLevel x x₁)
+  transLevel-prop (sucᵘᵣ x) (ne (neNfₜ₌ () neM k≡m))
+  transLevel-prop zeroᵘᵣ prop₁ = prop₁
+  transLevel-prop prop zeroᵘᵣ = prop
+  transLevel-prop (ne (neNfₜ₌ neK () k≡m)) (sucᵘᵣ x₃)
+  transLevel-prop (ne [k≡k′]) (ne [k′≡k″]) =
+    ne (transEqTermNe [k≡k′] [k′≡k″])
 
 mutual
   transEqTermℕ : ∀ {n n′ n″}
@@ -99,17 +120,17 @@ transEqTermEmpty
        (≅ₜ-trans t≡u (PE.subst (λ x → _ ⊢ x ≅ _ ∷ _) k₁≡k′ t≡u₁))
        (transEmpty-prop prop prop′)
 
-transUnit-prop : ∀ {k k′ k″}
-  → [Unitʷ]-prop Γ l k k′
-  → [Unitʷ]-prop Γ l k′ k″
-  → [Unitʷ]-prop Γ l k k″
+transUnit-prop : ∀ {k k′ k″ A [A]}
+  → [Unitʷ]-prop Γ l A [A] k k′
+  → [Unitʷ]-prop Γ l A [A] k′ k″
+  → [Unitʷ]-prop Γ l A [A] k k″
 transUnit-prop starᵣ eq = eq
 transUnit-prop (ne [k≡k′]) (ne [k′≡k″]) = ne (transEqTermNe [k≡k′] [k′≡k″])
 
-transEqTermUnit : ∀ {s n n′ n″}
-  → Γ ⊩Unit⟨ l , s ⟩ n  ≡ n′ ∷Unit
-  → Γ ⊩Unit⟨ l , s ⟩ n′ ≡ n″ ∷Unit
-  → Γ ⊩Unit⟨ l , s ⟩ n  ≡ n″ ∷Unit
+transEqTermUnit : ∀ {s n n′ n″ A [A]}
+  → Γ ⊩Unit⟨ l , s ⟩ n  ≡ n′ ∷ A / [A]
+  → Γ ⊩Unit⟨ l , s ⟩ n′ ≡ n″ ∷ A / [A]
+  → Γ ⊩Unit⟨ l , s ⟩ n  ≡ n″ ∷ A / [A]
 transEqTermUnit (Unitₜ₌ˢ ⊢t _ ok) (Unitₜ₌ˢ _ ⊢v _) = Unitₜ₌ˢ ⊢t ⊢v ok
 transEqTermUnit
   (Unitₜ₌ʷ k _ d d′ k≡k′ prop ok) (Unitₜ₌ʷ _ k‴ d″ d‴ k″≡k‴ prop′ _) =
@@ -117,7 +138,7 @@ transEqTermUnit
       whK′ = proj₂ (usplit prop)
       k″≡k′ = whrDet*Term (redₜ d″ , whK″) (redₜ d′ , whK′)
       k′≡k‴ = PE.subst (λ x → _ ⊢ x ≅ _ ∷ _) k″≡k′ k″≡k‴
-      prop″ = PE.subst (λ x → [Unitʷ]-prop _ _ x _) k″≡k′ prop′
+      prop″ = PE.subst (λ x → [Unitʷ]-prop _ _ _ _ x _) k″≡k′ prop′
   in  Unitₜ₌ʷ k k‴ d d‴ (≅ₜ-trans k≡k′ k′≡k‴)
         (transUnit-prop prop prop″) ok
 transEqTermUnit (Unitₜ₌ˢ _ _ (inj₂ ok)) (Unitₜ₌ʷ _ _ _ _ _ _ not-ok) =
@@ -127,6 +148,7 @@ transEqTermUnit (Unitₜ₌ʷ _ _ _ _ _ _ not-ok) (Unitₜ₌ˢ _ _ (inj₂ ok))
 
 
 -- Helper function for transitivity of type equality using shape views.
+{-# TERMINATING #-}
 transEqT : ∀ {n} {Γ : Con Term n} {A B C l l′ l″}
            {[A] : Γ ⊩⟨ l ⟩ A} {[B] : Γ ⊩⟨ l′ ⟩ B} {[C] : Γ ⊩⟨ l″ ⟩ C}
          → ShapeView₃ Γ l l′ l″ A B C [A] [B] [C]
@@ -134,7 +156,7 @@ transEqT : ∀ {n} {Γ : Con Term n} {A B C l l′ l″}
          → Γ ⊩⟨ l′ ⟩ B ≡ C / [B]
          → Γ ⊩⟨ l ⟩  A ≡ C / [A]
 
--- Transitivty of type equality.
+-- Transitivity of type equality.
 transEq : ∀ {A B C l l′ l″}
           ([A] : Γ ⊩⟨ l ⟩ A) ([B] : Γ ⊩⟨ l′ ⟩ B) ([C] : Γ ⊩⟨ l″ ⟩ C)
         → Γ ⊩⟨ l ⟩  A ≡ B / [A]
@@ -145,7 +167,7 @@ transEq [A] [B] [C] A≡B B≡C =
     (combine (goodCases [A] [B] A≡B) (goodCases [B] [C] B≡C))
     A≡B B≡C
 
--- Transitivty of type equality with some propositonally equal types.
+-- Transitivity of type equality with some propositonally equal types.
 transEq′ : ∀ {A B B′ C C′ l l′ l″} → B PE.≡ B′ → C PE.≡ C′
          → ([A] : Γ ⊩⟨ l ⟩ A) ([B] : Γ ⊩⟨ l′ ⟩ B) ([C] : Γ ⊩⟨ l″ ⟩ C)
          → Γ ⊩⟨ l ⟩  A ≡ B′ / [A]
@@ -154,7 +176,7 @@ transEq′ : ∀ {A B B′ C C′ l l′ l″} → B PE.≡ B′ → C PE.≡ C�
 transEq′ PE.refl PE.refl [A] [B] [C] A≡B B≡C =
   transEq [A] [B] [C] A≡B B≡C
 
--- Transitivty of term equality.
+-- Transitivity of term equality.
 transEqTerm : {n : Nat} → ∀ {Γ : Con Term n} {l A t u v}
               ([A] : Γ ⊩⟨ l ⟩ A)
             → Γ ⊩⟨ l ⟩ t ≡ u ∷ A / [A]
@@ -186,9 +208,10 @@ Id₌′ {⊩A = ⊩A} ⇒*Id′ Ty≡Ty′ lhs≡lhs′ rhs≡rhs′ = record
   where
   open _⊩ₗId_ ⊩A
 
+transEqT (Levelᵥ D D′ D″) A≡B B≡C = B≡C
 transEqT (ℕᵥ D D′ D″) A≡B B≡C = B≡C
 transEqT (Emptyᵥ D D′ D″) A≡B B≡C = B≡C
-transEqT (Unitᵥ _ (Unitₜ B⇒*Unit₁ _) _) B⇒*Unit₂ C⇒*Unit =
+transEqT (Unitᵥ _ (Unitₜ _ _ _ B⇒*Unit₁ _) _) B⇒*Unit₂ C⇒*Unit =
   case Unit-PE-injectivity $
        whrDet* (red B⇒*Unit₁ , Unitₙ) (B⇒*Unit₂ , Unitₙ) of λ {
     (_ , PE.refl) →
@@ -221,7 +244,7 @@ transEqT {n = n} {Γ = Γ} {l = l} {l′ = l′} {l″ = l″}
                     [a′]
        in  transEq ([G] ρ ⊢Δ [a]) ([G]₁ ρ ⊢Δ [a′]) ([G]₂ ρ ⊢Δ [a″])
                    ([G≡G′] ρ ⊢Δ [a]) ([G≡G′]₁ ρ ⊢Δ [a′])) }}
-transEqT (Uᵥ (Uᵣ l′ l< ⇒*U) (Uᵣ l′₁ l<₁ ⇒*U₁) (Uᵣ l′₂ l<₂ ⇒*U₂)) D D₁
+transEqT (Uᵥ (Uᵣ l′ [l′] l< ⇒*U) (Uᵣ l′₁ [l′₁] l<₁ ⇒*U₁) (Uᵣ l′₂ [l′₂] l<₂ ⇒*U₂)) D D₁
   rewrite whrDet* (red ⇒*U₁ , Uₙ) (red D , Uₙ)  | whrDet* (red ⇒*U₂ , Uₙ) (red D₁ , Uₙ) =
     [ _⊢_:⇒*:_.⊢A D₁ , _⊢_:⇒*:_.⊢B D , _⊢_:⇒*:_.D D₁ ]
 transEqT (Idᵥ ⊩A ⊩B ⊩C) A≡B B≡C =
@@ -268,12 +291,13 @@ transEqT (embᵥ₂ (≤ᵘ-step p) A≡B≡C) = transEqT (embᵥ₂ p A≡B≡C
 transEqT (embᵥ₃ ≤ᵘ-refl     A≡B≡C) = transEqT          A≡B≡C
 transEqT (embᵥ₃ (≤ᵘ-step p) A≡B≡C) = transEqT (embᵥ₃ p A≡B≡C)
 
-transEqTerm (Uᵣ′ _ (≤ᵘ-step p) A⇒*U) B≡C C≡D =
-  irrelevanceEqTerm (Uᵣ′ _ p A⇒*U) (Uᵣ′ _ (≤ᵘ-step p) A⇒*U)
-    (transEqTerm (Uᵣ′ _ p A⇒*U)
-       (irrelevanceEqTerm (Uᵣ′ _ (≤ᵘ-step p) A⇒*U) (Uᵣ′ _ p A⇒*U) B≡C)
-       (irrelevanceEqTerm (Uᵣ′ _ (≤ᵘ-step p) A⇒*U) (Uᵣ′ _ p A⇒*U) C≡D))
-transEqTerm (Uᵣ′ l′ ≤ᵘ-refl D)
+transEqTerm (Levelᵣ D) B≡C C≡D = transEqTermLevel B≡C C≡D
+transEqTerm (Uᵣ′ k [k] (≤ᵘ-step p) A⇒*U) B≡C C≡D =
+  irrelevanceEqTerm (Uᵣ′ _ [k] p A⇒*U) (Uᵣ′ k [k] (≤ᵘ-step p) A⇒*U)
+    (transEqTerm (Uᵣ′ _ _ p A⇒*U)
+       (irrelevanceEqTerm (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) (Uᵣ′ _ _ p A⇒*U) B≡C)
+       (irrelevanceEqTerm (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) (Uᵣ′ _ _ p A⇒*U) C≡D))
+transEqTerm (Uᵣ′ l′ [l′] ≤ᵘ-refl D)
             (Uₜ₌ A B d d′ typeA typeB t≡u [t] [u] [t≡u])
             (Uₜ₌ A₁ B₁ d₁ d₁′ typeA₁ typeB₁ t≡u₁ [t]₁ [u]₁ [t≡u]₁) =
                 case whrDet*Term (redₜ d₁ , typeWhnf typeA₁) (redₜ d′ , typeWhnf typeB) of λ where

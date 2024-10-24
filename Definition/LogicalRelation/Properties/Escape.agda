@@ -43,7 +43,7 @@ private
 -- Reducible types are well-formed.
 escape : ∀ {l A} → Γ ⊩⟨ l ⟩ A → Γ ⊢ A
 escape (Levelᵣ [ ⊢A , _ , _ ]) = ⊢A
-escape (Uᵣ′ l′ l< _ _ _ [ ⊢A , ⊢B , D ]) = ⊢A
+escape (Uᵣ′ _ _ _ [ ⊢A , ⊢B , D ]) = ⊢A
 escape (ℕᵣ [ ⊢A , ⊢B , D ]) = ⊢A
 escape (Emptyᵣ [ ⊢A , ⊢B , D ]) = ⊢A
 escape (Unitᵣ (Unitₜ _ _ _ [ ⊢A , ⊢B , D ] _)) = ⊢A
@@ -59,7 +59,7 @@ escapeTerm : ∀ {l A t} → ([A] : Γ ⊩⟨ l ⟩ A)
               → Γ ⊢ t ∷ A
 escapeTerm (Levelᵣ D) (Levelₜ m [ ⊢t , ⊢u , d ] m≡m prop) =
   conv ⊢t (sym (subset* (red D)))
-escapeTerm (Uᵣ′ l′ l< _ _ _ ⊢Γ) (Uₜ A [ ⊢t , ⊢u , d ] typeA A≡A [A]) =
+escapeTerm (Uᵣ′ _ _ _ ⊢Γ) (Uₜ A [ ⊢t , ⊢u , d ] typeA A≡A [A]) =
   conv ⊢t (sym ( subset* (red  ⊢Γ)))
 escapeTerm (ℕᵣ D) (ℕₜ n [ ⊢t , ⊢u , d ] t≡t prop) =
   conv ⊢t (sym (subset* (red D)))
@@ -110,7 +110,7 @@ Id≅Id {⊩A = ⊩A} A≡B =
 
 escapeEq (Levelᵣ [ ⊢A , ⊢B , D ]) D′ =
   ≅-red (D , Levelₙ) (D′ , Levelₙ) (≅-Levelrefl (wf ⊢A))
-escapeEq (Uᵣ′ l′ l< _ (Levelₜ m [ ⊢k , _ , _ ] m≡m prop) _ [ ⊢A , ⊢B , D ]) [ ⊢A₁ , ⊢B₁ , D₁ ] =
+escapeEq (Uᵣ′ _ (Levelₜ m [ ⊢k , _ , _ ] m≡m prop) _ [ ⊢A , ⊢B , D ]) [ ⊢A₁ , ⊢B₁ , D₁ ] =
   ≅-red (D , Uₙ) (D₁ , Uₙ) (≅-univ (≅-Urefl ⊢k))
 escapeEq (ℕᵣ [ ⊢A , ⊢B , D ]) D′ =
   ≅-red (D , ℕₙ) (D′ , ℕₙ) (≅-ℕrefl (wf ⊢A))
@@ -131,7 +131,7 @@ escapeEq (emb (≤ᵘ-step k) A) A≡B = escapeEq (emb k A) A≡B
 escapeTermEq (Levelᵣ [ ⊢A , ⊢B , D ]) (Levelₜ₌ k k′ d d′ k≡k′ prop) =
   let lk , lk′ = lsplit prop
   in ≅ₜ-red (D , Levelₙ) (redₜ d , lk) (redₜ d′ , lk′) k≡k′
-escapeTermEq (Uᵣ′ l′ l< _ _ _ [ ⊢A , ⊢B , D ]) (Uₜ₌ A B d d′ typeA typeB A≡B [A] [B] [A≡B]) =
+escapeTermEq (Uᵣ′ _ _ _ [ ⊢A , ⊢B , D ]) (Uₜ₌ A B d d′ typeA typeB A≡B [A] [B] [A≡B]) =
   ≅ₜ-red (D , Uₙ) (redₜ d , typeWhnf typeA) (redₜ d′ , typeWhnf typeB)  A≡B
 escapeTermEq (ℕᵣ D) (ℕₜ₌ k k′ d d′ k≡k′ prop) =
   let natK , natK′ = split prop
@@ -192,7 +192,7 @@ escapeTermEq (emb (≤ᵘ-step k) A) t≡u = escapeTermEq (emb k A) t≡u
     Γ ⊢ Unit! ↘ Level →⟨ flip whrDet* (id ⊢Unit , Unitₙ) ⟩
     Level PE.≡ Unit!  →⟨ ((case_of λ ())) ⟩
     Unit-allowed _    □
-  (Uᵣ′ l′ l< k _ _ [ ⊢Unit , _ , D ]) →
+  (Uᵣ′ k _ _ [ ⊢Unit , _ , D ]) →
                   $⟨ D , Uₙ ⟩
     Γ ⊢ Unit! ↘ U k  →⟨ flip whrDet* (id ⊢Unit , Unitₙ) ⟩
     U k PE.≡ Unit!   →⟨ (case_of λ ()) ⟩
@@ -237,7 +237,7 @@ escapeTermEq (emb (≤ᵘ-step k) A) t≡u = escapeTermEq (emb k A) t≡u
 ⊩ΠΣ→ΠΣ-allowed {b = b} = λ where
   (Levelᵣ [ ⊢ΠAB , _ , D ]) →
     ⊥-elim (Level≢ΠΣ b (whrDet* (D , Levelₙ) (id ⊢ΠAB , ΠΣₙ)))
-  (Uᵣ′ l′ l< _ _ _ [ ⊢ΠAB , _ , D ]) →
+  (Uᵣ′ _ _ _ [ ⊢ΠAB , _ , D ]) →
      ⊥-elim ( U≢ΠΣ b ( (whrDet* (D , Uₙ) (id ⊢ΠAB , ΠΣₙ))))
   (ℕᵣ [ ⊢ΠAB , _ , D ]) →
     ⊥-elim (ℕ≢ΠΣ b (whrDet* (D , ℕₙ) (id ⊢ΠAB , ΠΣₙ)))
