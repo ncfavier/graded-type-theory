@@ -18,13 +18,14 @@ open Type-restrictions R
 
 open import Definition.Untyped Mod as U hiding (K)
 open import Definition.Untyped.Neutral Mod type-variant
+open import Definition.Untyped.Properties Mod
 open import Definition.Typed.Properties R
 open import Definition.Typed R
 open import Definition.Typed.Weakening R
 
 open import Tools.Empty
 open import Tools.Function
-open import Tools.Level hiding (_⊔_)
+open import Tools.Level hiding (Level; _⊔_)
 open import Tools.Nat hiding (_<_; _≤_)
 open import Tools.Product
 import Tools.PropositionalEquality as PE
@@ -34,7 +35,8 @@ open import Tools.Unit
 private
   variable
     p q : Mod
-    ℓ l : Nat
+    ℓ : Nat
+    l : Universe-level
     Γ Δ : Con Term ℓ
     t t′ u u′ : Term _
     ρ : Wk _ _
@@ -114,6 +116,66 @@ record _⊩ne_≡_∷_/_ (Γ : Con Term ℓ) (t u A : Term ℓ) ([A] : Γ ⊩ne 
     d   : Γ ⊢ t ⇒* k ∷ K
     d′  : Γ ⊢ u ⇒* m ∷ K
     nf  : Γ ⊩neNf k ≡ m ∷ K
+
+-- Reducibility of levels:
+
+-- Level type
+_⊩Level_ : (Γ : Con Term ℓ) (A : Term ℓ) → Set a
+Γ ⊩Level A = Γ ⊢ A ⇒* Level
+
+-- Level type equality
+_⊩Level_≡_ : (Γ : Con Term ℓ) (A B : Term ℓ) → Set a
+Γ ⊩Level A ≡ B = Γ ⊢ B ⇒* Level
+
+mutual
+  -- Level term
+  record _⊩Level_∷Level (Γ : Con Term ℓ) (t : Term ℓ) : Set a where
+    inductive
+    constructor Levelₜ
+    field
+      m : Term ℓ
+      d : Γ ⊢ t ⇒* m ∷ Level
+      m≡m : Γ ⊢≅ m ∷ Level
+      prop : Level-prop Γ m
+
+  -- WHNF property of level terms
+  data Level-prop (Γ : Con Term ℓ) : (l : Term ℓ) → Set a where
+    zeroᵘᵣ : Level-prop Γ zeroᵘ
+    sucᵘᵣ  : ∀ {l} → Γ ⊩Level l ∷Level → Level-prop Γ (sucᵘ l)
+    ne     : ∀ {l} → Γ ⊩neNf l ∷ Level → Level-prop Γ l
+
+mutual
+  -- Level term equality
+  record _⊩Level_≡_∷Level (Γ : Con Term ℓ) (t u : Term ℓ) : Set a where
+    inductive
+    constructor Levelₜ₌
+    field
+      k k′ : Term ℓ
+      d : Γ ⊢ t ⇒* k ∷ Level
+      d′ : Γ ⊢ u ⇒* k′ ∷ Level
+      k≡k′ : Γ ⊢ k ≅ k′ ∷ Level
+      prop : [Level]-prop Γ k k′
+
+  -- WHNF property of level term equality
+  data [Level]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
+    zeroᵘᵣ : [Level]-prop Γ zeroᵘ zeroᵘ
+    sucᵘᵣ  : ∀ {k k′} → Γ ⊩Level k ≡ k′ ∷Level → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
+    ne     : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [Level]-prop Γ k k′
+
+mutual
+  reflect-level′ : Γ ⊩Level t ∷Level → Nat
+  reflect-level′ [t] = reflect-level-prop′ ([t] ._⊩Level_∷Level.prop)
+
+  reflect-level-prop′ : Level-prop Γ t → Nat
+  reflect-level-prop′ zeroᵘᵣ = 0
+  reflect-level-prop′ (sucᵘᵣ x) = 1+ (reflect-level′ x)
+  reflect-level-prop′ (ne x) = 0
+
+reflect-level : Γ ⊩Level t ∷Level → Universe-level
+reflect-level ⊩t = 0+ (reflect-level′ ⊩t)
+
+reflect-level-prop : Level-prop Γ t → Universe-level
+reflect-level-prop ⊩t = 0+ (reflect-level-prop′ ⊩t)
 
 -- Reducibility of natural numbers:
 
@@ -216,56 +278,64 @@ record _⊩Unit⟨_,_⟩_
   pattern
   constructor Unitₜ
   field
-    ⇒*-Unit : Γ ⊢ A ⇒* Unit s l
+    k : Term ℓ
+    [k] : Γ ⊩Level k ∷Level
+    k≡  : reflect-level [k] PE.≡ l
+    ⇒*-Unit : Γ ⊢ A ⇒* Unit s k
     ok      : Unit-allowed s
 
 -- Unit type equality
-_⊩Unit⟨_,_⟩_≡_ :
-  Con Term ℓ → Universe-level → Strength → (_ _ : Term ℓ) → Set a
-Γ ⊩Unit⟨ l , s ⟩ A ≡ B = Γ ⊢ B ⇒* Unit s l
+_⊩Unit⟨_,_⟩_≡_/_ :
+  (Γ : Con Term ℓ) → (l : Universe-level) → (s : Strength) → (A B : Term ℓ) → Γ ⊩Unit⟨ l , s ⟩ A → Set a
+Γ ⊩Unit⟨ l , s ⟩ A ≡ B / [A] = Γ ⊢ B ⇒* Unit s k
+  where open _⊩Unit⟨_,_⟩_ [A]
+
+-- Unit term
 
 data Unit-prop
-  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) :
+  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
   Term ℓ → Set a where
-  starᵣ : Unit-prop Γ l s (star s l)
-  ne : ∀ {n} → Γ ⊩neNf n ∷ Unit s l → Unit-prop Γ l s n
+  starᵣ : (open _⊩Unit⟨_,_⟩_ [A]) → Unit-prop Γ l s A [A] (star s k) -- TODO k′ ≡ k ∷Level → Unit-prop (star s k′) ?
+  ne : ∀ {n} (open _⊩Unit⟨_,_⟩_ [A]) → Γ ⊩neNf n ∷ Unit s k → Unit-prop Γ l s A [A] n
 
-record _⊩Unit⟨_,_⟩_∷Unit
-  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (t : Term ℓ) :
+record _⊩Unit⟨_,_⟩_∷_/_
+  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (t : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
   Set a where
   inductive
   no-eta-equality
   pattern
   constructor Unitₜ
+  open _⊩Unit⟨_,_⟩_ [A]
   field
     n : Term ℓ
-    d : Γ ⊢ t ⇒* n ∷ Unit s l
-    n≡n : Γ ⊢≅ n ∷ Unit s l
-    prop : Unit-prop Γ l s n
+    d : Γ ⊢ t ⇒* n ∷ Unit s k
+    n≡n : Γ ⊢≅ n ∷ Unit s k
+    prop : Unit-prop Γ l s A [A] n
 
 -- Unit term equality
 
 data [Unitʷ]-prop
-  (Γ : Con Term ℓ) (l : Universe-level) : (_ _ : Term ℓ) → Set a where
-  starᵣ : [Unitʷ]-prop Γ l (starʷ l) (starʷ l)
-  ne : ∀ {n n′} → Γ ⊩neNf n ≡ n′ ∷ Unitʷ l → [Unitʷ]-prop Γ l n n′
+  (Γ : Con Term ℓ) (l : Universe-level) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , 𝕨 ⟩ A) : (_ _ : Term ℓ) → Set a where
+  starᵣ : (open _⊩Unit⟨_,_⟩_ [A]) → [Unitʷ]-prop Γ l A [A] (starʷ k) (starʷ k)
+  ne : ∀ {n n′} (open _⊩Unit⟨_,_⟩_ [A]) → Γ ⊩neNf n ≡ n′ ∷ Unit 𝕨 k → [Unitʷ]-prop Γ l A [A] n n′
 
-data _⊩Unit⟨_,_⟩_≡_∷Unit
-  (Γ : Con Term ℓ) (l : Universe-level) : Strength → (_ _ : Term ℓ) → Set a where
+data _⊩Unit⟨_,_⟩_≡_∷_/_
+  (Γ : Con Term ℓ) (l : Universe-level) : (s : Strength) (t u : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) → Set a where
   Unitₜ₌ˢ :
-    Γ ⊢ t ∷ Unit s l →
-    Γ ⊢ u ∷ Unit s l →
+    ∀ {A} {[A]} (open _⊩Unit⟨_,_⟩_ [A]) →
+    Γ ⊢ t ∷ Unit s k →
+    Γ ⊢ u ∷ Unit s k →
     Unit-with-η s →
-    Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷Unit
+    Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷ A / [A]
   Unitₜ₌ʷ :
-    (k k′ : Term ℓ) →
-    Γ ⊢ t ⇒* k  ∷ Unitʷ l →
-    Γ ⊢ u ⇒* k′ ∷ Unitʷ l →
-    Γ ⊢ k ≅ k′ ∷ Unitʷ l →
-    [Unitʷ]-prop Γ l k k′ →
+    ∀ {A} {[A]} (open _⊩Unit⟨_,_⟩_ [A]) →
+    (t′ u′ : Term ℓ) →
+    Γ ⊢ t ⇒* t′  ∷ Unitʷ k →
+    Γ ⊢ u ⇒* u′ ∷ Unitʷ k →
+    Γ ⊢ t′ ≅ u′ ∷ Unitʷ k →
+    [Unitʷ]-prop Γ l A [A] t′ u′ →
     ¬ Unitʷ-η →
-    Γ ⊩Unit⟨ l , 𝕨 ⟩ t ≡ u ∷Unit
-
+    Γ ⊩Unit⟨ l , 𝕨 ⟩ t ≡ u ∷ A / [A]
 
 -- Logical relation
 -- Exported interface
@@ -295,45 +365,54 @@ module LogRel
     pattern
     constructor Uᵣ
     field
-      l′  : Universe-level
-      l′< : l′ <ᵘ l
-      ⇒*U : Γ ⊢ A ⇒* U l′
+      k   : Term ℓ
+      [k] : Γ ⊩Level k ∷Level
+      k< : reflect-level [k] <ᵘ l
+      ⇒*U : Γ ⊢ A ⇒* U k
 
   -- Universe type equality
-  _⊩₁U≡_/_ : Con Term ℓ → Term ℓ → Universe-level → Set a
-  Γ ⊩₁U≡ B / l′ = Γ ⊢ B ⇒* U l′
+  record _⊩₁U≡_/_ (Γ : Con Term ℓ) (B : Term ℓ) (k : Term ℓ) : Set a where
+    no-eta-equality
+    pattern
+    constructor U₌
+    field
+      k′ : Term ℓ
+      ⇒*U′ : Γ ⊢ B ⇒* U k′
+      k≡k′ : Γ ⊩Level k ≡ k′ ∷Level
 
 
   -- Universe term
   record _⊩₁U_∷U/_
-           {l′} (Γ : Con Term ℓ) (t : Term ℓ) (l< : l′ <ᵘ l) :
+           {T} (Γ : Con Term ℓ) (t : Term ℓ) ([T] : Γ ⊩₁U T) :
            Set a where
     no-eta-equality
     pattern
     constructor Uₜ
-    open LogRelKit (rec l<)
+    open _⊩₁U_ [T]
+    open LogRelKit (rec k<)
     field
       A     : Term ℓ
-      d     : Γ ⊢ t ⇒* A ∷ U l′
+      d     : Γ ⊢ t ⇒* A ∷ U k
       typeA : Type A
-      A≡A   : Γ ⊢≅ A ∷ U l′
+      A≡A   : Γ ⊢≅ A ∷ U k
       [t]   : Γ ⊩ t
 
   -- Universe term equality
   record _⊩₁U_≡_∷U/_
-           {l′} (Γ : Con Term ℓ) (t u : Term ℓ) (l< : l′ <ᵘ l) :
+           {T} (Γ : Con Term ℓ) (t u : Term ℓ) ([T] : Γ ⊩₁U T) :
            Set a where
     no-eta-equality
     pattern
     constructor Uₜ₌
-    open LogRelKit (rec l<)
+    open _⊩₁U_ [T]
+    open LogRelKit (rec k<)
     field
       A B   : Term ℓ
-      d     : Γ ⊢ t ⇒* A ∷ U l′
-      d′    : Γ ⊢ u ⇒* B ∷ U l′
+      d     : Γ ⊢ t ⇒* A ∷ U k
+      d′    : Γ ⊢ u ⇒* B ∷ U k
       typeA : Type A
       typeB : Type B
-      A≡B   : Γ ⊢ A ≅ B ∷ U l′
+      A≡B   : Γ ⊢ A ≅ B ∷ U k
       [t]   : Γ ⊩ t
       [u]   : Γ ⊩ u
       [t≡u] : Γ ⊩ t ≡ u / [t]
@@ -592,6 +671,7 @@ module LogRel
 
     -- Logical relation definition
     data _⊩ₗ_ (Γ : Con Term ℓ) : Term ℓ → Set a where
+      Levelᵣ : ∀ {A} → Γ ⊩Level A → Γ ⊩ₗ A
       Uᵣ  : ∀ {A} → Γ ⊩₁U A → Γ ⊩ₗ A
       ℕᵣ  : ∀ {A} → Γ ⊩ℕ A → Γ ⊩ₗ A
       Emptyᵣ : ∀ {A} → Γ ⊩Empty A → Γ ⊩ₗ A
@@ -603,10 +683,11 @@ module LogRel
             ([A] : Γ ⊩ A) → Γ ⊩ₗ A
 
     _⊩ₗ_≡_/_ : (Γ : Con Term ℓ) (A B : Term ℓ) → Γ ⊩ₗ A → Set a
-    Γ ⊩ₗ A ≡ B / Uᵣ ⊩A = Γ ⊩₁U≡ B / _⊩₁U_.l′ ⊩A
+    Γ ⊩ₗ A ≡ B / Levelᵣ D = Γ ⊩Level A ≡ B
+    Γ ⊩ₗ A ≡ B / Uᵣ ⊩A = Γ ⊩₁U≡ B / ⊩A ._⊩₁U_.k
     Γ ⊩ₗ A ≡ B / ℕᵣ D = Γ ⊩ℕ A ≡ B
     Γ ⊩ₗ A ≡ B / Emptyᵣ D = Γ ⊩Empty A ≡ B
-    Γ ⊩ₗ A ≡ B / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ A ≡ B
+    Γ ⊩ₗ A ≡ B / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ A ≡ B / D
     Γ ⊩ₗ A ≡ B / ne neA = Γ ⊩ne A ≡ B / neA
     Γ ⊩ₗ A ≡ B / Bᵣ W BA = Γ ⊩ₗB⟨ W ⟩ A ≡ B / BA
     Γ ⊩ₗ A ≡ B / Idᵣ ⊩A = Γ ⊩ₗId A ≡ B / ⊩A
@@ -614,10 +695,11 @@ module LogRel
       where open LogRelKit (rec l<)
 
     _⊩ₗ_∷_/_ : (Γ : Con Term ℓ) (t A : Term ℓ) → Γ ⊩ₗ A → Set a
-    Γ ⊩ₗ t ∷ A / Uᵣ p = Γ ⊩₁U t ∷U/ _⊩₁U_.l′< p
+    Γ ⊩ₗ t ∷ A / Levelᵣ D = Γ ⊩Level t ∷Level
+    Γ ⊩ₗ t ∷ A / Uᵣ p = Γ ⊩₁U t ∷U/ p
     Γ ⊩ₗ t ∷ A / ℕᵣ D = Γ ⊩ℕ t ∷ℕ
     Γ ⊩ₗ t ∷ A / Emptyᵣ D = Γ ⊩Empty t ∷Empty
-    Γ ⊩ₗ t ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ t ∷Unit
+    Γ ⊩ₗ t ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ t ∷ A / D
     Γ ⊩ₗ t ∷ A / ne neA = Γ ⊩ne t ∷ A / neA
     Γ ⊩ₗ t ∷ A / Bᵣ BΠ! ΠA  = Γ ⊩ₗΠ t ∷ A / ΠA
     Γ ⊩ₗ t ∷ A / Bᵣ BΣ! ΣA  = Γ ⊩ₗΣ t ∷ A / ΣA
@@ -626,10 +708,11 @@ module LogRel
       where open LogRelKit (rec l<)
 
     _⊩ₗ_≡_∷_/_ : (Γ : Con Term ℓ) (t u A : Term ℓ) → Γ ⊩ₗ A → Set a
-    Γ ⊩ₗ t ≡ u ∷ A / Uᵣ ⊩A = Γ ⊩₁U t ≡ u ∷U/ _⊩₁U_.l′< ⊩A
+    Γ ⊩ₗ t ≡ u ∷ A / Levelᵣ D = Γ ⊩Level t ≡ u ∷Level
+    Γ ⊩ₗ t ≡ u ∷ A / Uᵣ ⊩A = Γ ⊩₁U t ≡ u ∷U/ ⊩A
     Γ ⊩ₗ t ≡ u ∷ A / ℕᵣ D = Γ ⊩ℕ t ≡ u ∷ℕ
     Γ ⊩ₗ t ≡ u ∷ A / Emptyᵣ D = Γ ⊩Empty t ≡ u ∷Empty
-    Γ ⊩ₗ t ≡ u ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷Unit
+    Γ ⊩ₗ t ≡ u ∷ A / Unitᵣ {s = s} D = Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷ A / D
     Γ ⊩ₗ t ≡ u ∷ A / ne neA = Γ ⊩ne t ≡ u ∷ A / neA
     Γ ⊩ₗ t ≡ u ∷ A / Bᵣ BΠ! ΠA = Γ ⊩ₗΠ t ≡ u ∷ A / ΠA
     Γ ⊩ₗ t ≡ u ∷ A / Bᵣ BΣ! ΣA  = Γ ⊩ₗΣ t ≡ u ∷ A / ΣA
@@ -643,8 +726,8 @@ module LogRel
 
 open LogRel public
   using
-    (Uᵣ; ℕᵣ; Emptyᵣ; Unitᵣ; ne; Bᵣ; B₌; Idᵣ; Id₌; emb; Uₜ; Uₜ₌;
-     module _⊩₁U_; module _⊩₁U_∷U/_; module _⊩₁U_≡_∷U/_;
+    (Levelᵣ; Uᵣ; U₌; ℕᵣ; Emptyᵣ; Unitᵣ; ne; Bᵣ; B₌; Idᵣ; Id₌; emb; Uₜ; Uₜ₌;
+     module _⊩₁U_; module _⊩₁U≡_/_; module _⊩₁U_∷U/_; module _⊩₁U_≡_∷U/_;
      module _⊩ₗB⟨_⟩_; module _⊩ₗB⟨_⟩_≡_/_;
      module _⊩ₗId_; module _⊩ₗId_≡_/_)
 
@@ -654,24 +737,19 @@ pattern Πₜ₌ f g d d′ funcF funcG f≡g [f] [g] [f≡g] = f , g , d , d′
 pattern Σₜ p d p≡p pProd prop =  p , d , p≡p , pProd , prop
 pattern Σₜ₌ p r d d′ pProd rProd p≅r [t] [u] prop = p , r , d , d′ , p≅r , [t] , [u] , pProd , rProd , prop
 
-pattern Uᵣ′ a b c = Uᵣ (Uᵣ a b c)
+pattern Uᵣ′ a b c d = Uᵣ (Uᵣ a b c d)
 pattern ne′ a b c d = ne (ne a b c d)
 pattern Bᵣ′ W a b c d e f g h = Bᵣ W (Bᵣ a b c d e f g h)
 pattern Πᵣ′ a b c d e f g h = Bᵣ′ BΠ! a b c d e f g h
 pattern 𝕨′ a b c d e f g h = Bᵣ′ BΣ! a b c d e f g h
 
-mutual
+-- A LogRelKit for the given Universe-level.
 
-  -- A LogRelKit for the given Universe-level.
+kit′ : ∀ {n m} → n <ᵘ m → LogRelKit
+kit′ p = <ᵘ-recBuilder _ LogRel.kit _ p
 
-  kit : Universe-level → LogRelKit
-  kit ℓ = LogRel.kit ℓ kit′
-
-  -- A LogRelKit for m.
-
-  kit′ : {n m : Universe-level} → m <ᵘ n → LogRelKit
-  kit′ {m = m} ≤ᵘ-refl = kit m
-  kit′ (≤ᵘ-step p) = kit′ p
+kit : Universe-level → LogRelKit
+kit = <ᵘ-rec _ LogRel.kit
 
 _⊩′⟨_⟩U_ : Con Term ℓ → Universe-level → Term ℓ → Set a
 Γ ⊩′⟨ l ⟩U A = Γ ⊩U A where open LogRelKit (kit l)
@@ -689,7 +767,7 @@ _⊩′⟨_⟩Id_ : Con Term ℓ → Universe-level → Term ℓ → Set a
 _⊩⟨_⟩_ : Con Term ℓ → Universe-level → Term ℓ → Set a
 Γ ⊩⟨ l ⟩ A = Γ ⊩ A where open LogRelKit (kit l)
 
--- Equality of reducibile types
+-- Equality of reducible types
 
 _⊩⟨_⟩_≡_/_ :
   (Γ : Con Term ℓ) (l : Universe-level) (A _ : Term ℓ) → Γ ⊩⟨ l ⟩ A →
@@ -703,7 +781,7 @@ _⊩⟨_⟩_∷_/_ :
   Set a
 Γ ⊩⟨ l ⟩ t ∷ A / [A] = Γ ⊩ t ∷ A / [A] where open LogRelKit (kit l)
 
--- Equality of reducibile terms
+-- Equality of reducible terms
 
 _⊩⟨_⟩_≡_∷_/_ :
   (Γ : Con Term ℓ) (l : Universe-level) (_ _ A : Term ℓ) → Γ ⊩⟨ l ⟩ A →

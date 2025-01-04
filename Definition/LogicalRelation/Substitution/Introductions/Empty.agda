@@ -21,16 +21,18 @@ open import Definition.Untyped.Neutral M type-variant
 open import Definition.Typed R
 open import Definition.Typed.Properties R
 open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Hidden R
+open import Definition.LogicalRelation.Hidden R {{eqrel}}
 open import Definition.LogicalRelation.Irrelevance R
 open import Definition.LogicalRelation.Properties R
 open import Definition.LogicalRelation.ShapeView R
-open import Definition.LogicalRelation.Substitution R
-open import Definition.LogicalRelation.Substitution.Introductions.Universe R
+open import Definition.LogicalRelation.Substitution R {{eqrel}}
+open import Definition.LogicalRelation.Substitution.Introductions.Level R {{eqrel}}
+open import Definition.LogicalRelation.Substitution.Introductions.Universe R {{eqrel}}
 
 open import Tools.Function
 open import Tools.Nat using (Nat; 1+)
 open import Tools.Product
+import Tools.PropositionalEquality as PE
 
 private variable
   Γ Δ : Con Term _
@@ -68,8 +70,8 @@ opaque
       (⊩Empty : Γ ⊩⟨ l ⟩Empty Empty) →
       Γ ⊩⟨ l ⟩ t ∷ Empty / Empty-intr ⊩Empty →
       Γ ⊩Empty t ∷Empty
-    lemma (emb ≤ᵘ-refl ⊩Empty′) ⊩t = lemma ⊩Empty′ ⊩t
-    lemma (emb (≤ᵘ-step s) ⊩Empty′) ⊩t = lemma (emb s ⊩Empty′) ⊩t
+    lemma (emb p ⊩Empty′) ⊩t = {!   !}
+    -- lemma (emb (≤ᵘ-step s) ⊩Empty′) ⊩t = lemma (emb s ⊩Empty′) ⊩t
     lemma (noemb _) ⊩t = ⊩t
 
 opaque
@@ -97,8 +99,8 @@ opaque
       Γ ⊩⟨ l ⟩ A ≡ B / Empty-intr ⊩A →
       Γ ⊩Empty A ≡ B
     lemma (noemb _)    A≡B = A≡B
-    lemma (emb ≤ᵘ-refl ⊩A) A≡B = lemma ⊩A A≡B
-    lemma (emb (≤ᵘ-step l<) ⊩A) A≡B = lemma (emb l< ⊩A) A≡B
+    lemma (emb p ⊩A) A≡B = {!   !}
+    -- lemma (emb (≤ᵘ-step l<) ⊩A) A≡B = lemma (emb l< ⊩A) A≡B
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_ ⊩Empty⇔
@@ -127,9 +129,8 @@ opaque
       (⊩Empty : Γ ⊩⟨ l ⟩Empty Empty) →
       Γ ⊩⟨ l ⟩ t ≡ u ∷ Empty / Empty-intr ⊩Empty →
       Γ ⊩Empty t ≡ u ∷Empty
-    lemma (emb ≤ᵘ-refl     ⊩Empty′) = lemma ⊩Empty′
-    lemma (emb (≤ᵘ-step s) ⊩Empty′) = lemma (emb s ⊩Empty′)
-    lemma (noemb _)                 = idᶠ
+    lemma (emb p ⊩Empty′) = {!   !}
+    lemma (noemb _) = idᶠ
 
 ------------------------------------------------------------------------
 -- Empty
@@ -143,30 +144,30 @@ opaque
 
 opaque
 
-  -- Validity for Empty, seen as a type formerr.
+  -- Validity for Empty, seen as a type former.
 
-  Emptyᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ⟨ l ⟩ Empty
-  Emptyᵛ {Γ} {l} ⊩Γ =
-    ⊩ᵛ⇔ .proj₂
+  Emptyᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ Empty
+  Emptyᵛ {Γ} ⊩Γ =
+    ⊩ᵛ-const-intro
       ( ⊩Γ
       , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
           Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ        →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
           ⊢ Δ                     ⇔˘⟨ ⊩Empty⇔ ⟩→
-          (Δ ⊩⟨ l ⟩ Empty)        →⟨ refl-⊩≡ ⟩
-          Δ ⊩⟨ l ⟩ Empty ≡ Empty  □
+          (Δ ⊩⟨ 0ᵘ ⟩ Empty)        →⟨ refl-⊩≡ ⟩
+          Δ ⊩⟨ 0ᵘ ⟩ Empty ≡ Empty  □
       )
 
 opaque
 
   -- Validity for Empty, seen as a term former.
 
-  Emptyᵗᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ⟨ 1 ⟩ Empty ∷ U 0
+  Emptyᵗᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ Empty ∷ U zeroᵘ
   Emptyᵗᵛ ⊩Γ =
-    ⊩ᵛ∷⇔ .proj₂
-      ( ⊩ᵛU ⊩Γ
+    ⊩ᵛ∷-const-intro {l = 1ᵘ}
+      ( ⊩ᵛU (zeroᵘᵛ ⊩Γ)
       , λ σ₁≡σ₂ →
           case escape-⊩ˢ≡∷ σ₁≡σ₂ of λ
             (⊢Δ , _) →
           Type→⊩≡∷U⇔ Emptyₙ Emptyₙ .proj₂
-            (≤ᵘ-refl , refl-⊩≡ (⊩Empty ⊢Δ) , ≅ₜ-Emptyrefl ⊢Δ)
+            (⊩Level-zeroᵘ ⊢Δ , PE.subst (_<ᵘ 1ᵘ) (PE.sym (reflect-level-zero ⊢Δ)) 0ᵘ<ᵘ1ᵘ , refl-⊩≡ (⊩Empty ⊢Δ) , ≅ₜ-Emptyrefl ⊢Δ)
       )

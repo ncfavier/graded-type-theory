@@ -44,7 +44,12 @@ private opaque
       .≅-red        → λ (A⇒* , _) (B⇒* , _) → reduction A⇒* B⇒*
       .≅ₜ-red       → λ (A⇒* , _) (t⇒* , _) (u⇒* , _) →
                         reductionₜ A⇒* t⇒* u⇒*
+      .≅-Levelrefl  → refl ∘ᶠ Levelⱼ
+      .≅ₜ-zeroᵘrefl → refl ∘ᶠ zeroᵘⱼ
+      .≅ₜ-sucᵘ-cong → sucᵘ-cong
       .≅-Urefl      → refl ∘ᶠ Uⱼ
+      .≅-U-cong     → U-cong
+      .≅ₜ-U-cong    → U-cong
       .≅ₜ-ℕrefl     → refl ∘ᶠ ℕⱼ
       .≅ₜ-Emptyrefl → refl ∘ᶠ Emptyⱼ
       .≅ₜ-Unitrefl  → λ ⊢Γ → refl ∘ᶠ Unitⱼ ⊢Γ
