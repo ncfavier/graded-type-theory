@@ -162,20 +162,10 @@ mutual
     sucᵘᵣ  : ∀ {k k′} → Γ ⊩Level k ≡ k′ ∷Level → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
     ne     : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [Level]-prop Γ k k′
 
-mutual
-  reflect-level′ : Γ ⊩Level t ∷Level → Nat
-  reflect-level′ [t] = reflect-level-prop′ ([t] ._⊩Level_∷Level.prop)
+Internal-level : ∀ {ℓ} (Γ : Con Term ℓ) → Set a
+Internal-level Γ = ∃ λ l → Γ ⊩Level l ∷Level
 
-  reflect-level-prop′ : Level-prop Γ t → Nat
-  reflect-level-prop′ zeroᵘᵣ = 0
-  reflect-level-prop′ (sucᵘᵣ x) = 1+ (reflect-level′ x)
-  reflect-level-prop′ (ne x) = 0
-
-reflect-level : Γ ⊩Level t ∷Level → Universe-level
-reflect-level ⊩t = 0+ (reflect-level′ ⊩t)
-
-reflect-level-prop : Level-prop Γ t → Universe-level
-reflect-level-prop ⊩t = 0+ (reflect-level-prop′ ⊩t)
+data _<i_ {ℓ} {Γ : Con Term ℓ} (l l′ : Internal-level Γ) : Set a where
 
 -- Reducibility of natural numbers:
 
@@ -272,7 +262,7 @@ record _⊩Empty_≡_∷Empty (Γ : Con Term ℓ) (t u : Term ℓ) : Set a where
 
 -- Unit type
 record _⊩Unit⟨_,_⟩_
-  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (A : Term ℓ) :
+  (Γ : Con Term ℓ) (l : Internal-level Γ) (s : Strength) (A : Term ℓ) :
   Set a where
   no-eta-equality
   pattern
@@ -280,26 +270,26 @@ record _⊩Unit⟨_,_⟩_
   field
     k : Term ℓ
     [k] : Γ ⊩Level k ∷Level
-    k≡  : reflect-level [k] PE.≡ l
+    k≡l : Γ ⊩Level k ≡ l .proj₁ ∷Level
     ⇒*-Unit : Γ ⊢ A ⇒* Unit s k
     ok      : Unit-allowed s
 
 -- Unit type equality
 _⊩Unit⟨_,_⟩_≡_/_ :
-  (Γ : Con Term ℓ) → (l : Universe-level) → (s : Strength) → (A B : Term ℓ) → Γ ⊩Unit⟨ l , s ⟩ A → Set a
-Γ ⊩Unit⟨ l , s ⟩ A ≡ B / [A] = Γ ⊢ B ⇒* Unit s k
+  (Γ : Con Term ℓ) → (l : Internal-level Γ) → (s : Strength) → (A B : Term ℓ) → Γ ⊩Unit⟨ l , s ⟩ A → Set a
+Γ ⊩Unit⟨ l , s ⟩ A ≡ B / [A] = Γ ⊢ B ⇒* Unit s k -- TODO k′ equal to k
   where open _⊩Unit⟨_,_⟩_ [A]
 
 -- Unit term
 
 data Unit-prop
-  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
+  (Γ : Con Term ℓ) (l : Internal-level Γ) (s : Strength) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
   Term ℓ → Set a where
-  starᵣ : (open _⊩Unit⟨_,_⟩_ [A]) → Unit-prop Γ l s A [A] (star s k) -- TODO k′ ≡ k ∷Level → Unit-prop (star s k′) ?
+  starᵣ : (open _⊩Unit⟨_,_⟩_ [A]) → Unit-prop Γ l s A [A] (star s k) -- TODO k′ ≡ k ∷Level → Unit-prop (star s k′)
   ne : ∀ {n} (open _⊩Unit⟨_,_⟩_ [A]) → Γ ⊩neNf n ∷ Unit s k → Unit-prop Γ l s A [A] n
 
 record _⊩Unit⟨_,_⟩_∷_/_
-  (Γ : Con Term ℓ) (l : Universe-level) (s : Strength) (t : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
+  (Γ : Con Term ℓ) (l : Internal-level Γ) (s : Strength) (t : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) :
   Set a where
   inductive
   no-eta-equality
@@ -315,12 +305,12 @@ record _⊩Unit⟨_,_⟩_∷_/_
 -- Unit term equality
 
 data [Unitʷ]-prop
-  (Γ : Con Term ℓ) (l : Universe-level) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , 𝕨 ⟩ A) : (_ _ : Term ℓ) → Set a where
+  (Γ : Con Term ℓ) (l : Internal-level Γ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , 𝕨 ⟩ A) : (_ _ : Term ℓ) → Set a where
   starᵣ : (open _⊩Unit⟨_,_⟩_ [A]) → [Unitʷ]-prop Γ l A [A] (starʷ k) (starʷ k)
   ne : ∀ {n n′} (open _⊩Unit⟨_,_⟩_ [A]) → Γ ⊩neNf n ≡ n′ ∷ Unit 𝕨 k → [Unitʷ]-prop Γ l A [A] n n′
 
 data _⊩Unit⟨_,_⟩_≡_∷_/_
-  (Γ : Con Term ℓ) (l : Universe-level) : (s : Strength) (t u : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) → Set a where
+  (Γ : Con Term ℓ) (l : Internal-level Γ) : (s : Strength) (t u : Term ℓ) (A : Term ℓ) ([A] : Γ ⊩Unit⟨ l , s ⟩ A) → Set a where
   Unitₜ₌ˢ :
     ∀ {A} {[A]} (open _⊩Unit⟨_,_⟩_ [A]) →
     Γ ⊢ t ∷ Unit s k →
@@ -354,24 +344,24 @@ record LogRelKit : Set (lsuc a) where
     _⊩_≡_∷_/_ : (Γ : Con Term ℓ) (t u A : Term ℓ) → Γ ⊩ A → Set a
 
 module LogRel
-  (l : Universe-level) (rec : ∀ {l′} → l′ <ᵘ l → LogRelKit)
+  {ℓ} (Γ : Con Term ℓ) (l : Internal-level Γ) (rec : ∀ {l′} → l′ <i l → LogRelKit)
   where
 
   -- Reducibility of Universe:
 
   -- Universe type
-  record _⊩₁U_ (Γ : Con Term ℓ) (A : Term ℓ) : Set a where
+  record Γ⊩₁U_ (A : Term ℓ) : Set a where
     no-eta-equality
     pattern
     constructor Uᵣ
     field
       k   : Term ℓ
       [k] : Γ ⊩Level k ∷Level
-      k< : reflect-level [k] <ᵘ l
+      k< : (k , [k]) <i l
       ⇒*U : Γ ⊢ A ⇒* U k
 
   -- Universe type equality
-  record _⊩₁U≡_/_ (Γ : Con Term ℓ) (B : Term ℓ) (k : Term ℓ) : Set a where
+  record Γ⊩₁U≡_/_ (B : Term ℓ) (k : Term ℓ) : Set a where
     no-eta-equality
     pattern
     constructor U₌
@@ -382,14 +372,14 @@ module LogRel
 
 
   -- Universe term
-  record _⊩₁U_∷U/_
-           {T} (Γ : Con Term ℓ) (t : Term ℓ) ([T] : Γ ⊩₁U T) :
+  record Γ⊩₁U_∷U/_
+           {T} (t : Term ℓ) ([T] : Γ⊩₁U T) :
            Set a where
     no-eta-equality
     pattern
     constructor Uₜ
-    open _⊩₁U_ [T]
-    open LogRelKit (rec k<)
+    open Γ⊩₁U_ [T]
+    open LogRelKit (rec {k , [k]} k<)
     field
       A     : Term ℓ
       d     : Γ ⊢ t ⇒* A ∷ U k
@@ -398,14 +388,14 @@ module LogRel
       [t]   : Γ ⊩ t
 
   -- Universe term equality
-  record _⊩₁U_≡_∷U/_
-           {T} (Γ : Con Term ℓ) (t u : Term ℓ) ([T] : Γ ⊩₁U T) :
+  record Γ⊩₁U_≡_∷U/_
+           {T} (t u : Term ℓ) ([T] : Γ⊩₁U T) :
            Set a where
     no-eta-equality
     pattern
     constructor Uₜ₌
-    open _⊩₁U_ [T]
-    open LogRelKit (rec k<)
+    open Γ⊩₁U_ [T]
+    open LogRelKit (rec {k , [k]} k<)
     field
       A B   : Term ℓ
       d     : Γ ⊢ t ⇒* A ∷ U k
@@ -419,6 +409,7 @@ module LogRel
 
 
 
+{-
   mutual
 
     -- Reducibility of Binding types (Π, Σ):
@@ -895,3 +886,4 @@ data ⊩Id≡∷-view
         (t′ , t⇒*t′ , t′-id , ~t′)
       , (u′ , u⇒*u′ , u′-id , ~u′)
       , t′~u′
+-}
