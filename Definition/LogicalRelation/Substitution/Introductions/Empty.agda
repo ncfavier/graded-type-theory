@@ -148,13 +148,13 @@ opaque
 
   Emptyᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ Empty
   Emptyᵛ {Γ} ⊩Γ =
-    ⊩ᵛ-const-intro
+    ⊩ᵛ⇔ .proj₂
       ( ⊩Γ
       , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
           Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ        →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
           ⊢ Δ                     ⇔˘⟨ ⊩Empty⇔ ⟩→
-          (Δ ⊩⟨ 0ᵘ ⟩ Empty)        →⟨ refl-⊩≡ ⟩
-          Δ ⊩⟨ 0ᵘ ⟩ Empty ≡ Empty  □
+          (Δ ⊩ Empty)        →⟨ refl-⊩≡ ⟩
+          Δ ⊩ Empty ≡ Empty  □
       )
 
 opaque
@@ -163,11 +163,11 @@ opaque
 
   Emptyᵗᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ Empty ∷ U zeroᵘ
   Emptyᵗᵛ ⊩Γ =
-    ⊩ᵛ∷-const-intro {l = 1ᵘ}
+    ⊩ᵛ∷⇔ .proj₂
       ( ⊩ᵛU (zeroᵘᵛ ⊩Γ)
       , λ σ₁≡σ₂ →
           case escape-⊩ˢ≡∷ σ₁≡σ₂ of λ
             (⊢Δ , _) →
           Type→⊩≡∷U⇔ Emptyₙ Emptyₙ .proj₂
-            (⊩Level-zeroᵘ ⊢Δ , PE.subst (_<ᵘ 1ᵘ) (PE.sym (reflect-level-zero ⊢Δ)) 0ᵘ<ᵘ1ᵘ , refl-⊩≡ (⊩Empty ⊢Δ) , ≅ₜ-Emptyrefl ⊢Δ)
+            (⊩Level-zeroᵘ ⊢Δ , <ᵘ-ω , refl-⊩≡ (⊩Empty ⊢Δ) , ≅ₜ-Emptyrefl ⊢Δ)
       )

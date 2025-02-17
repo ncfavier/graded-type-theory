@@ -249,17 +249,16 @@ opaque
       ( wf-⊩ᵛ (wf-⊩ᵛ∷ ⊩t)
       , λ {_} {Δ} {σ₁} {σ₂} →
           λ σ₁≡σ₂ →
-            let (⊩t[σ₁] , ⊩t[σ₂] , ⊩t≡) = ⊩≡∷Level⇔ .proj₁ (⊩ᵛ∷⇔ .proj₁ ⊩t .proj₂ σ₁≡σ₂ .proj₂)
+            let (⊩t[σ₁] , ⊩t[σ₂] , ⊩t≡) = ⊩≡∷Level⇔ .proj₁ (⊩ᵛ∷⇔ .proj₁ ⊩t .proj₂ σ₁≡σ₂)
                 ⊢Δ = escape-⊩ˢ≡∷ σ₁≡σ₂ .proj₁
             in
-              ω+0 , (
               ⊩U≡⇔ .proj₂ $
                 ⊩t[σ₁]
               , <ᵘ-ω
               , t [ σ₂ ]
               , id (Uⱼ (escapeLevel ⊩t[σ₂]))
               , ⊩t≡
-              , ⊩U⇔ .proj₂ (⊩t[σ₂] , <ᵘ-ω))
+              , ⊩U⇔ .proj₂ (⊩t[σ₂] , <ᵘ-ω)
       )
 
 opaque
@@ -271,12 +270,11 @@ opaque
     ⊩ᵛ∷⇔ .proj₂
       ( ⊩ᵛU (sucᵘᵛ ⊩t)
       , λ {_} {Δ} {σ₁} {σ₂} σ₁≡σ₂ →
-          let ⊩t[σ₁]≡t[σ₂] = ⊩ᵛ∷⇔ .proj₁ ⊩t .proj₂ σ₁≡σ₂ .proj₂
+          let ⊩t[σ₁]≡t[σ₂] = ⊩ᵛ∷⇔ .proj₁ ⊩t .proj₂ σ₁≡σ₂
               (⊩t[σ₁] , ⊩t[σ₂] , ⊩t≡) = ⊩≡∷Level⇔ .proj₁ ⊩t[σ₁]≡t[σ₂]
               ⊩1+t[σ₁] : Δ ⊩Level sucᵘ (t [ σ₁ ]) ∷Level
               ⊩1+t[σ₁] = ⊩Level-sucᵘ ⊩t[σ₁]
           in
-            ω+0 , (
             Type→⊩≡∷U⇔ Uₙ Uₙ .proj₂ $
               ⊩1+t[σ₁]
             , <ᵘ-ω
@@ -288,7 +286,7 @@ opaque
               , ⊩t≡
               , ⊩U⇔ .proj₂ (⊩t[σ₂] , PE.subst (_<ᵘ reflect-level (⊩Level-sucᵘ ⊩t[σ₁])) (reflect-level-cong′ ⊩t[σ₁] ⊩t[σ₂] ⊩t≡) (reflect-level-suc ⊩t[σ₁]))
               )
-            , ≅ₜ-U-cong (escapeLevelEq ⊩t≡))
+            , ≅ₜ-U-cong (escapeLevelEq ⊩t≡)
       )
 
 opaque
@@ -304,8 +302,8 @@ opaque
     ⊩ᵛ⇔ .proj₂
       ( wf-⊩ᵛ ⊩U
       , λ σ₁≡σ₂ →
-        let ([t] , t<l , A≡A , _) = ⊩≡∷U⇔ .proj₁ (A≡A∷U σ₁≡σ₂ .proj₂) in
-        _ , emb-⊩≡ (<ᵘ→≤ᵘ t<l) A≡A
+        let ([t] , t<l , A≡A , _) = ⊩≡∷U⇔ .proj₁ (A≡A∷U σ₁≡σ₂) in
+        emb-⊩≡ (<ᵘ→≤ᵘ t<l) A≡A
       )
 
 opaque
@@ -321,6 +319,6 @@ opaque
     ⊩ᵛ≡⇔ .proj₂
       ( wf-⊩ᵛ ⊩U
       , λ σ₁≡σ₂ →
-        let ([t] , t<l , A≡B , _) = ⊩≡∷U⇔ .proj₁ (A≡B∷U σ₁≡σ₂ .proj₂) in
-        _ , emb-⊩≡ (<ᵘ→≤ᵘ t<l) A≡B
+        let ([t] , t<l , A≡B , _) = ⊩≡∷U⇔ .proj₁ (A≡B∷U σ₁≡σ₂) in
+        emb-⊩≡ (<ᵘ→≤ᵘ t<l) A≡B
       )

@@ -416,11 +416,10 @@ opaque
     Γ ⊩ᵛ A →
     Γ ∙ A ⊩ᵛ B →
     Δ ⊩ˢ σ ∷ Γ →
-    ∃ λ l → Δ ⊩⟨ l ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B) [ σ ]
+    Δ ⊩ (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B) [ σ ]
   ⊩ΠΣ {Γ} {A} {B} {Δ} ok ⊩A ⊩B ⊩σ =
-    let (l , ⊩A[σ]) = ⊩ᵛ→⊩ˢ∷→⊩[] ⊩A ⊩σ in
-      ω+0
-    , ⊩ΠΣ⇔ .proj₂
+    let ⊩A[σ] = ⊩ᵛ→⊩ˢ∷→⊩[] ⊩A ⊩σ in
+    ⊩ΠΣ⇔ .proj₂
       ( ok
       , escape-⊩ˢ∷ ⊩σ .proj₁
       , λ ρ⊇ →
@@ -432,10 +431,9 @@ opaque
           emb-⊩≡ ≤ᵘ-ω $
           ⊩ᵛ⇔ .proj₁ ⊩B .proj₂
             (⊩ˢ≡∷∙⇔ .proj₂
-              ( ( _ , ⊩A
+              ( ( ⊩A
                 , PE.subst (_ ⊩⟨ _ ⟩ _ ≡ _ ∷_) (wk-subst A) t≡u)
               , refl-⊩ˢ≡∷ (⊩ˢ∷-•ₛ ρ⊇ ⊩σ)))
-            .proj₂
       )
 
 opaque
@@ -449,7 +447,7 @@ opaque
     Γ ⊩ᵛ A₁ ≡ A₂ →
     Γ ∙ A₁ ⊩ᵛ B₁ ≡ B₂ →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    ∃ λ l → Δ ⊩⟨ l ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
+    Δ ⊩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
       (ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂) [ σ₂ ]
   ⊩ΠΣ≡ΠΣ {A₁} {A₂} {B₁} {B₂} ok A₁≡A₂ B₁≡B₂ σ₁≡σ₂ =
     case wf-⊩ᵛ≡ A₁≡A₂ of λ
@@ -460,36 +458,27 @@ opaque
       ⊩B₂ →
     case wf-⊩ˢ≡∷ σ₁≡σ₂ of λ
       (⊩σ₁ , ⊩σ₂) →
-    -- ⊩ΠΣ≡ΠΣ⇔ .proj₂
-    --   ( ⊩ΠΣ ok ⊩A₁ ⊩B₁ ⊩σ₁ .proj₂
-    --   -- , ⊩ΠΣ ok ⊩A₂ ⊩B₂ ⊩σ₂
-    --   , ?
-    --   , PE.refl , PE.refl , PE.refl
-    --   , λ ρ⊇ →
-    --         ?
-    --         -- PE.subst₂ (_⊩⟨_⟩_≡_ _ _) (PE.sym $ wk-subst A₁)
-    --         --   (PE.sym $ wk-subst A₂)
-    --         --   (proj₂ $ ⊩ᵛ≡⇔ .proj₁ A₁≡A₂ .proj₂ $
-    --         --    ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂)
-    --       , λ ⊩t →
-    --           -- PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
-    --           --   (PE.sym $ singleSubstWkComp _ _ B₁)
-    --           --   (PE.sym $ singleSubstWkComp _ _ B₂) $
-    --           -- ⊩ᵛ≡⇔ .proj₁ B₁≡B₂ .proj₂ $
-    --           -- ⊩ˢ≡∷∙⇔ .proj₂
-    --           --   ( ( _ , ⊩A₁
-    --           --     , refl-⊩≡∷
-    --           --         (PE.subst (_⊩⟨_⟩_∷_ _ _ _) (wk-subst A₁) ⊩t)
-    --           --     )
-    --           --   , ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂
-    --           --   )
-    --           ?
-    --   )
-    _ , ⊩ΠΣ≡ΠΣ⇔ .proj₂
-      ( ⊩ΠΣ ok ⊩A₁ ⊩B₁ ⊩σ₁ .proj₂
-      , ⊩ΠΣ ok ⊩A₂ ⊩B₂ ⊩σ₂ .proj₂
+    ⊩ΠΣ≡ΠΣ⇔ .proj₂
+      ( ⊩ΠΣ ok ⊩A₁ ⊩B₁ ⊩σ₁
+      , ⊩ΠΣ ok ⊩A₂ ⊩B₂ ⊩σ₂
       , PE.refl , PE.refl , PE.refl
-      , {!   !}
+      , λ ρ⊇ →
+            PE.subst₂ (_⊩⟨_⟩_≡_ _ _) (PE.sym $ wk-subst A₁)
+              (PE.sym $ wk-subst A₂)
+              (⊩ᵛ≡→⊩ˢ≡∷→⊩[]≡[] A₁≡A₂ $
+               ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂)
+          , λ ⊩t →
+              PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
+                (PE.sym $ singleSubstWkComp _ _ B₁)
+                (PE.sym $ singleSubstWkComp _ _ B₂) $
+              ⊩ᵛ≡→⊩ˢ≡∷→⊩[]≡[] B₁≡B₂ $
+              ⊩ˢ≡∷∙⇔ .proj₂
+                ( ( ⊩A₁
+                  , refl-⊩≡∷
+                      (PE.subst (_⊩⟨_⟩_∷_ _ _ _) (wk-subst A₁) ⊩t)
+                  )
+                , ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂
+                )
       )
 opaque
 
@@ -532,25 +521,25 @@ opaque
            (⊩Γ , ΠΣAB≡ΠΣAB) →
          case ⊩ᵛ⇔ .proj₂
                 ( ⊩Γ
-                , {!proj₁ ∘→ proj₂ ∘→ proj₂ ∘→ proj₂ ∘→ proj₂ ∘→
-                  ⊩ΠΣ≡ΠΣ→ ∘→ ΠΣAB≡ΠΣAB!}
+                , proj₁ ∘→ proj₂ ∘→ proj₂ ∘→ proj₂ ∘→ proj₂ ∘→
+                  ⊩ΠΣ≡ΠΣ→ ∘→ ΠΣAB≡ΠΣAB
                 ) of λ
            ⊩A →
            ⊩ΠΣ⇔ .proj₁
-             (wf-⊩≡ (ΠΣAB≡ΠΣAB (refl-⊩ˢ≡∷ $ ⊩ˢ∷-idSubst ⊩Γ) .proj₂) .proj₁)
+             (wf-⊩≡ (ΠΣAB≡ΠΣAB (refl-⊩ˢ≡∷ $ ⊩ˢ∷-idSubst ⊩Γ)) .proj₁)
              .proj₁
          , ⊩A
          , ⊩ᵛ⇔ .proj₂
              ( ⊩ᵛ-∙-intro ⊩A
-             , λ {_ _} {σ₁ = σ₁} {σ₂ = σ₂} σ₁≡σ₂ → ω+0 , (
+             , λ {_ _} {σ₁ = σ₁} {σ₂ = σ₂} σ₁≡σ₂ →
                  case ⊩ˢ≡∷∙⇔ .proj₁ σ₁≡σ₂ of λ
-                   ((_ , _ , head-σ₁≡head-σ₂) , tail-σ₁≡tail-σ₂) →
+                   ((_ , head-σ₁≡head-σ₂) , tail-σ₁≡tail-σ₂) →
                  B [ σ₁ ]                             ≡˘⟨ substVar-to-subst consSubst-η B ⟩⊩≡
                  B [ consSubst (tail σ₁) (head σ₁) ]  ≡˘⟨ singleSubstComp _ _ B ⟩⊩≡
-                 B [ tail σ₁ ⇑ ] [ head σ₁ ]₀         ≡⟨ {!⊩ΠΣ≡ΠΣ→⊩≡∷→⊩[]₀≡[]₀ (ΠΣAB≡ΠΣAB tail-σ₁≡tail-σ₂ .proj₂) head-σ₁≡head-σ₂ !} ⟩⊩∎≡
+                 B [ tail σ₁ ⇑ ] [ head σ₁ ]₀         ≡⟨ ⊩ΠΣ≡ΠΣ→⊩≡∷→⊩[]₀≡[]₀ (ΠΣAB≡ΠΣAB tail-σ₁≡tail-σ₂) head-σ₁≡head-σ₂ ⟩⊩∎≡
                  B [ tail σ₂ ⇑ ] [ head σ₂ ]₀         ≡⟨ singleSubstComp _ _ B ⟩
                  B [ consSubst (tail σ₂) (head σ₂) ]  ≡⟨ substVar-to-subst consSubst-η B ⟩
-                 B [ σ₂ ]                             ∎)
+                 B [ σ₂ ]                             ∎
              ))
     , (λ (ok , ⊩A , ⊩B) → ΠΣᵛ ok ⊩A ⊩B)
     where
@@ -569,17 +558,16 @@ opaque
     Γ ⊩ᵛ A₁ ≡ A₂ ∷ U t →
     Γ ∙ A₁ ⊩ᵛ B₁ ≡ B₂ ∷ U (wk1 u) →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    ∃ λ l →
-    Δ ⊩⟨ l ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
+    Δ ⊩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
       (ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂) [ σ₂ ] ∷ U ((t [ σ₁ ]) maxᵘ (u [ σ₁ ]))
   ⊩ΠΣ≡ΠΣ∷U {t} {u} {Δ} {σ₁} {σ₂} ok A₁≡A₂∷U B₁≡B₂∷U σ₁≡σ₂ =
     case ⊩ᵛ≡∷U→⊩ᵛ≡ A₁≡A₂∷U of λ
       A₁≡A₂ →
     case ⊩ᵛ≡∷U→⊩ᵛ≡ B₁≡B₂∷U of λ
       B₁≡B₂ →
-    case ⊩ᵛ≡∷⇔ .proj₁ A₁≡A₂∷U .proj₂ σ₁≡σ₂ .proj₂ of λ
+    case ⊩ᵛ≡∷⇔ .proj₁ A₁≡A₂∷U .proj₂ σ₁≡σ₂ of λ
       A₁[σ₁]≡A₂[σ₂]∷U →
-    case ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[⇑]≡[⇑]∷ B₁≡B₂∷U σ₁≡σ₂ .proj₂ of λ
+    case ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[⇑]≡[⇑]∷ B₁≡B₂∷U σ₁≡σ₂ of λ
       B₁[σ₁⇑]≡B₂[σ₂⇑]∷U →
     case wf-⊩≡∷ A₁[σ₁]≡A₂[σ₂]∷U of λ
       (⊩A₁[σ₁] , ⊩A₂[σ₂]) →
@@ -595,7 +583,6 @@ opaque
     let ⊩t⊔u : Δ ⊩Level (t [ σ₁ ]) maxᵘ (u [ σ₁ ]) ∷Level
         ⊩t⊔u = {!   !}
     in
-    ω+0 ,
     Type→⊩≡∷U⇔ ΠΣₙ ΠΣₙ .proj₂
       ( ⊩t⊔u
       , <ᵘ-ω

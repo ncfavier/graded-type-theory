@@ -264,14 +264,14 @@ opaque
 
   Levelᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ Level
   Levelᵛ {Γ} ⊩Γ =
-    ⊩ᵛ-const-intro
+    ⊩ᵛ⇔ .proj₂
       ( ⊩Γ
       , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
           Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ  →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
           ⊢ Δ               →⟨ Levelⱼ ⟩
           (Δ ⊢ Level)           →⟨ id ⟩
           Δ ⊢ Level ⇒* Level        ⇔˘⟨ ⊩Level≡⇔ ⟩→
-          Δ ⊩⟨ 0ᵘ ⟩ Level ≡ Level    □
+          Δ ⊩ Level ≡ Level    □
       )
 
 
@@ -291,12 +291,12 @@ opaque
 
   zeroᵘᵛ : ⊩ᵛ Γ → Γ ⊩ᵛ zeroᵘ ∷ Level
   zeroᵘᵛ {Γ} ⊩Γ =
-    ⊩ᵛ∷-const-intro
+    ⊩ᵛ∷⇔ .proj₂
       ( Levelᵛ ⊩Γ
       , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
           Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ          →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
           ⊢ Δ                       ⇔˘⟨ ⊩zeroᵘ≡zeroᵘ∷Level⇔ ⟩→
-          Δ ⊩⟨ 0ᵘ ⟩ zeroᵘ ≡ zeroᵘ ∷ Level  □
+          Δ ⊩ zeroᵘ ≡ zeroᵘ ∷ Level  □
       )
 
 opaque
@@ -312,7 +312,7 @@ opaque
   sucᵘ-congᵛ : Γ ⊩ᵛ t ≡ u ∷ Level → Γ ⊩ᵛ sucᵘ t ≡ sucᵘ u ∷ Level
   sucᵘ-congᵛ t≡u = ⊩ᵛ≡∷⇔ .proj₂
     ( Levelᵛ (wf-⊩ᵛ $ wf-⊩ᵛ∷ $ wf-⊩ᵛ≡∷ t≡u .proj₁)
-    , Σ.map idᶠ (⊩sucᵘ≡sucᵘ∷Level⇔ .proj₂) ∘→ ⊩ᵛ≡∷⇔ .proj₁ t≡u .proj₂)
+    , ⊩sucᵘ≡sucᵘ∷Level⇔ .proj₂ ∘→ ⊩ᵛ≡∷⇔ .proj₁ t≡u .proj₂)
 
 opaque
 

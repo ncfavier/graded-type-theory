@@ -46,6 +46,11 @@ private variable
   l l′              : Universe-level
   k                 : LogRelKit
 
+infix 4 _⊩_
+
+_⊩_ : Con Term n → Term n → Set a
+Γ ⊩ A = Γ ⊩⟨ ω+0 ⟩ A
+
 ------------------------------------------------------------------------
 -- The type formers
 
@@ -59,6 +64,11 @@ opaque
   Γ ⊩⟨ l ⟩ t ∷ A =
     ∃ λ (⊩A : Γ ⊩⟨ l ⟩ A) → Γ ⊩⟨ l ⟩ t ∷ A / ⊩A
 
+infix 4 _⊩_∷_
+
+_⊩_∷_ : Con Term n → Term n → Term n → Set a
+Γ ⊩ t ∷ A = Γ ⊩⟨ ω+0 ⟩ t ∷ A
+
 opaque
 
   -- Reducible type equality.
@@ -68,6 +78,11 @@ opaque
   _⊩⟨_⟩_≡_ : Con Term n → Universe-level → Term n → Term n → Set a
   Γ ⊩⟨ l ⟩ A ≡ B =
     ∃ λ (⊩A : Γ ⊩⟨ l ⟩ A) → (Γ ⊩⟨ l ⟩ B) × Γ ⊩⟨ l ⟩ A ≡ B / ⊩A
+
+infix 4 _⊩_≡_
+
+_⊩_≡_ : Con Term n → Term n → Term n → Set a
+Γ ⊩ A ≡ B = Γ ⊩⟨ ω+0 ⟩ A ≡ B
 
 opaque
 
@@ -82,6 +97,11 @@ opaque
     Γ ⊩⟨ l ⟩ t ∷ A / ⊩A ×
     Γ ⊩⟨ l ⟩ u ∷ A / ⊩A ×
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A / ⊩A
+
+infix 4 _⊩_≡_∷_
+
+_⊩_≡_∷_ : Con Term n → Term n → Term n → Term n → Set a
+Γ ⊩ t ≡ u ∷ A = Γ ⊩⟨ ω+0 ⟩ t ≡ u ∷ A
 
 ------------------------------------------------------------------------
 -- Conversions to the underlying type formers
