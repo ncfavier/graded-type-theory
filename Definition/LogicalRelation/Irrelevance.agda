@@ -39,6 +39,65 @@ private
     A A′ B B′ C C′ : Term _
     l l′ : Universe-level
 
+mutual
+  open import Definition.LogicalRelation.Properties.Whnf R
+
+  reflect-level-cong′
+    : ∀ {t u} ([t] : Γ ⊩Level t ∷Level) ([u] : Γ ⊩Level u ∷Level)
+    → Γ ⊩Level t ≡ u ∷Level → reflect-level [t] PE.≡ reflect-level [u]
+  reflect-level-cong′ (Levelₜ m d m≡m prop) (Levelₜ m′ d′ m′≡m′ prop′) (Levelₜ₌ m₌ m′₌ d₌ d′₌ m≡m′ prop₌) =
+    reflect-level-prop-cong′ prop prop′ (PE.subst₂ ([Level]-prop _) (whrDet*Term (d₌ , lsplit prop₌ .proj₁) (d , level prop)) (whrDet*Term (d′₌ , lsplit prop₌ .proj₂) (d′ , level prop′)) prop₌)
+
+  reflect-level-prop-cong′
+    : ∀ {t u} ([t] : Level-prop Γ t) ([u] : Level-prop Γ u)
+    → [Level]-prop Γ t u → reflect-level-prop [t] PE.≡ reflect-level-prop [u]
+  reflect-level-prop-cong′ zeroᵘᵣ zeroᵘᵣ zeroᵘᵣ = PE.refl
+  reflect-level-prop-cong′ (sucᵘᵣ a) (sucᵘᵣ b) (sucᵘᵣ x) = PE.cong 1+ᵘ (reflect-level-cong′ a b x)
+  reflect-level-prop-cong′ (ne a) (ne b) (ne x) = PE.refl
+  reflect-level-prop-cong′ zeroᵘᵣ (ne (neNfₜ _ () _)) zeroᵘᵣ
+  reflect-level-prop-cong′ (ne (neNfₜ _ () _)) _ zeroᵘᵣ
+  reflect-level-prop-cong′ (sucᵘᵣ _) (ne (neNfₜ _ () _)) (sucᵘᵣ _)
+  reflect-level-prop-cong′ (ne (neNfₜ _ () _)) _ (sucᵘᵣ _)
+  reflect-level-prop-cong′ zeroᵘᵣ _ (ne (neNfₜ₌ _ () _ _))
+  reflect-level-prop-cong′ (sucᵘᵣ _) _ (ne (neNfₜ₌ _ () _ _))
+  reflect-level-prop-cong′ (ne _) zeroᵘᵣ (ne (neNfₜ₌ _ _ () _))
+  reflect-level-prop-cong′ (ne _) (sucᵘᵣ _) (ne (neNfₜ₌ _ _ () _))
+
+  reflect-level-cong
+    : ∀ {t u} ([t] : Γ ⊩Level t ∷Level) ([u] : Γ ⊩Level u ∷Level)
+    → t PE.≡ u → reflect-level [t] PE.≡ reflect-level [u]
+  reflect-level-cong (Levelₜ m d m≡m prop) (Levelₜ m′ d′ m′≡m′ prop′) PE.refl =
+    reflect-level-prop-cong prop prop′ (whrDet*Term (d , level prop) (d′ , level prop′))
+
+  reflect-level-prop-cong
+    : ∀ {t u} ([t] : Level-prop Γ t) ([u] : Level-prop Γ u)
+    → t PE.≡ u → reflect-level-prop [t] PE.≡ reflect-level-prop [u]
+  reflect-level-prop-cong zeroᵘᵣ zeroᵘᵣ PE.refl = PE.refl
+  reflect-level-prop-cong (sucᵘᵣ [t]) (sucᵘᵣ [u]) PE.refl = PE.cong 1+ᵘ (reflect-level-cong [t] [u] PE.refl)
+  reflect-level-prop-cong (ne _) (ne _) PE.refl = PE.refl
+  reflect-level-prop-cong (ne (neNfₜ _ () _)) (sucᵘᵣ [u]) PE.refl
+  reflect-level-prop-cong (ne (neNfₜ _ () _)) zeroᵘᵣ PE.refl
+  reflect-level-prop-cong (sucᵘᵣ [u]) (ne (neNfₜ _ () _)) PE.refl
+  reflect-level-prop-cong zeroᵘᵣ (ne (neNfₜ _ () _)) PE.refl
+  reflect-level-prop-cong zeroᵘᵣ (sucᵘᵣ _) ()
+  reflect-level-prop-cong (sucᵘᵣ _) zeroᵘᵣ ()
+
+  -- level-reflection-unique
+  --   : ∀ {l l′ k k′} {[k] : Γ ⊩Level k ∷Level} {[k′] : Γ ⊩Level k′ ∷Level}
+  --   → k PE.≡ k′ → Γ ⊩ [k] ≡ᵘ l → Γ ⊩ [k′] ≡ᵘ l′
+  --   → l PE.≡ l′
+  -- level-reflection-unique {[k] = Levelₜ m [ _ , _ , d ] m≡m prop} {[k′] = Levelₜ m′ [ _ , _ , d′ ] m′≡m′ prop′} PE.refl =
+  --   level-reflection-unique′ (whrDet*Term (d , level prop) (d′ , level prop′))
+
+  -- level-reflection-unique′
+  --   : ∀ {l l′ k k′} {[k] : Level-prop Γ k} {[k′] : Level-prop Γ k′}
+  --   → k PE.≡ k′ → Γ ⊩ [k] ≡ᵘ′ l → Γ ⊩ [k′] ≡ᵘ′ l′
+  --   → l PE.≡ l′
+  -- level-reflection-unique′ PE.refl (≡ᵘ-ne [l′]) (≡ᵘ-ne [l′]₁) = PE.refl
+  -- level-reflection-unique′ PE.refl ≡ᵘ-zeroᵘ ≡ᵘ-zeroᵘ = PE.refl
+  -- level-reflection-unique′ {[k] = sucᵘᵣ pk} {[k′] = sucᵘᵣ pk′} PE.refl (≡ᵘ-sucᵘ x) (≡ᵘ-sucᵘ y) =
+  --   PE.cong 1+ (level-reflection-unique {[k] = pk} {[k′] = pk′} PE.refl x y)
+
 -- Irrelevance for propositionally equal types
 irrelevance′ : ∀ {A A′ l}
              → A PE.≡ A′
@@ -89,6 +148,8 @@ mutual
   irrelevanceEqT : ∀ {A B l l′} {p : Γ ⊩⟨ l ⟩ A} {q : Γ ⊩⟨ l′ ⟩ A}
                        → ShapeView Γ l l′ A A p q
                        → Γ ⊩⟨ l ⟩ A ≡ B / p → Γ ⊩⟨ l′ ⟩ A ≡ B / q
+  irrelevanceEqT = {!   !}
+  {-
   irrelevanceEqT (ℕᵥ D D′) A≡B = A≡B
   irrelevanceEqT (Emptyᵥ D D′) A≡B = A≡B
   irrelevanceEqT (Unitᵥ (Unitₜ A⇒*Unit₁ _) (Unitₜ A⇒*Unit₂ _)) A≡B =
@@ -143,6 +204,7 @@ mutual
   irrelevanceEqT (embᵥ₁ (≤ᵘ-step p) A≡A) = irrelevanceEqT (embᵥ₁ p A≡A)
   irrelevanceEqT (embᵥ₂ ≤ᵘ-refl     A≡A) = irrelevanceEqT          A≡A
   irrelevanceEqT (embᵥ₂ (≤ᵘ-step p) A≡A) = irrelevanceEqT (embᵥ₂ p A≡A)
+  -}
 
 --------------------------------------------------------------------------------
 
@@ -179,6 +241,8 @@ mutual
   irrelevanceTermT : ∀ {A t l l′} {p : Γ ⊩⟨ l ⟩ A} {q : Γ ⊩⟨ l′ ⟩ A}
                          → ShapeView Γ l l′ A A p q
                          → Γ ⊩⟨ l ⟩ t ∷ A / p → Γ ⊩⟨ l′ ⟩ t ∷ A / q
+  irrelevanceTermT = {!   !}
+  {-
   irrelevanceTermT (ℕᵥ D D′) t = t
   irrelevanceTermT (Emptyᵥ D D′) t = t
   irrelevanceTermT (Unitᵥ (Unitₜ A⇒*Unit₁ _) (Unitₜ A⇒*Unit₂ _)) ⊩t =
@@ -274,6 +338,7 @@ mutual
   irrelevanceTermT (embᵥ₁ (≤ᵘ-step p) A≡A) = irrelevanceTermT (embᵥ₁ p A≡A)
   irrelevanceTermT (embᵥ₂ ≤ᵘ-refl     A≡A) = irrelevanceTermT          A≡A
   irrelevanceTermT (embᵥ₂ (≤ᵘ-step p) A≡A) = irrelevanceTermT (embᵥ₂ p A≡A)
+  -}
 
 --------------------------------------------------------------------------------
 
@@ -299,6 +364,8 @@ mutual
   irrelevanceEqTermT : ∀ {A t u} {l l′} {p : Γ ⊩⟨ l ⟩ A} {q : Γ ⊩⟨ l′ ⟩ A}
                            → ShapeView Γ l l′ A A p q
                            → Γ ⊩⟨ l ⟩ t ≡ u ∷ A / p → Γ ⊩⟨ l′ ⟩ t ≡ u ∷ A / q
+  irrelevanceEqTermT = {!   !}
+  {-
   irrelevanceEqTermT (ℕᵥ D D′) t≡u = t≡u
   irrelevanceEqTermT (Emptyᵥ D D′) t≡u = t≡u
   irrelevanceEqTermT (Unitᵥ (Unitₜ A⇒*Unit₁ _) (Unitₜ A⇒*Unit₂ _)) t≡u =
@@ -422,3 +489,4 @@ mutual
   irrelevanceEqTermT (embᵥ₁ (≤ᵘ-step p) A≡A) = irrelevanceEqTermT (embᵥ₁ p A≡A)
   irrelevanceEqTermT (embᵥ₂ ≤ᵘ-refl     A≡A) = irrelevanceEqTermT          A≡A
   irrelevanceEqTermT (embᵥ₂ (≤ᵘ-step p) A≡A) = irrelevanceEqTermT (embᵥ₂ p A≡A)
+  -}
