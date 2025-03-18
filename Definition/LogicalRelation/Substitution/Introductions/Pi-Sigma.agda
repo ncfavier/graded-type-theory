@@ -16,13 +16,14 @@ module Definition.LogicalRelation.Substitution.Introductions.Pi-Sigma
 open EqRelSet eqrel
 open Type-restrictions R
 
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Hidden R
-import Definition.LogicalRelation.Hidden.Restricted R as R
-open import Definition.LogicalRelation.Irrelevance R
+open import Definition.LogicalRelation R {{eqrel}}
+open import Definition.LogicalRelation.Hidden R {{eqrel}}
+import Definition.LogicalRelation.Hidden.Restricted R {{eqrel}} as R
+open import Definition.LogicalRelation.Irrelevance R {{eqrel}}
 open import Definition.LogicalRelation.Properties R
 open import Definition.LogicalRelation.ShapeView R
-open import Definition.LogicalRelation.Substitution R
+open import Definition.LogicalRelation.Substitution R {{eqrel}}
+open import Definition.LogicalRelation.Substitution.Introductions.Level R {{eqrel}}
 open import
   Definition.LogicalRelation.Substitution.Introductions.Universe R
 open import Definition.LogicalRelation.Substitution.Introductions.Var R
@@ -49,7 +50,7 @@ import Tools.Reasoning.PropositionalEquality
 private variable
   n                         : Nat
   Γ Δ                       : Con Term _
-  A A₁ A₂ B B₁ B₂ C t t₁ t₂ : Term _
+  A A₁ A₂ B B₁ B₂ C t t₁ t₂ u : Term _
   σ σ₁ σ₂                   : Subst _ _
   p p₁ p₂ q q₁ q₂           : M
   l l′ l₁ l₁′ l₂ l₂′        : Universe-level
@@ -240,8 +241,8 @@ opaque
         Δ ⊩⟨ l ⟩ t ∷ wk ρ A₁ →
         Δ ⊩⟨ l ⟩ wk (lift ρ) B₁ [ t ]₀ ≡ wk (lift ρ) B₂ [ t ]₀)) →
       Γ ⊩⟨ l′ ⟩ ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁ ≡ C / B-intr _ ⊩ΠΣ
-    lemma₂ (emb ≤ᵘ-refl     ⊩ΠΣ₁) = lemma₂ ⊩ΠΣ₁
-    lemma₂ (emb (≤ᵘ-step p) ⊩ΠΣ₁) = lemma₂ (emb p ⊩ΠΣ₁)
+    lemma₂ (emb p     ⊩ΠΣ₁) = {!   !}
+    -- lemma₂ (emb (≤ᵘ-step p) ⊩ΠΣ₁) = lemma₂ (emb p ⊩ΠΣ₁)
     lemma₂
       (noemb ⊩ΠΣ₁@(Bᵣ _ _ ⇒*ΠΣ₁ _ ⊩wk-A₁ ⊩wk-B₁ _ ok))
       C⇒* ΠΣ≅ΠΣ rest =
@@ -430,6 +431,7 @@ opaque
       )
 
 opaque
+  unfolding ⊩ΠΣ
 
   -- Reducibility of equality between Π and Π or Σ and Σ, seen as type
   -- formers.
@@ -488,7 +490,6 @@ opaque
                 , ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂
                 )
       )
-
 opaque
 
   -- Validity of equality preservation for Π and Σ, seen as type
@@ -571,19 +572,45 @@ opaque
 
 opaque
 
+  ⊩ΠΣ∷U :
+    Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ A ▹ B ∷ U (t maxᵘ u) →
+    Γ ⊩ᵛ⟨ l₁′ ⟩ A ∷ U t →
+    Γ ∙ A ⊩ᵛ⟨ l₂′ ⟩ B ∷ U (wk1 u) →
+    ⦃ inc : Neutrals-included or-empty Δ ⦄ →
+    Δ ⊩ˢ σ ∷ Γ →
+    Δ ⊩⟨ ω+0 ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B) [ σ ] ∷ U ((t [ σ ]) maxᵘ (u [ σ ]))
+  ⊩ΠΣ∷U {t} {u} {Δ} {σ} ΠΣ A∷U B∷U [σ] =
+    case ⊩ᵛ∷U→⊩ᵛ A∷U of λ
+      A →
+    case ⊩ᵛ∷U→⊩ᵛ B∷U of λ
+      B →
+    case ⊩ᵛ∷⇔ .proj₁ A∷U .proj₂ (refl-⊩ˢ≡∷ [σ]) of λ
+      A[σ]∷U →
+    -- case ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[⇑]≡[⇑]∷ B₁≡B₂∷U σ₁≡σ₂ of λ
+    --   B₁[σ₁⇑]≡B₂[σ₂⇑]∷U →
+    let ⊩t⊔u : Δ ⊩Level (t [ σ₁ ]) maxᵘ (u [ σ₁ ]) ∷Level
+        ⊩t⊔u = {! ✓  !}
+    in
+    Type→⊩∷U⇔ ΠΣₙ .proj₂
+      (⊩t⊔u , <ᵘ-ω
+      , ⊩ΠΣ⇔ .proj₂ ({!   !} , λ [ρ] → {!   !})
+      , {!   !})
+
+opaque
+
   -- Reducibility of equality between Π and Π or Σ and Σ, seen as term
   -- formers.
 
   ⊩ΠΣ≡ΠΣ∷U :
     Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁ ≡ ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂ ∷
-      U (l₁ ⊔ᵘ l₂) →
-    Γ ⊩ᵛ⟨ l₁′ ⟩ A₁ ≡ A₂ ∷ U l₁ →
-    Γ ∙ A₁ ⊩ᵛ⟨ l₂′ ⟩ B₁ ≡ B₂ ∷ U l₂ →
+      U (t maxᵘ u) →
+    Γ ⊩ᵛ⟨ l₁′ ⟩ A₁ ≡ A₂ ∷ U t →
+    Γ ∙ A₁ ⊩ᵛ⟨ l₂′ ⟩ B₁ ≡ B₂ ∷ U (wk1 u) →
     ⦃ inc : Neutrals-included or-empty Δ ⦄ →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    Δ ⊩⟨ 1+ (l₁ ⊔ᵘ l₂) ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
-      (ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂) [ σ₂ ] ∷ U (l₁ ⊔ᵘ l₂)
-  ⊩ΠΣ≡ΠΣ∷U ΠΣ≡ΠΣ A₁≡A₂∷U B₁≡B₂∷U σ₁≡σ₂ =
+    Δ ⊩⟨ ω+0 ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
+      (ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂) [ σ₂ ] ∷ U ((t [ σ₁ ]) maxᵘ (u [ σ₁ ]))
+  ⊩ΠΣ≡ΠΣ∷U {t} {u} {Δ} {σ₁} ΠΣ≡ΠΣ A₁≡A₂∷U B₁≡B₂∷U σ₁≡σ₂ =
     case ⊩ᵛ≡∷U→⊩ᵛ≡ A₁≡A₂∷U of λ
       A₁≡A₂ →
     case ⊩ᵛ≡∷U→⊩ᵛ≡ B₁≡B₂∷U of λ
@@ -592,21 +619,57 @@ opaque
       A₁[σ₁]≡A₂[σ₂]∷U →
     case ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[⇑]≡[⇑]∷ B₁≡B₂∷U σ₁≡σ₂ of λ
       B₁[σ₁⇑]≡B₂[σ₂⇑]∷U →
+    let ⊩t⊔u : Δ ⊩Level (t [ σ₁ ]) maxᵘ (u [ σ₁ ]) ∷Level
+        ⊩t⊔u = {! ✓  !}
+    in
     Type→⊩≡∷U⇔ ΠΣₙ ΠΣₙ .proj₂
-      ( ≤ᵘ-refl
-      , (R.⊩≡→ $
-         ⊩ᵛ≡→⊩ˢ≡∷→⊩[]≡[]
-           (ΠΣ-congᵛ (univ ΠΣ≡ΠΣ) (emb-⊩ᵛ≡ ≤ᵘ⊔ᵘʳ A₁≡A₂)
-              (emb-⊩ᵛ≡ ≤ᵘ⊔ᵘˡ B₁≡B₂))
-           σ₁≡σ₂)
-      , with-inc-⊢≅∷ (subst-⊢≡∷ ΠΣ≡ΠΣ (escape-⊩ˢ≡∷ σ₁≡σ₂ .proj₂))
-          (let _ , _ , ok =
-                 inversion-ΠΣ (wf-⊢≡ (univ ΠΣ≡ΠΣ) .proj₁)
-           in
-           ≅ₜ-ΠΣ-cong (R.escape-⊩≡∷ A₁[σ₁]≡A₂[σ₂]∷U)
-             (R.escape-⊩≡∷ ⦃ inc = included ⦄ B₁[σ₁⇑]≡B₂[σ₂⇑]∷U) ok)
+      ( ⊩t⊔u
+      , <ᵘ-ω
+      -- , (R.⊩≡→ $
+      --    ⊩ᵛ≡→⊩ˢ≡∷→⊩[]≡[]
+      --      (ΠΣ-congᵛ (univ ΠΣ≡ΠΣ) (emb-⊩ᵛ≡ ≤ᵘ⊔ᵘʳ A₁≡A₂)
+      --         (emb-⊩ᵛ≡ ≤ᵘ⊔ᵘˡ B₁≡B₂))
+      --      σ₁≡σ₂)
+      -- , ⊩ΠΣ≡ΠΣ (univ ΠΣ≡ΠΣ) {! A₁≡A₂∷U  !} {!   !} {!   !}
+      , ⊩ΠΣ≡ΠΣ⇔ .proj₂
+        ( ⊩ΠΣ {!   !} {!   !} {!   !} {!   !}
+        , {!   !}
+        , {!   !}
+        , PE.refl
+        , PE.refl
+        , PE.refl
+        , {!   !}
+        )
+      -- , with-inc-⊢≅∷ (subst-⊢≡∷ ΠΣ≡ΠΣ (escape-⊩ˢ≡∷ σ₁≡σ₂ .proj₂))
+      --     (let _ , _ , ok =
+      --            inversion-ΠΣ (wf-⊢≡ (univ ΠΣ≡ΠΣ) .proj₁)
+      --      in
+      --      ≅ₜ-ΠΣ-cong (R.escape-⊩≡∷ A₁[σ₁]≡A₂[σ₂]∷U)
+      --        (R.escape-⊩≡∷ ⦃ inc = included ⦄ B₁[σ₁⇑]≡B₂[σ₂⇑]∷U) ok)
+      , {!   !}
+    -- case wf-⊩≡∷ A₁[σ₁]≡A₂[σ₂]∷U of λ
+    --   (⊩A₁[σ₁] , ⊩A₂[σ₂]) →
+    -- case wf-⊩≡∷ B₁[σ₁⇑]≡B₂[σ₂⇑]∷U of λ
+    --   (⊩B₁[σ₁] , _) →
+    -- case ⊩ᵛ∷→⊩ˢ∷→⊩[⇑]∷ (conv-∙-⊩ᵛ∷ A₁≡A₂ (wf-⊩ᵛ≡∷ B₁≡B₂∷U .proj₂)) $
+    --      wf-⊩ˢ≡∷ σ₁≡σ₂ .proj₂ of λ
+    --   ⊩B₂[σ₂] →
+    -- case escape-⊩∷ ⊩A₁[σ₁] of λ
+    --   ⊢A₁[σ₁] →
+    -- case escape-⊩∷ ⊩B₁[σ₁] of λ
+    --   ⊢B₁[σ₁] →
+    -- let ⊩t⊔u : Δ ⊩Level (t [ σ₁ ]) maxᵘ (u [ σ₁ ]) ∷Level
+    --     ⊩t⊔u = {!   !}
+    -- in
+    -- ω+0 ,
+    -- Type→⊩≡∷U⇔ ΠΣₙ ΠΣₙ .proj₂
+    --   ( ⊩t⊔u
+    --   , <ᵘ-ω
+    --   , {! ΠΣ-congᵛ ok A₁≡A₂ B₁≡B₂  !}
+    --   , ≅ₜ-ΠΣ-cong (escape-⊩≡∷ A₁[σ₁]≡A₂[σ₂]∷U) (escape-⊩≡∷ {! B₁[σ₁⇑]≡B₂[σ₂⇑]∷U  !}) ok
       )
 
+{-
 opaque
 
   -- Validity of equality preservation for Π and Σ, seen as term
@@ -614,12 +677,21 @@ opaque
 
   ΠΣ-congᵗᵛ :
     Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁ ≡ ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂ ∷
-      U (l₁ ⊔ᵘ l₂) →
-    Γ ⊩ᵛ⟨ l₁′ ⟩ A₁ ≡ A₂ ∷ U l₁ →
-    Γ ∙ A₁ ⊩ᵛ⟨ l₂′ ⟩ B₁ ≡ B₂ ∷ U l₂ →
+      U (t ⊔ᵘ u) →
+    Γ ⊩ᵛ⟨ l₁′ ⟩ A₁ ≡ A₂ ∷ U t →
+    Γ ∙ A₁ ⊩ᵛ⟨ l₂′ ⟩ B₁ ≡ B₂ ∷ U (wk1 u) →
     Γ ⊩ᵛ⟨ 1+ (l₁ ⊔ᵘ l₂) ⟩ ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁ ≡
-      ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂ ∷ U (l₁ ⊔ᵘ l₂)
+      ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂ ∷ U (t maxᵘ u)
   ΠΣ-congᵗᵛ ΠΣ≡ΠΣ A₁≡A₂ B₁≡B₂ =
+    -- case wf-⊩ᵛ≡∷ A₁≡A₂ of λ
+    --   (⊩A₁ , ⊩A₂) →
+    -- case wf-⊩ᵛ≡∷ B₁≡B₂ of λ
+    --   (⊩B₁ , ⊩B₂) →
+    -- case conv-∙-⊩ᵛ∷ (⊩ᵛ≡∷U→⊩ᵛ≡ A₁≡A₂) ⊩B₂ of λ
+    --   ⊩B₂ →
+    -- ⊩ᵛ≡∷⇔ .proj₂
+    --   ({!   !}
+    --   , λ σ₁≡σ₂ → {! ⊩ΠΣ≡ΠΣ∷U ok A₁≡A₂ B₁≡B₂ σ₁≡σ₂ .proj₂  !})
     ⊩ᵛ≡∷⇔ʰ .proj₂
       ( ⊩ᵛU (wf-⊩ᵛ (wf-⊩ᵛ∷ (wf-⊩ᵛ≡∷ A₁≡A₂ .proj₁)))
       , ⊩ΠΣ≡ΠΣ∷U ΠΣ≡ΠΣ A₁≡A₂ B₁≡B₂
@@ -630,12 +702,13 @@ opaque
   -- Validity of Π and Σ, seen as term formers.
 
   ΠΣᵗᵛ :
-    Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ A ▹ B ∷ U (l₁ ⊔ᵘ l₂) →
-    Γ ⊩ᵛ⟨ l₁′ ⟩ A ∷ U l₁ →
-    Γ ∙ A ⊩ᵛ⟨ l₂′ ⟩ B ∷ U l₂ →
-    Γ ⊩ᵛ⟨ 1+ (l₁ ⊔ᵘ l₂) ⟩ ΠΣ⟨ b ⟩ p , q ▷ A ▹ B ∷ U (l₁ ⊔ᵘ l₂)
+    Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ A ▹ B ∷ U (t ⊔ᵘ u) →
+    Γ ⊩ᵛ⟨ l₁′ ⟩ A ∷ U t →
+    Γ ∙ A ⊩ᵛ⟨ l₂′ ⟩ B ∷ U (wk1 u) →
+    Γ ⊩ᵛ⟨ 1+ (l₁ ⊔ᵘ l₂) ⟩ ΠΣ⟨ b ⟩ p , q ▷ A ▹ B ∷ U (t maxᵘ u)
   ΠΣᵗᵛ ⊢ΠΣ ⊩A ⊩B =
     ⊩ᵛ∷⇔ʰ .proj₂
       ( ⊩ᵛU (wf-⊩ᵛ (wf-⊩ᵛ∷ ⊩A))
       , ⊩ΠΣ≡ΠΣ∷U (refl ⊢ΠΣ) (refl-⊩ᵛ≡∷ ⊩A) (refl-⊩ᵛ≡∷ ⊩B)
       )
+-}
