@@ -25,12 +25,11 @@ open import Definition.Untyped.Neutral M type-variant
 
 private variable
   P : Set _
-  A B t u : Term _
+  A B l t u : Term _
   ρ : Wk _ _
   σ : Subst _ _
   b : BinderMode
   s : Strength
-  l : Universe-level
   p q : M
   n : Nat
   x : Fin _
@@ -130,7 +129,7 @@ opaque
     lemma {t} (unitrecₙ no-η n) ≡u =
       case subst-unitrec {t = t} ≡u of λ {
         (inj₁ (_ , refl)) → var _ ;
-        (inj₂ (_ , _ , _ , refl , _ , ≡t′ , _)) →
+        (inj₂ (_ , _ , _ , _ , refl , _ , _ , ≡t′ , _)) →
       unitrecₙ no-η (lemma n ≡t′) }
     lemma {t} (Jₙ n) ≡u =
       case subst-J {w = t} ≡u of λ {
@@ -158,10 +157,26 @@ opaque
   whnf-subst {t} = lemma refl
     where
     lemma : t [ σ ] ≡ u → Whnf u → Whnf t
+    lemma ≡u Levelₙ =
+      case subst-Level {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ refl) → Levelₙ
+    lemma ≡u zeroᵘₙ =
+      case subst-zeroᵘ {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ refl) → zeroᵘₙ
+    lemma ≡u sucᵘₙ =
+      case subst-sucᵘ {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ (_ , refl , _)) → sucᵘₙ
+    lemma ≡u maxᵘₙ =
+      case subst-maxᵘ {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ (_ , _ , refl , _)) → maxᵘₙ
     lemma ≡u Uₙ =
       case subst-U {t = t} ≡u of λ where
         (inj₁ (x , refl)) → ne (var x)
-        (inj₂ refl) → Uₙ
+        (inj₂ (_ , refl , _)) → Uₙ
     lemma ≡u ΠΣₙ =
       case subst-ΠΣ {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
@@ -173,7 +188,7 @@ opaque
     lemma ≡u Unitₙ =
       case subst-Unit {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
-        (inj₂ refl) → Unitₙ
+        (inj₂ (_ , refl , _)) → Unitₙ
     lemma ≡u Emptyₙ =
       case subst-Empty {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
@@ -197,7 +212,7 @@ opaque
     lemma ≡u starₙ =
       case subst-star {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
-        (inj₂ refl) → starₙ
+        (inj₂ (_ , refl , _)) → starₙ
     lemma ≡u prodₙ =
       case subst-prod {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
