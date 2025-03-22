@@ -11,6 +11,14 @@ module Definition.Typed.InverseUniv
   (R : Type-restrictions 𝕄)
   where
 
+-- TODO This is not true any more with universe polymorphism, for two reasons:
+-- 1. Level doesn't live in any universe;
+-- 2. more importantly, if (l : Level) → U l lives in U k then
+-- ∀ l. l < k, hence in particular k < k. In order to allow this, we
+-- would have to restrict to *bounded* universe polymorphism, e.g.
+-- ((l : Level< ω) → U l) : U ω.
+
+{-
 open import Definition.Untyped M
 open import Definition.Typed R
 open import Definition.Typed.Properties.Well-formed R
@@ -63,3 +71,4 @@ opaque
 
   ⊢⇒⇔⊢⇒∷U : Γ ⊢ A ⇒ B ⇔ ∃ λ l → Γ ⊢ A ⇒ B ∷ U l
   ⊢⇒⇔⊢⇒∷U = inverseUnivRed , univ ∘→ proj₂
+-}

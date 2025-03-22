@@ -25,12 +25,11 @@ open import Definition.Untyped.Neutral M type-variant
 
 private variable
   P : Set _
-  A B t u : Term _
+  A B l t u : Term _
   ρ : Wk _ _
   σ : Subst _ _
   b : BinderMode
   s : Strength
-  l : Universe-level
   p q : M
   n : Nat
   x : Fin _
@@ -97,6 +96,19 @@ opaque
       case subst-var {t = t} ≡u of λ {
         (x , refl , ≡t′) →
       var x }
+    lemma {t} (maxᵘˡₙ n) ≡u =
+      case subst-maxᵘ {t = t} ≡u of λ {
+        (inj₁ (_ , refl)) → var _ ;
+        (inj₂ (_ , _ , refl , ≡t′ , _)) →
+      maxᵘˡₙ (lemma n ≡t′) }
+    lemma {t} (maxᵘʳₙ n) ≡u =
+      case subst-maxᵘ {t = t} ≡u of λ {
+        (inj₁ (_ , refl)) → var _ ;
+        (inj₂ (t′ , _ , refl , ≡t′ , ≡u)) →
+      case subst-sucᵘ {t = t′} ≡t′ of λ {
+        (inj₁ (_ , refl)) → maxᵘˡₙ (var _) ;
+        (inj₂ (_ , refl , _)) →
+      maxᵘʳₙ (lemma n ≡u) } }
     lemma {t} (∘ₙ n) ≡u =
       case subst-∘ {t = t} ≡u of λ {
         (inj₁ (_ , refl)) → var _ ;
@@ -130,7 +142,7 @@ opaque
     lemma {t} (unitrecₙ no-η n) ≡u =
       case subst-unitrec {t = t} ≡u of λ {
         (inj₁ (_ , refl)) → var _ ;
-        (inj₂ (_ , _ , _ , refl , _ , ≡t′ , _)) →
+        (inj₂ (_ , _ , _ , _ , refl , _ , _ , ≡t′ , _)) →
       unitrecₙ no-η (lemma n ≡t′) }
     lemma {t} (Jₙ n) ≡u =
       case subst-J {w = t} ≡u of λ {
@@ -158,10 +170,22 @@ opaque
   whnf-subst {t} = lemma refl
     where
     lemma : t [ σ ] ≡ u → Whnf u → Whnf t
+    lemma ≡u Levelₙ =
+      case subst-Level {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ refl) → Levelₙ
+    lemma ≡u zeroᵘₙ =
+      case subst-zeroᵘ {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ refl) → zeroᵘₙ
+    lemma ≡u sucᵘₙ =
+      case subst-sucᵘ {t = t} ≡u of λ where
+        (inj₁ (x , refl)) → ne (var _)
+        (inj₂ (_ , refl , _)) → sucᵘₙ
     lemma ≡u Uₙ =
       case subst-U {t = t} ≡u of λ where
         (inj₁ (x , refl)) → ne (var x)
-        (inj₂ refl) → Uₙ
+        (inj₂ (_ , refl , _)) → Uₙ
     lemma ≡u ΠΣₙ =
       case subst-ΠΣ {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
@@ -173,7 +197,7 @@ opaque
     lemma ≡u Unitₙ =
       case subst-Unit {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
-        (inj₂ refl) → Unitₙ
+        (inj₂ (_ , refl , _)) → Unitₙ
     lemma ≡u Emptyₙ =
       case subst-Empty {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
@@ -197,7 +221,7 @@ opaque
     lemma ≡u starₙ =
       case subst-star {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
-        (inj₂ refl) → starₙ
+        (inj₂ (_ , refl , _)) → starₙ
     lemma ≡u prodₙ =
       case subst-prod {t = t} ≡u of λ where
         (inj₁ (_ , refl)) → ne (var _)
@@ -215,6 +239,8 @@ opaque
 
   NeutralAt→Neutral : NeutralAt x t → Neutral t
   NeutralAt→Neutral var = var _
+  NeutralAt→Neutral (maxᵘˡₙ n) = maxᵘˡₙ (NeutralAt→Neutral n)
+  NeutralAt→Neutral (maxᵘʳₙ n) = maxᵘʳₙ (NeutralAt→Neutral n)
   NeutralAt→Neutral (∘ₙ n) = ∘ₙ (NeutralAt→Neutral n)
   NeutralAt→Neutral (fstₙ n) = fstₙ (NeutralAt→Neutral n)
   NeutralAt→Neutral (sndₙ n) = sndₙ (NeutralAt→Neutral n)
@@ -233,6 +259,8 @@ opaque
 
   Neutral→NeutralAt : Neutral t → ∃ λ x → NeutralAt x t
   Neutral→NeutralAt (var x) = x , var
+  Neutral→NeutralAt (maxᵘˡₙ n) = _ , maxᵘˡₙ (Neutral→NeutralAt n .proj₂)
+  Neutral→NeutralAt (maxᵘʳₙ n) = _ , maxᵘʳₙ (Neutral→NeutralAt n .proj₂)
   Neutral→NeutralAt (∘ₙ n) = _ , ∘ₙ (Neutral→NeutralAt n .proj₂)
   Neutral→NeutralAt (fstₙ n) = _ , fstₙ (Neutral→NeutralAt n .proj₂)
   Neutral→NeutralAt (sndₙ n) = _ , sndₙ (Neutral→NeutralAt n .proj₂)

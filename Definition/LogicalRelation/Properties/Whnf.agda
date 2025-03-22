@@ -29,6 +29,15 @@ private variable
 
 opaque
 
+  -- If t and u satisfy [Level]-prop Γ, then they are WHNFs.
+
+  lsplit : [Level]-prop Γ t u → Whnf t × Whnf u
+  lsplit zeroᵘᵣ = zeroᵘₙ , zeroᵘₙ
+  lsplit (sucᵘᵣ x) = sucᵘₙ , sucᵘₙ
+  lsplit (ne (neNfₜ₌ _ t-ne u-ne _)) = ne t-ne , ne u-ne
+
+opaque
+
   -- If t and u satisfy [Natural]-prop Γ, then they are "Naturals".
 
   split : [Natural]-prop Γ t u → Natural t × Natural u
@@ -42,3 +51,11 @@ opaque
 
   esplit : [Empty]-prop Γ t u → Neutral t × Neutral u
   esplit (ne (neNfₜ₌ _ t-ne u-ne _)) = t-ne , u-ne
+
+opaque
+
+  -- If t and u satisfy [Unitʷ]-prop Γ, then they are WHNFs.
+
+  usplit : ∀ {k} → [Unitʷ]-prop Γ k t u → Whnf t × Whnf u
+  usplit (starᵣ _ _)               = starₙ , starₙ
+  usplit (ne (neNfₜ₌ _ t-ne u-ne _)) = ne t-ne , ne u-ne

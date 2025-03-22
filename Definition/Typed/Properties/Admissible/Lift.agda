@@ -24,6 +24,7 @@ open import Definition.Typed.Reasoning.Term R
 open import Definition.Typed.Substitution.Primitive R
 open import Definition.Typed.Syntactic R
 import Definition.Typed.Weakening R as W
+open import Definition.Typed.Well-formed R
 
 open import Definition.Untyped M hiding (lift)
 open import Definition.Untyped.Lift 𝕄
@@ -38,11 +39,10 @@ import Tools.PropositionalEquality as PE
 open import Tools.Reasoning.PropositionalEquality
 
 private variable
-  Γ                         : Con Term _
-  A B B₁ B₂ t t₁ t₂ u u₁ u₂ : Term _
-  s                         : Strength
-  l l₁ l₂                   : Universe-level
-  q r                       : M
+  Γ                                 : Con Term _
+  A B B₁ B₂ l l₁ l₂ t t₁ t₂ u u₁ u₂ : Term _
+  s                                 : Strength
+  q r                               : M
 
 ------------------------------------------------------------------------
 -- Definitions related to Lift
@@ -58,11 +58,12 @@ opaque
   -- A typing rule for Lift.
 
   ⊢Lift :
+    Γ ⊢ l₂ ∷ Level →
     Lift-allowed s →
     Γ ⊢ A ∷ U l₁ →
-    Γ ⊢ Lift s l₂ A ∷ U (l₁ ⊔ᵘ l₂)
-  ⊢Lift (ok₁ , ok₂) ⊢A =
-    ΠΣⱼ ⊢A (Unitⱼ (∙ univ ⊢A) ok₂) ok₁
+    Γ ⊢ Lift s l₂ A ∷ U (l₁ maxᵘ l₂)
+  ⊢Lift ⊢l₂ (ok₁ , ok₂) ⊢A =
+    ΠΣⱼ (inversion-U-Level (wf-⊢∷ ⊢A)) ⊢l₂ ⊢A (Unitⱼ (W.wkTerm₁ (univ ⊢A) ⊢l₂) ok₂) ok₁
 
 opaque
   unfolding Lift
@@ -74,7 +75,7 @@ opaque
     Lift-allowed s × Γ ⊢ A
   inversion-Lift ⊢Lift =
     let ⊢A , ⊢Unit , ok = inversion-ΠΣ ⊢Lift in
-    (ok , inversion-Unit ⊢Unit) , ⊢A
+    (ok , inversion-Unit-allowed ⊢Unit) , ⊢A
 
 ------------------------------------------------------------------------
 -- A typing rule for lift
@@ -85,13 +86,17 @@ opaque
   -- A typing rule for lift.
 
   ⊢lift :
+    Γ ⊢ l ∷ Level →
     Lift-allowed s →
     Γ ⊢ t ∷ A →
     Γ ⊢ lift s l t ∷ Lift s l A
-  ⊢lift (ok₁ , ok₂) ⊢t =
+  ⊢lift ⊢l (ok₁ , ok₂) ⊢t =
     let ⊢A = syntacticTerm ⊢t in
-    prodⱼ (Unitⱼ (∙ ⊢A) ok₂) ⊢t (starⱼ (wf ⊢A) ok₂) ok₁
+    prodⱼ (Unitⱼ (W.wkTerm₁ ⊢A ⊢l) ok₂) ⊢t
+      (PE.subst (_⊢_∷_ _ _) ≡Unit-wk1[]₀ (starⱼ ⊢l ok₂))
+      ok₁
 
+{-
 ------------------------------------------------------------------------
 -- Typing rules for liftrec
 
@@ -297,3 +302,4 @@ opaque
       wk1 t [ u , star s l ]₁₀  ≡⟨ step-consSubst t ⟩
       wk id t [ u ]₀            ≡⟨ PE.cong _[ _ ]₀ $ wk-id t ⟩
       t [ u ]₀                  ∎
+-}

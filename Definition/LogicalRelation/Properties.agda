@@ -13,6 +13,7 @@ module Definition.LogicalRelation.Properties
 
 open import Definition.LogicalRelation.Properties.Kit R public
 open import Definition.LogicalRelation.Properties.Whnf R public
+open import Definition.LogicalRelation.Properties.Primitive R public
 open import Definition.LogicalRelation.Properties.Reflexivity R public
 open import Definition.LogicalRelation.Properties.Symmetry R public
 open import Definition.LogicalRelation.Properties.Transitivity R public

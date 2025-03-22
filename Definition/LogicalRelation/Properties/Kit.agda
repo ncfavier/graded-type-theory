@@ -26,9 +26,9 @@ open import Tools.Product
 import Tools.PropositionalEquality as PE
 
 private variable
-  l l₁ l₂ n : Nat
-  Γ         : Con Term _
-  A B       : Term _
+  l l₁ l₂ k₁ k₂ n : Nat
+  Γ               : Con Term _
+  A B t u         : Term _
 
 -- A variant of _⊩⟨_⟩_.
 
@@ -44,6 +44,22 @@ infix 4 _⊩<⟨_⟩_≡_/_
 _⊩<⟨_⟩_≡_/_ :
   (Γ : Con Term n) (p : l₁ <ᵘ l₂) (A _ : Term n) → Γ ⊩<⟨ p ⟩ A → Set a
 Γ ⊩<⟨ p ⟩ A ≡ B / ⊩A = LogRelKit._⊩_≡_/_ (kit′ p) Γ A B ⊩A
+
+-- A variant of _⊩⟨_⟩_∷_/_.
+
+infix 4 _⊩<⟨_⟩_∷_/_
+
+_⊩<⟨_⟩_∷_/_ :
+  (Γ : Con Term n) (p : l₁ <ᵘ l₂) (t A : Term n) → Γ ⊩<⟨ p ⟩ A → Set a
+Γ ⊩<⟨ p ⟩ t ∷ A / ⊩A = LogRelKit._⊩_∷_/_ (kit′ p) Γ t A ⊩A
+
+-- A variant of _⊩⟨_⟩_≡_∷_/_.
+
+infix 4 _⊩<⟨_⟩_≡_∷_/_
+
+_⊩<⟨_⟩_≡_∷_/_ :
+  (Γ : Con Term n) (p : l₁ <ᵘ l₂) (t u : Term n) (A : Term n) → Γ ⊩<⟨ p ⟩ A → Set a
+Γ ⊩<⟨ p ⟩ t ≡ u ∷ A / ⊩A = LogRelKit._⊩_≡_∷_/_ (kit′ p) Γ t u A ⊩A
 
 -- If p : l₁ <ᵘ l₂, then Γ ⊩<⟨ p ⟩ A is logically equivalent to
 -- Γ ⊩⟨ l₁ ⟩ A.
@@ -69,6 +85,40 @@ _⊩<⟨_⟩_≡_/_ :
 ⊩<≡⇔⊩≡′ ≤ᵘ-refl     = id⇔
 ⊩<≡⇔⊩≡′ (≤ᵘ-step p) = ⊩<≡⇔⊩≡′ p
 
+-- If p : l₁ <ᵘ l₂ and ⊩A : Γ ⊩<⟨ p ⟩ A, then Γ ⊩<⟨ p ⟩ t ∷ A / ⊩A is
+-- logically equivalent to Γ ⊩⟨ l₁ ⟩ t ∷ A / ⊩<⇔⊩ p .proj₁ ⊩A.
+
+⊩<∷⇔⊩∷ :
+  (p : l₁ <ᵘ l₂) {⊩A : Γ ⊩<⟨ p ⟩ A} →
+  Γ ⊩<⟨ p ⟩ t ∷ A / ⊩A ⇔ Γ ⊩⟨ l₁ ⟩ t ∷ A / ⊩<⇔⊩ p .proj₁ ⊩A
+⊩<∷⇔⊩∷ ≤ᵘ-refl     = id⇔
+⊩<∷⇔⊩∷ (≤ᵘ-step p) = ⊩<∷⇔⊩∷ p
+
+-- A variant of ⊩<∷⇔⊩∷.
+
+⊩<∷⇔⊩∷′ :
+  (p : l₁ <ᵘ l₂) {⊩A : Γ ⊩⟨ l₁ ⟩ A} →
+  Γ ⊩<⟨ p ⟩ t ∷ A / ⊩<⇔⊩ p .proj₂ ⊩A ⇔ Γ ⊩⟨ l₁ ⟩ t ∷ A / ⊩A
+⊩<∷⇔⊩∷′ ≤ᵘ-refl     = id⇔
+⊩<∷⇔⊩∷′ (≤ᵘ-step p) = ⊩<∷⇔⊩∷′ p
+
+-- If p : l₁ <ᵘ l₂ and ⊩A : Γ ⊩<⟨ p ⟩ A, then Γ ⊩<⟨ p ⟩ t ≡ u ∷ A / ⊩A is
+-- logically equivalent to Γ ⊩⟨ l₁ ⟩ t ≡ u ∷ A / ⊩<⇔⊩ p .proj₁ ⊩A.
+
+⊩<≡∷⇔⊩≡∷ :
+  (p : l₁ <ᵘ l₂) {⊩A : Γ ⊩<⟨ p ⟩ A} →
+  Γ ⊩<⟨ p ⟩ t ≡ u ∷ A / ⊩A ⇔ Γ ⊩⟨ l₁ ⟩ t ≡ u ∷ A / ⊩<⇔⊩ p .proj₁ ⊩A
+⊩<≡∷⇔⊩≡∷ ≤ᵘ-refl     = id⇔
+⊩<≡∷⇔⊩≡∷ (≤ᵘ-step p) = ⊩<≡∷⇔⊩≡∷ p
+
+-- A variant of ⊩<≡∷⇔⊩≡∷.
+
+⊩<≡∷⇔⊩≡∷′ :
+  (p : l₁ <ᵘ l₂) {⊩A : Γ ⊩⟨ l₁ ⟩ A} →
+  Γ ⊩<⟨ p ⟩ t ≡ u ∷ A / ⊩<⇔⊩ p .proj₂ ⊩A ⇔ Γ ⊩⟨ l₁ ⟩ t ≡ u ∷ A / ⊩A
+⊩<≡∷⇔⊩≡∷′ ≤ᵘ-refl     = id⇔
+⊩<≡∷⇔⊩≡∷′ (≤ᵘ-step p) = ⊩<≡∷⇔⊩≡∷′ p
+
 opaque
 
   -- If p : l₁ <ᵘ l₂, then kit l₁ is equal to kit′ p.
@@ -82,10 +132,10 @@ opaque
   -- Irrelevance for _⊩<⟨_⟩_.
 
   irrelevance-⊩< :
-    (p : l <ᵘ l₁) (q : l <ᵘ l₂) → Γ ⊩<⟨ p ⟩ A → Γ ⊩<⟨ q ⟩ A
-  irrelevance-⊩<  ≤ᵘ-refl    ≤ᵘ-refl     = idᶠ
-  irrelevance-⊩< p           (≤ᵘ-step q) = irrelevance-⊩< p q
-  irrelevance-⊩< (≤ᵘ-step p) q           = irrelevance-⊩< p q
+    (eq : k₁ PE.≡ k₂) (p : k₁ <ᵘ l₁) (q : k₂ <ᵘ l₂) → Γ ⊩<⟨ p ⟩ A → Γ ⊩<⟨ q ⟩ A
+  irrelevance-⊩< PE.refl ≤ᵘ-refl     ≤ᵘ-refl     = idᶠ
+  irrelevance-⊩< PE.refl p           (≤ᵘ-step q) = irrelevance-⊩< PE.refl p q
+  irrelevance-⊩< PE.refl (≤ᵘ-step p) q           = irrelevance-⊩< PE.refl p q
 
 opaque
   unfolding irrelevance-⊩<
@@ -93,11 +143,10 @@ opaque
   -- One form of irrelevance for _⊩<⟨_⟩_≡_/_.
 
   irrelevance-⊩<≡ :
-    (p : l <ᵘ l₁) (q : l <ᵘ l₂) {⊩A : Γ ⊩<⟨ p ⟩ A} →
+    ∀ {Γ : Con Term n} (eq : k₁ PE.≡ k₂) (p : k₁ <ᵘ l₁) (q : k₂ <ᵘ l₂) {⊩A : Γ ⊩<⟨ p ⟩ A} →
     Γ ⊩<⟨ p ⟩ A ≡ B / ⊩A →
-    Γ ⊩<⟨ q ⟩ A ≡ B / irrelevance-⊩< p q ⊩A
-  irrelevance-⊩<≡ ≤ᵘ-refl     ≤ᵘ-refl     = idᶠ
-  irrelevance-⊩<≡ (≤ᵘ-step p) ≤ᵘ-refl     = irrelevance-⊩<≡ p ≤ᵘ-refl
-  irrelevance-⊩<≡ ≤ᵘ-refl     (≤ᵘ-step q) = irrelevance-⊩<≡ ≤ᵘ-refl q
-  irrelevance-⊩<≡ (≤ᵘ-step p) (≤ᵘ-step q) =
-    irrelevance-⊩<≡ (≤ᵘ-step p) q
+    Γ ⊩<⟨ q ⟩ A ≡ B / irrelevance-⊩< eq p q ⊩A
+  irrelevance-⊩<≡ PE.refl ≤ᵘ-refl     ≤ᵘ-refl     = idᶠ
+  irrelevance-⊩<≡ PE.refl (≤ᵘ-step p) ≤ᵘ-refl     = irrelevance-⊩<≡ PE.refl p ≤ᵘ-refl
+  irrelevance-⊩<≡ PE.refl ≤ᵘ-refl     (≤ᵘ-step q) = irrelevance-⊩<≡ PE.refl ≤ᵘ-refl q
+  irrelevance-⊩<≡ PE.refl (≤ᵘ-step p) (≤ᵘ-step q) = irrelevance-⊩<≡ PE.refl (≤ᵘ-step p) q

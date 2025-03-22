@@ -35,6 +35,7 @@ import Definition.Typed.Reasoning.Type R as TypeR
 open import Definition.Typed.Substitution.Primitive R
 open import Definition.Typed.Syntactic R
 open import Definition.Typed.Weakening R as W
+open import Definition.Typed.Well-formed R
 
 import Definition.Untyped M as U
 import Definition.Untyped.Erased 𝕄 as Erased
@@ -52,13 +53,12 @@ open import Tools.Reasoning.PropositionalEquality
 open import Tools.Relation
 
 private variable
-  n                                                    : Nat
-  Γ                                                    : Con Term _
-  A A₁ A₂ B B₁ B₂ C t t′ t₁ t₂ u u₁ u₂ v v₁ v₂ w w₁ w₂ : Term _
-  σ                                                    : Subst _ _
-  s                                                    : Strength
-  l                                                    : Universe-level
-  p                                                    : M
+  n                                                      : Nat
+  Γ                                                      : Con Term _
+  A A₁ A₂ B B₁ B₂ C l t t′ t₁ t₂ u u₁ u₂ v v₁ v₂ w w₁ w₂ : Term _
+  σ                                                      : Subst _ _
+  s                                                      : Strength
+  p                                                      : M
 
 ------------------------------------------------------------------------
 -- Lemmas about Erased, [_] and erased
@@ -89,14 +89,14 @@ module _ (Erased-ok : Erased-allowed s) where
   -- An introduction rule for U.
 
   Erasedⱼ-U : Γ ⊢ A ∷ U l → Γ ⊢ Erased A ∷ U l
-  Erasedⱼ-U = P′.Erasedⱼ-U
+  Erasedⱼ-U ⊢A = P′.Erasedⱼ-U (inversion-U-Level (wf-⊢∷ ⊢A)) ⊢A
 
   -- A corresponding congruence rule.
 
   Erased-cong-U :
     Γ ⊢ A ≡ B ∷ U l →
     Γ ⊢ Erased A ≡ Erased B ∷ U l
-  Erased-cong-U A≡B = P′.Erased-cong-U ⊢A A≡B
+  Erased-cong-U A≡B = P′.Erased-cong-U (inversion-U-Level (wf-⊢≡∷ A≡B .proj₁)) ⊢A A≡B
     where
     ⊢A = univ (syntacticEqTerm A≡B .proj₂ .proj₁)
 
@@ -153,6 +153,7 @@ module _ where
       (𝕤 , PE.refl) → Eta.erased-cong
       (𝕨 , PE.refl) → NoEta.erased-cong A≡B
 
+{-
 opaque
 
   -- An inversion lemma for Erased.
@@ -1074,3 +1075,4 @@ module _ (ok : []-cong-allowed s) where
 
       ¬lhs⇒rhs : ¬ Γ′ ⊢ lhs ⇒ rhs ∷ C
       ¬lhs⇒rhs (conv lhs⇒rhs _) = ¬lhs⇒rhs lhs⇒rhs
+-}
