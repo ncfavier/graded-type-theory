@@ -13,14 +13,13 @@ open import Tools.PropositionalEquality
 open import Tools.Sum
 
 private variable
-  l              : Nat
-  x              : Fin _
-  ρ              : Wk _ _
-  A B t t′ u v w : Term _
-  p q r          : M
-  s              : Strength
-  b              : BinderMode
-  σ              : Subst _ _
+  x                : Fin _
+  ρ                : Wk _ _
+  A B l t t′ u v w : Term _
+  p q r            : M
+  s                : Strength
+  b                : BinderMode
+  σ                : Subst _ _
 
 -- Inversion for var.
 
@@ -34,14 +33,59 @@ subst-var :
   ∃ λ x′ → t ≡ var x′ ×  σ x′ ≡ var x
 subst-var {t = var _} eq = _ , refl , eq
 
+-- Inversion for Level.
+
+wk-Level : wk ρ t ≡ Level → t ≡ Level
+wk-Level {t = Level} refl = refl
+
+subst-Level : t [ σ ] ≡ Level → (∃ λ x → t ≡ var x) ⊎ t ≡ Level
+subst-Level {t = var _} _ = inj₁ (_ , refl)
+subst-Level {t = Level} refl = inj₂ refl
+
+-- Inversion for zeroᵘ.
+
+wk-zeroᵘ : wk ρ t ≡ zeroᵘ → t ≡ zeroᵘ
+wk-zeroᵘ {t = zeroᵘ} refl = refl
+
+subst-zeroᵘ : t [ σ ] ≡ zeroᵘ → (∃ λ x → t ≡ var x) ⊎ t ≡ zeroᵘ
+subst-zeroᵘ {t = var _} _ = inj₁ (_ , refl)
+subst-zeroᵘ {t = zeroᵘ} refl = inj₂ refl
+
+-- Inversion for sucᵘ.
+
+wk-sucᵘ :
+  wk ρ t ≡ sucᵘ u →
+  ∃ λ u′ → t ≡ sucᵘ u′ × wk ρ u′ ≡ u
+wk-sucᵘ {t = sucᵘ _} refl = _ , refl , refl
+
+subst-sucᵘ :
+  t [ σ ] ≡ sucᵘ u →
+  (∃ λ x → t ≡ var x) ⊎ ∃ λ u′ → t ≡ sucᵘ u′ × u′ [ σ ] ≡ u
+subst-sucᵘ {t = var _} _ = inj₁ (_ , refl)
+subst-sucᵘ {t = sucᵘ _} refl = inj₂ (_ , refl , refl)
+
+-- Inversion for _maxᵘ_.
+
+wk-maxᵘ :
+  wk ρ t ≡ u maxᵘ v →
+  ∃₂ λ u′ v′ → t ≡ u′ maxᵘ v′ × wk ρ u′ ≡ u × wk ρ v′ ≡ v
+wk-maxᵘ {t = _ maxᵘ _} refl = _ , _ , refl , refl , refl
+
+subst-maxᵘ :
+  t [ σ ] ≡ u maxᵘ v →
+  (∃ λ x → t ≡ var x) ⊎
+  ∃₂ λ u′ v′ → t ≡ u′ maxᵘ v′ × u′ [ σ ] ≡ u × v′ [ σ ] ≡ v
+subst-maxᵘ {t = var _} _ = inj₁ (_ , refl)
+subst-maxᵘ {t = _ maxᵘ _} refl = inj₂ (_ , _ , refl , refl , refl)
+
 -- Inversion for U.
 
-wk-U : wk ρ t ≡ U l → t ≡ U l
-wk-U {t = U l} refl = refl
+wk-U : wk ρ t ≡ U l → ∃ λ l′ → t ≡ U l′ × wk ρ l′ ≡ l
+wk-U {t = U l} refl = _ , refl , refl
 
-subst-U : t [ σ ] ≡ U l → (∃ λ x → t ≡ var x) ⊎ t ≡ U l
+subst-U : t [ σ ] ≡ U l → (∃ λ x → t ≡ var x) ⊎ ∃ λ l′ → t ≡ U l′ × l′ [ σ ] ≡ l
 subst-U {t = var _} _ = inj₁ (_ , refl)
-subst-U {t = U _} refl = inj₂ refl
+subst-U {t = U _} refl = inj₂ (_ , refl , refl)
 
 -- Inversion for ΠΣ⟨_⟩_,_▷_▹_.
 
@@ -160,44 +204,44 @@ subst-prodrec {t = prodrec _ _ _ _ _ _} refl =
 
 -- Inversion for Unit.
 
-wk-Unit : wk ρ t ≡ Unit s l → t ≡ Unit s l
-wk-Unit {t = Unit!} refl = refl
+wk-Unit : wk ρ t ≡ Unit s l → ∃ λ l′ → t ≡ Unit s l′ × wk ρ l′ ≡ l
+wk-Unit {t = Unit!} refl = _ , refl , refl
 
 subst-Unit : t [ σ ] ≡ Unit s l →
-             (∃ λ x → t ≡ var x) ⊎ t ≡ Unit s l
+             (∃ λ x → t ≡ var x) ⊎ ∃ λ l′ → t ≡ Unit s l′ × l′ [ σ ] ≡ l
 subst-Unit {t = var _} _ = inj₁ (_ , refl)
-subst-Unit {t = Unit!} refl = inj₂ refl
+subst-Unit {t = Unit!} refl = inj₂ (_ , refl , refl)
 
 -- Inversion for star.
 
-wk-star : wk ρ t ≡ star s l → t ≡ star s l
-wk-star {t = star!} refl = refl
+wk-star : wk ρ t ≡ star s l → ∃ λ l′ → t ≡ star s l′ × wk ρ l′ ≡ l
+wk-star {t = star!} refl =  _ , refl , refl
 
 subst-star : t [ σ ] ≡ star s l →
-            (∃ λ x → t ≡ var x) ⊎ t ≡ star s l
+            (∃ λ x → t ≡ var x) ⊎ ∃ λ l′ → t ≡ star s l′ × l′ [ σ ] ≡ l
 subst-star {t = var _} _ = inj₁ (_ , refl)
-subst-star {t = star!} refl = inj₂ refl
+subst-star {t = star!} refl = inj₂ (_ , refl , refl)
 
 -- Inversion for unitrec.
 
 wk-unitrec :
-  wk ρ t ≡ unitrec l p q A u v →
-  ∃₃ λ A′ u′ v′ →
-     t ≡ unitrec l p q A′ u′ v′ ×
-     wk (lift ρ) A′ ≡ A × wk ρ u′ ≡ u × wk ρ v′ ≡ v
+  wk ρ t ≡ unitrec p q l A u v →
+  ∃₄ λ l′ A′ u′ v′ →
+     t ≡ unitrec p q l′ A′ u′ v′ ×
+     wk ρ l′ ≡ l × wk (lift ρ) A′ ≡ A × wk ρ u′ ≡ u × wk ρ v′ ≡ v
 wk-unitrec {t = unitrec _ _ _ _ _ _} refl =
-  _ , _ , _ , refl , refl , refl , refl
+  _ , _ , _ , _ , refl , refl , refl , refl , refl
 
 subst-unitrec :
-  t [ σ ] ≡ unitrec l p q A u v →
+  t [ σ ] ≡ unitrec p q l A u v →
   (∃ λ x → t ≡ var x) ⊎
-  ∃₃ λ A′ u′ v′ →
-     t ≡ unitrec l p q A′ u′ v′ ×
-     A′ [ liftSubst σ ] ≡ A × u′ [ σ ] ≡ u × v′ [ σ ] ≡ v
+  ∃₄ λ l′ A′ u′ v′ →
+     t ≡ unitrec p q l′ A′ u′ v′ ×
+     l′ [ σ ] ≡ l × A′ [ liftSubst σ ] ≡ A × u′ [ σ ] ≡ u × v′ [ σ ] ≡ v
 subst-unitrec {t = var _} _ =
   inj₁ (_ , refl)
 subst-unitrec {t = unitrec _ _ _ _ _ _} refl =
-  inj₂ (_ , _ , _ , refl , refl , refl , refl)
+  inj₂ (_ , _ , _ , _ , refl , refl , refl , refl , refl)
 
 -- Inversion for Empty.
 

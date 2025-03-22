@@ -19,8 +19,9 @@ open import Definition.Untyped M hiding (K)
 open import Definition.Untyped.Neutral M type-variant
 open import Definition.Typed R
 open import Definition.Typed.Properties R
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Properties.Kit R
+open import Definition.LogicalRelation R {{eqrel}}
+open import Definition.LogicalRelation.Properties.Kit R {{eqrel}}
+open import Definition.LogicalRelation.Properties.Primitive R {{eqrel}}
 
 open import Tools.Function
 open import Tools.Nat using (Nat)
@@ -34,6 +35,20 @@ private
     l′ l : Universe-level
     A B t : Term _
     Γ : Con Term n
+
+mutual
+  reflLevel-prop : ∀ {n}
+                 → Level-prop Γ n
+                 → [Level]-prop Γ n n
+  reflLevel-prop (sucᵘᵣ [n]) = sucᵘᵣ (reflLevel [n])
+  reflLevel-prop zeroᵘᵣ = zeroᵘᵣ
+  reflLevel-prop (ne (neNfₜ neK k≡k)) = ne (neNfₜ₌ neK neK k≡k)
+
+  reflLevel : ∀ {n}
+            → Γ ⊩Level n ∷Level
+            → Γ ⊩Level n ≡ n ∷Level
+  reflLevel (Levelₜ n d t≡t prop) =
+    Levelₜ₌ n n d d t≡t (reflLevel-prop prop)
 
 reflNatural-prop : ∀ {n}
                  → Natural-prop Γ n
@@ -49,10 +64,10 @@ reflEmpty-prop : ∀ {n}
                  → [Empty]-prop Γ n n
 reflEmpty-prop (ne (neNfₜ neK k≡k)) = ne (neNfₜ₌ neK neK k≡k)
 
-reflUnitʷ-prop : ∀ {t}
-               → Unit-prop Γ l 𝕨 t
-               → [Unitʷ]-prop Γ l t t
-reflUnitʷ-prop starᵣ = starᵣ
+reflUnitʷ-prop : ∀ {t A k}
+               → Unit-prop Γ 𝕨 A k t
+               → [Unitʷ]-prop Γ A k t t
+reflUnitʷ-prop (starᵣ k≡k′) = starᵣ k≡k′ (reflLevel (wf-⊩Level k≡k′ .proj₂))
 reflUnitʷ-prop (ne (neNfₜ neK k≡k)) = ne (neNfₜ₌ neK neK k≡k)
 
 
@@ -69,14 +84,15 @@ private
   -- A lemma used below.
 
   reflEq-⊩< :
-    (p : l′ <ᵘ l) (⊩A : Γ ⊩<⟨ p ⟩ A) → Γ ⊩⟨ l ⟩ A ≡ A / emb p ⊩A
+    (p : l′ <ᵘ l) (⊩A : Γ ⊩<⟨ p ⟩ A) → Γ ⊩<⟨ p ⟩ A ≡ A / ⊩A
   reflEq-⊩< ≤ᵘ-refl     = reflEq
   reflEq-⊩< (≤ᵘ-step p) = reflEq-⊩< p
 
-reflEq (Uᵣ′ l′ l< ⊢Γ) = ⊢Γ
+reflEq (Levelᵣ D) = D
+reflEq (Uᵣ′ k [k] k< A⇒*U) = U₌ k A⇒*U (reflLevel [k])
 reflEq (ℕᵣ D) = D
 reflEq (Emptyᵣ D) = D
-reflEq (Unitᵣ (Unitₜ D _)) = D
+reflEq (Unitᵣ′ k [k] _ D _) = Unit₌ k D (reflLevel [k])
 reflEq (ne′ _ D neK K≡K) = ne₌ _ D neK K≡K
 reflEq (Bᵣ′ _ _ _ D A≡A [F] [G] _ _) =
    B₌ _ _ D A≡A
@@ -92,10 +108,10 @@ reflEq (Idᵣ ⊩A) = record
   }
   where
   open _⊩ₗId_ ⊩A
-reflEq (emb p [A]) = reflEq-⊩< p [A]
 
-reflEqTerm (Uᵣ′ _ p _) (Uₜ A d A-type A≅A ⊩A) =
-  Uₜ₌ A A d d A-type A-type A≅A ⊩A ⊩A (reflEq-⊩< p ⊩A)
+reflEqTerm (Levelᵣ D) = reflLevel
+reflEqTerm (Uᵣ′ k [k] k< ⊢Γ) (Uₜ A d A-type A≅A ⊩A) =
+  Uₜ₌ A A d d A-type A-type A≅A ⊩A ⊩A (reflEq-⊩< k< ⊩A)
 reflEqTerm (ℕᵣ D) (ℕₜ n d t≡t prop) =
   ℕₜ₌ n n d d t≡t (reflNatural-prop prop)
 reflEqTerm (Emptyᵣ D) (Emptyₜ n d t≡t prop) =
@@ -132,10 +148,3 @@ reflEqTerm (Idᵣ _) ⊩t =
     (case ⊩Id∷-view-inhabited ⊩t of λ where
        (rflᵣ _)     → _
        (ne _ t′~t′) → t′~t′)
-reflEqTerm (emb p ⊩A) ⊩t = reflEqTerm-⊩< p ⊩A ⊩t
-  where
-  reflEqTerm-⊩< :
-    (p : l′ <ᵘ l) (⊩A : Γ ⊩<⟨ p ⟩ A) →
-    Γ ⊩⟨ l ⟩ t ∷ A / emb p ⊩A → Γ ⊩⟨ l ⟩ t ≡ t ∷ A / emb p ⊩A
-  reflEqTerm-⊩< ≤ᵘ-refl     ⊩A = reflEqTerm ⊩A
-  reflEqTerm-⊩< (≤ᵘ-step p) ⊩A = reflEqTerm-⊩< p ⊩A

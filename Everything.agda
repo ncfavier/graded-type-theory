@@ -258,7 +258,6 @@ import Definition.LogicalRelation.Properties.Conversion
 import Definition.LogicalRelation.Properties.Embedding
 import Definition.LogicalRelation.Properties.Symmetry
 import Definition.LogicalRelation.Properties.Neutral
-import Definition.LogicalRelation.Properties.Universe
 import Definition.LogicalRelation.Properties.Transitivity
 import Definition.LogicalRelation.Properties.Reduction
 import Definition.LogicalRelation.Properties

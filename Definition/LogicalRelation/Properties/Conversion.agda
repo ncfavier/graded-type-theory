@@ -22,9 +22,10 @@ open import Definition.Untyped.Properties M
 open import Definition.Typed R
 open import Definition.Typed.Properties R
 open import Definition.Typed.Well-formed R
-open import Definition.LogicalRelation R
+open import Definition.LogicalRelation R {{eqrel}}
 open import Definition.LogicalRelation.Properties.Escape R
 open import Definition.LogicalRelation.Properties.Kit R
+open import Definition.LogicalRelation.Properties.Primitive R
 open import Definition.LogicalRelation.ShapeView R
 open import Definition.LogicalRelation.Irrelevance R
 
@@ -38,6 +39,13 @@ private
     n : Nat
     p q : M
     Γ : Con Term n
+    A B t u : Term n
+
+convTermNe : Γ ⊢ A ≡ B → Γ ⊩neNf t ∷ A → Γ ⊩neNf t ∷ B
+convTermNe A≡B (neNfₜ neK k≡k) = neNfₜ neK (~-conv k≡k A≡B)
+
+convEqTermNe : Γ ⊢ A ≡ B → Γ ⊩neNf t ≡ u ∷ A → Γ ⊩neNf t ≡ u ∷ B
+convEqTermNe A≡B (neNfₜ₌ neK neM k≡m) = neNfₜ₌ neK neM (~-conv k≡m A≡B)
 
 mutual
   -- Helper function for conversion of terms converting from left to right.
@@ -46,19 +54,24 @@ mutual
              → Γ ⊩⟨ l ⟩  A ≡ B / [A]
              → Γ ⊩⟨ l ⟩  t ∷ A / [A]
              → Γ ⊩⟨ l′ ⟩ t ∷ B / [B]
+  convTermT₁ (Levelᵥ D D′) A≡B t = t
   convTermT₁ (ℕᵥ D D′) A≡B t = t
   convTermT₁ (Emptyᵥ D D′) A≡B t = t
-  convTermT₁ (Unitᵥ _ (Unitₜ B⇒*Unit₁ _)) B⇒*Unit₂ ⊩t =
+  convTermT₁ (Unitᵥ (Unitᵣ k [k] _ _ _) (Unitᵣ k′ [k′] _ B⇒*Unit₁ ok)) (Unit₌ _ B⇒*Unit₂ k≡k′) (Unitₜ n d n≡n prop) =
     case Unit-PE-injectivity $
          whrDet* (B⇒*Unit₁ , Unitₙ) (B⇒*Unit₂ , Unitₙ) of λ {
       (_ , PE.refl) →
-    ⊩t }
+    let Unit≡Unit = ≅-eq (≅-Unit-cong (escapeLevelEq k≡k′) ok) in
+    Unitₜ n (conv* d Unit≡Unit) (≅-conv n≡n Unit≡Unit)
+      (case prop of λ where
+        (starᵣ k≡k″) → starᵣ (transEqTermLevel (symLevel k≡k′) k≡k″)
+        (ne x) → ne (convTermNe Unit≡Unit x)) }
   convTermT₁ (ne (ne _ D neK K≡K) (ne K₁ D₁ neK₁ K≡K₁)) (ne₌ M D′ neM K≡M)
-             (neₜ k d (neNfₜ neK₂ k≡k)) =
+             (neₜ k d ⊩k) =
     let K≡K₁ = PE.subst (λ x → _ ⊢ _ ≡ x)
                         (whrDet* (D′ , ne neM) (D₁ , ne neK₁))
                         (≅-eq K≡M)
-    in  neₜ k (conv* d K≡K₁) (neNfₜ neK₂ (~-conv k≡k K≡K₁))
+    in  neₜ k (conv* d K≡K₁) (convTermNe K≡K₁ ⊩k)
   convTermT₁
     {Γ = Γ}
     (Bᵥ (BΠ p q) (Bᵣ F G D A≡A [F] [G] G-ext _)
@@ -146,11 +159,12 @@ mutual
             (≅-eq A≡B)
     in  Σₜ f (conv* d ΣFG≡ΣF₁G₁) (≅-conv f≡f ΣFG≡ΣF₁G₁) (ne x)
           (~-conv f~f ΣFG≡ΣF₁G₁)
-  convTermT₁ (Uᵥ (Uᵣ l1 l<1 D1) (Uᵣ l2 l<2 D2)) D (Uₜ A d typeA A≡A [t]) with whrDet* (D2 , Uₙ) (D , Uₙ)
-  convTermT₁ (Uᵥ (Uᵣ l1 l<1 D1) (Uᵣ l2 l<2 D2)) D (Uₜ A d typeA A≡A [t])
-        | PE.refl =
-    Uₜ A (conv* d (refl (wf-⊢≡∷ (≅ₜ-eq A≡A) .proj₁))) typeA A≡A
-      (irrelevance-⊩< l<1 l<2 [t])
+  convTermT₁ (Uᵥ (Uᵣ k [k] k< D1) (Uᵣ k′ [k′] k′< D2)) (U₌ _ D k≡k′) (Uₜ A d typeA A≡A [t]) with whrDet* (D2 , Uₙ) (D , Uₙ)
+  ... | PE.refl =
+    let Uk≡Uk′ = ≅-eq (≅-U-cong (escapeLevelEq k≡k′))
+        ↑k≡↑k′ = ↑ᵘ-cong [k] [k′] k≡k′
+    in Uₜ A (conv* d Uk≡Uk′) typeA (≅-conv A≡A Uk≡Uk′)
+      (irrelevance-⊩< ↑k≡↑k′ k< k′< [t])
   convTermT₁ (Idᵥ ⊩A ⊩B@record{}) A≡B ⊩t@(_ , t⇒*u , _) =
     case whrDet* (_⊩ₗId_.⇒*Id ⊩B , Idₙ) (⇒*Id′ , Idₙ) of λ {
       PE.refl →
@@ -166,10 +180,6 @@ mutual
                (lhs≡rhs→lhs′≡rhs′ lhs≡rhs)) }}
     where
     open _⊩ₗId_≡_/_ A≡B
-  convTermT₁ (embᵥ₁ ≤ᵘ-refl     A≡B) = convTermT₁          A≡B
-  convTermT₁ (embᵥ₁ (≤ᵘ-step p) A≡B) = convTermT₁ (embᵥ₁ p A≡B)
-  convTermT₁ (embᵥ₂ ≤ᵘ-refl     A≡B) = convTermT₁          A≡B
-  convTermT₁ (embᵥ₂ (≤ᵘ-step p) A≡B) = convTermT₁ (embᵥ₂ p A≡B)
 
   -- Helper function for conversion of terms converting from right to left.
   convTermT₂ : ∀ {l l′ A B t} {[A] : Γ ⊩⟨ l ⟩ A} {[B] : Γ ⊩⟨ l′ ⟩ B}
@@ -177,19 +187,24 @@ mutual
            → Γ ⊩⟨ l ⟩  A ≡ B / [A]
            → Γ ⊩⟨ l′ ⟩ t ∷ B / [B]
            → Γ ⊩⟨ l ⟩  t ∷ A / [A]
+  convTermT₂ (Levelᵥ D D′) A≡B t = t
   convTermT₂ (ℕᵥ D D′) A≡B t = t
   convTermT₂ (Emptyᵥ D D′) A≡B t = t
-  convTermT₂ (Unitᵥ _ (Unitₜ B⇒*Unit₁ _)) B⇒*Unit₂ ⊩t =
+  convTermT₂ (Unitᵥ (Unitᵣ k _ _ _ _) (Unitᵣ k′ _ _ B⇒*Unit₁ ok)) (Unit₌ _ B⇒*Unit₂ k≡k′) (Unitₜ n d n≡n prop) =
     case Unit-PE-injectivity $
          whrDet* (B⇒*Unit₁ , Unitₙ) (B⇒*Unit₂ , Unitₙ) of λ {
       (_ , PE.refl) →
-    ⊩t }
+    let Unit≡Unit = ≅-eq (≅-Unit-cong (escapeLevelEq k≡k′) ok) in
+    Unitₜ n (conv* d (sym Unit≡Unit)) (≅-conv n≡n (sym Unit≡Unit))
+      (case prop of λ where
+        (starᵣ k′≡k″) → starᵣ (transEqTermLevel k≡k′ k′≡k″)
+        (ne x) → ne (convTermNe (sym Unit≡Unit) x)) }
   convTermT₂ (ne (ne _ D neK K≡K) (ne K₁ D₁ neK₁ K≡K₁)) (ne₌ M D′ neM K≡M)
-             (neₜ k d (neNfₜ neK₂ k≡k)) =
+             (neₜ k d ⊩k) =
     let K₁≡K = PE.subst (λ x → _ ⊢ x ≡ _)
                         (whrDet* (D′ , ne neM) (D₁ , ne neK₁))
                         (sym (≅-eq K≡M))
-    in  neₜ k (conv* d K₁≡K) (neNfₜ neK₂ (~-conv k≡k K₁≡K))
+    in  neₜ k (conv* d K₁≡K) (convTermNe K₁≡K ⊩k)
   convTermT₂
     {Γ = Γ}
     (Bᵥ (BΠ p q) (Bᵣ F G D A≡A [F] [G] G-ext _)
@@ -277,11 +292,12 @@ mutual
             (≅-eq A≡B)
     in  Σₜ f (conv* d (sym ΣFG≡ΣF₁G₁)) (≅-conv f≡f (sym ΣFG≡ΣF₁G₁))
            (ne x) (~-conv f~f (sym ΣFG≡ΣF₁G₁))
-  convTermT₂ (Uᵥ (Uᵣ l1 l<1 D1) (Uᵣ l2 l<2 D2)) D (Uₜ A d typeA A≡A [t]) with whrDet* (D2 , Uₙ) (D , Uₙ)
-  convTermT₂ (Uᵥ (Uᵣ l1 l<1 D1) (Uᵣ l2 l<2 D2)) D (Uₜ A d typeA A≡A [t])
-        | PE.refl =
-    Uₜ A (conv* d (refl (wf-⊢≡∷ (≅ₜ-eq A≡A) .proj₁))) typeA A≡A
-      (irrelevance-⊩< l<2 l<1 [t])
+  convTermT₂ (Uᵥ (Uᵣ k [k] k< D1) (Uᵣ k′ [k′] k′< D2)) (U₌ _ D k≡k′) (Uₜ A d typeA A≡A [t]) with whrDet* (D2 , Uₙ) (D , Uₙ)
+  ... | PE.refl =
+    let Uk≡Uk′ = ≅-eq (≅-U-cong (escapeLevelEq k≡k′))
+        ↑k≡↑k′ = ↑ᵘ-cong [k] [k′] k≡k′
+    in Uₜ A (conv* d (sym Uk≡Uk′)) typeA (≅-conv A≡A (sym Uk≡Uk′))
+      (irrelevance-⊩< (PE.sym ↑k≡↑k′) k′< k< [t])
   convTermT₂ (Idᵥ ⊩A ⊩B@record{}) A≡B ⊩t@(_ , t⇒*u , _) =
     case whrDet* (_⊩ₗId_.⇒*Id ⊩B , Idₙ) (⇒*Id′ , Idₙ) of λ {
       PE.refl →
@@ -298,10 +314,6 @@ mutual
                   lhs≡rhs)) }}
     where
     open _⊩ₗId_≡_/_ A≡B
-  convTermT₂ (embᵥ₁ ≤ᵘ-refl     A≡B) = convTermT₂          A≡B
-  convTermT₂ (embᵥ₁ (≤ᵘ-step p) A≡B) = convTermT₂ (embᵥ₁ p A≡B)
-  convTermT₂ (embᵥ₂ ≤ᵘ-refl     A≡B) = convTermT₂          A≡B
-  convTermT₂ (embᵥ₂ (≤ᵘ-step p) A≡B) = convTermT₂ (embᵥ₂ p A≡B)
 
   -- Conversion of terms converting from left to right.
   convTerm₁ : ∀ {A B t l l′} ([A] : Γ ⊩⟨ l ⟩ A) ([B] : Γ ⊩⟨ l′ ⟩ B)
@@ -336,20 +348,28 @@ mutual
                → Γ ⊩⟨ l ⟩  A ≡ B / [A]
                → Γ ⊩⟨ l ⟩  t ≡ u ∷ A / [A]
                → Γ ⊩⟨ l′ ⟩ t ≡ u ∷ B / [B]
+  convEqTermT₁ (Levelᵥ D D′) A≡B t≡u = t≡u
   convEqTermT₁ (ℕᵥ D D′) A≡B t≡u = t≡u
   convEqTermT₁ (Emptyᵥ D D′) A≡B t≡u = t≡u
-  convEqTermT₁ (Unitᵥ _ (Unitₜ B⇒*Unit₁ _)) B⇒*Unit₂ t≡u =
+  convEqTermT₁ (Unitᵥ (Unitᵣ k _ _ _ _) (Unitᵣ k′ _ _ B⇒*Unit₁ ok)) (Unit₌ _ B⇒*Unit₂ k≡k′) t≡u =
     case Unit-PE-injectivity $
          whrDet* (B⇒*Unit₁ , Unitₙ) (B⇒*Unit₂ , Unitₙ) of λ {
       (_ , PE.refl) →
-    t≡u }
+    let Unit≡Unit = ≅-eq (≅-Unit-cong (escapeLevelEq k≡k′) ok) in
+    case t≡u of λ where
+      (Unitₜ₌ˢ [t] [u] η) → Unitₜ₌ˢ (conv [t] Unit≡Unit) (conv [u] Unit≡Unit) η
+      (Unitₜ₌ʷ t′ u′ t⇒ u⇒ t≅u prop ¬η) →
+        Unitₜ₌ʷ t′ u′ (conv* t⇒ Unit≡Unit) (conv* u⇒ Unit≡Unit) (≅-conv t≅u Unit≡Unit)
+          (case prop of λ where
+            (starᵣ k≡k″ k″≡k‴) → starᵣ (transEqTermLevel (symLevel k≡k′) k≡k″) k″≡k‴
+            (ne x) → ne (convEqTermNe Unit≡Unit x)) ¬η }
   convEqTermT₁ (ne (ne _ D neK K≡K) (ne K₁ D₁ neK₁ K≡K₁)) (ne₌ M D′ neM K≡M)
-               (neₜ₌ k m d d′ (neNfₜ₌ neK₂ neM₁ k≡m)) =
+               (neₜ₌ k m d d′ k≡m) =
     let K≡K₁ = PE.subst (λ x → _ ⊢ _ ≡ x)
                         (whrDet* (D′ , ne neM) (D₁ , ne neK₁))
                         (≅-eq K≡M)
     in  neₜ₌ k m (conv* d K≡K₁) (conv* d′ K≡K₁)
-                 (neNfₜ₌ neK₂ neM₁ (~-conv k≡m K≡K₁))
+                 (convEqTermNe K≡K₁ k≡m)
   convEqTermT₁
     {Γ = Γ}
     (Bᵥ (BΠ p q) (Bᵣ F G D A≡A [F] [G] G-ext ok)
@@ -467,13 +487,17 @@ mutual
             (ne x) (ne y) (≅-conv p≅r ΣFG≡ΣF₁G₁)
             (convTerm₁ [A] [B] [A≡B] [t]) (convTerm₁ [A] [B] [A≡B] [u])
             p~r₁
-  convEqTermT₁ (Uᵥ (Uᵣ l1 l<1 D1) (Uᵣ l2 l<2 D2)) D eq with whrDet* (D2 , Uₙ) (D , Uₙ)
   convEqTermT₁
-    (Uᵥ (Uᵣ _ l<1 _) (Uᵣ _ l<2 _)) _
-    (Uₜ₌ A B d d′ typeA typeB A≡B _ [u] [t≡u])
-    | PE.refl =
-    Uₜ₌ A B d d′ typeA typeB A≡B _ (irrelevance-⊩< l<1 l<2 [u])
-      (irrelevance-⊩<≡ l<1 l<2 [t≡u])
+    (Uᵥ (Uᵣ k [k] k< D1) (Uᵣ k′ [k′] k′< D2)) (U₌ _ D k≡k′)
+    (Uₜ₌ A B d d′ typeA typeB A≡B [t] [u] [t≡u])
+    with whrDet* (D2 , Uₙ) (D , Uₙ)
+  ... | PE.refl =
+    let Uk≡Uk′ = ≅-eq (≅-U-cong (escapeLevelEq k≡k′))
+        ↑k≡↑k′ = ↑ᵘ-cong [k] [k′] k≡k′
+    in Uₜ₌ A B (conv* d Uk≡Uk′) (conv* d′ Uk≡Uk′) typeA typeB (≅-conv A≡B Uk≡Uk′)
+      (irrelevance-⊩< ↑k≡↑k′ k< k′< [t])
+      (irrelevance-⊩< ↑k≡↑k′ k< k′< [u])
+      (irrelevance-⊩<≡ ↑k≡↑k′ k< k′< [t≡u])
   convEqTermT₁
     (Idᵥ ⊩A ⊩B@record{}) A≡B t≡u@(_ , _ , t⇒*t′ , u⇒*u′ , _) =
     case whrDet* (_⊩ₗId_.⇒*Id ⊩B , Idₙ) (⇒*Id′ , Idₙ) of λ {
@@ -492,10 +516,6 @@ mutual
                (lhs≡rhs→lhs′≡rhs′ lhs≡rhs)) }}
     where
     open _⊩ₗId_≡_/_ A≡B
-  convEqTermT₁ (embᵥ₁ ≤ᵘ-refl     A≡B) = convEqTermT₁          A≡B
-  convEqTermT₁ (embᵥ₁ (≤ᵘ-step p) A≡B) = convEqTermT₁ (embᵥ₁ p A≡B)
-  convEqTermT₁ (embᵥ₂ ≤ᵘ-refl     A≡B) = convEqTermT₁          A≡B
-  convEqTermT₁ (embᵥ₂ (≤ᵘ-step p) A≡B) = convEqTermT₁ (embᵥ₂ p A≡B)
 
   -- Helper function for conversion of term equality converting from right to left.
   convEqTermT₂ : ∀ {l l′ A B t u} {[A] : Γ ⊩⟨ l ⟩ A} {[B] : Γ ⊩⟨ l′ ⟩ B}
@@ -503,20 +523,28 @@ mutual
              → Γ ⊩⟨ l ⟩  A ≡ B / [A]
              → Γ ⊩⟨ l′ ⟩ t ≡ u ∷ B / [B]
              → Γ ⊩⟨ l ⟩  t ≡ u ∷ A / [A]
+  convEqTermT₂ (Levelᵥ D D′) A≡B t≡u = t≡u
   convEqTermT₂ (ℕᵥ D D′) A≡B t≡u = t≡u
   convEqTermT₂ (Emptyᵥ D D′) A≡B t≡u = t≡u
-  convEqTermT₂ (Unitᵥ _ (Unitₜ B⇒*Unit₁ _)) B⇒*Unit₂ t≡u =
+  convEqTermT₂ (Unitᵥ (Unitᵣ k _ _ _ _) (Unitᵣ k′ _ _ B⇒*Unit₁ ok)) (Unit₌ _ B⇒*Unit₂ k≡k′) t≡u =
     case Unit-PE-injectivity $
          whrDet* (B⇒*Unit₁ , Unitₙ) (B⇒*Unit₂ , Unitₙ) of λ {
       (_ , PE.refl) →
-    t≡u }
+    let Unit≡Unit = sym (≅-eq (≅-Unit-cong (escapeLevelEq k≡k′) ok)) in
+    case t≡u of λ where
+      (Unitₜ₌ˢ [t] [u] η) → Unitₜ₌ˢ (conv [t] Unit≡Unit) (conv [u] Unit≡Unit) η
+      (Unitₜ₌ʷ t′ u′ t⇒ u⇒ t≅u prop ¬η) →
+        Unitₜ₌ʷ t′ u′ (conv* t⇒ Unit≡Unit) (conv* u⇒ Unit≡Unit) (≅-conv t≅u Unit≡Unit)
+          (case prop of λ where
+            (starᵣ k′≡k″ k″≡k‴) → starᵣ (transEqTermLevel k≡k′ k′≡k″) k″≡k‴
+            (ne x) → ne (convEqTermNe Unit≡Unit x)) ¬η }
   convEqTermT₂ (ne (ne _ D neK K≡K) (ne K₁ D₁ neK₁ K≡K₁)) (ne₌ M D′ neM K≡M)
-               (neₜ₌ k m d d′ (neNfₜ₌ neK₂ neM₁ k≡m)) =
+               (neₜ₌ k m d d′ k≡m) =
     let K₁≡K = PE.subst (λ x → _ ⊢ x ≡ _)
                         (whrDet* (D′ , ne neM) (D₁ , ne neK₁))
                         (sym (≅-eq K≡M))
     in  neₜ₌ k m (conv* d K₁≡K) (conv* d′ K₁≡K)
-                 (neNfₜ₌ neK₂ neM₁ (~-conv k≡m K₁≡K))
+                 (convEqTermNe K₁≡K k≡m)
   convEqTermT₂
     {Γ = Γ}
     (Bᵥ (BΠ p q) (Bᵣ F G D A≡A [F] [G] G-ext ok)
@@ -634,13 +662,17 @@ mutual
             (ne x) (ne y) (≅-conv t≡u (sym ΣFG≡ΣF₁G₁))
             (convTerm₂ [A] [B] [A≡B] [t]) (convTerm₂ [A] [B] [A≡B] [u])
             p~r
-  convEqTermT₂ (Uᵥ (Uᵣ l1 l<1 D1) (Uᵣ l2 l<2 D2)) D eq with whrDet* (D2 , Uₙ) (D , Uₙ)
   convEqTermT₂
-    (Uᵥ (Uᵣ _ l<1 _) (Uᵣ _ l<2 _)) D
-    (Uₜ₌ A B d d′ typeA typeB A≡B _ [u] [t≡u])
-    | PE.refl =
-    Uₜ₌ A B d d′ typeA typeB A≡B _ (irrelevance-⊩< l<2 l<1 [u])
-      (irrelevance-⊩<≡ l<2 l<1 [t≡u])
+    (Uᵥ (Uᵣ k [k] k< D1) (Uᵣ k′ [k′] k′< D2)) (U₌ _ D k≡k′)
+    (Uₜ₌ A B d d′ typeA typeB A≡B [t] [u] [t≡u])
+    with whrDet* (D2 , Uₙ) (D , Uₙ)
+  ... | PE.refl =
+    let Uk≡Uk′ = ≅-eq (≅-U-cong (escapeLevelEq k≡k′))
+        ↑k≡↑k′ = ↑ᵘ-cong [k] [k′] k≡k′
+    in Uₜ₌ A B (conv* d (sym Uk≡Uk′)) (conv* d′ (sym Uk≡Uk′)) typeA typeB (≅-conv A≡B (sym Uk≡Uk′))
+      (irrelevance-⊩< (PE.sym ↑k≡↑k′) k′< k< [t])
+      (irrelevance-⊩< (PE.sym ↑k≡↑k′) k′< k< [u])
+      (irrelevance-⊩<≡ (PE.sym ↑k≡↑k′) k′< k< [t≡u])
   convEqTermT₂
     (Idᵥ ⊩A ⊩B@record{}) A≡B t≡u@(_ , _ , t⇒*t′ , u⇒*u′ , _) =
     case whrDet* (_⊩ₗId_.⇒*Id ⊩B , Idₙ) (⇒*Id′ , Idₙ) of λ {
@@ -660,10 +692,6 @@ mutual
                   lhs≡rhs)) }}
     where
     open _⊩ₗId_≡_/_ A≡B
-  convEqTermT₂ (embᵥ₁ ≤ᵘ-refl     A≡B) = convEqTermT₂          A≡B
-  convEqTermT₂ (embᵥ₁ (≤ᵘ-step p) A≡B) = convEqTermT₂ (embᵥ₁ p A≡B)
-  convEqTermT₂ (embᵥ₂ ≤ᵘ-refl     A≡B) = convEqTermT₂          A≡B
-  convEqTermT₂ (embᵥ₂ (≤ᵘ-step p) A≡B) = convEqTermT₂ (embᵥ₂ p A≡B)
 
   -- Conversion of term equality converting from left to right.
   convEqTerm₁ : ∀ {l l′ A B t u} ([A] : Γ ⊩⟨ l ⟩ A) ([B] : Γ ⊩⟨ l′ ⟩ B)

@@ -34,10 +34,9 @@ open import Tools.Sum using (_⊎_; inj₁; inj₂)
 
 private variable
   Γ                               : Con Term _
-  A A′ B B′ C t t′ u u′ v v₁ v₂ w : Term _
+  A A′ B B′ C l t t′ u u′ v v₁ v₂ w : Term _
   s                               : Strength
   p p′ q r                        : M
-  l                               : Universe-level
 
 ------------------------------------------------------------------------
 -- Inversion lemmas related to _⊢_⇒_∷_
@@ -116,18 +115,18 @@ private opaque
   -- An inversion lemma related to unitrec.
 
   inv-⇒-unitrec :
-    Γ ⊢ unitrec l p q A t u ⇒ v ∷ B →
-    (∃₂ λ t′ C → Γ ⊢ t ⇒ t′ ∷ C × v PE.≡ unitrec l p q A t′ u ×
+    Γ ⊢ unitrec p q l A t u ⇒ v ∷ B →
+    (∃₂ λ t′ C → Γ ⊢ t ⇒ t′ ∷ C × v PE.≡ unitrec p q l A t′ u ×
      ¬ Unitʷ-η) ⊎
     t PE.≡ starʷ l × v PE.≡ u × ¬ Unitʷ-η ⊎
     v PE.≡ u × Unitʷ-η
   inv-⇒-unitrec (conv d _) =
     inv-⇒-unitrec d
-  inv-⇒-unitrec (unitrec-subst _ _ d _ no-η) =
+  inv-⇒-unitrec (unitrec-subst _ _ _ d _ no-η) =
     inj₁ (_ , _ , d , PE.refl , no-η)
-  inv-⇒-unitrec (unitrec-β _ _ _ no-η) =
+  inv-⇒-unitrec (unitrec-β _ _ _ _ no-η) =
     inj₂ (inj₁ (PE.refl , PE.refl , no-η))
-  inv-⇒-unitrec (unitrec-β-η _ _ _ _ η) =
+  inv-⇒-unitrec (unitrec-β-η _ _ _ _ _ η) =
     inj₂ (inj₂ (PE.refl , η))
 
   -- An inversion lemma related to J.
@@ -169,6 +168,11 @@ private opaque
   inv-⇒-[]-cong ([]-cong-β _ _ _ _ _) =
     inj₂ (PE.refl , PE.refl)
 
+  -- An inversion lemma related to sucᵘ.
+
+  ¬sucᵘ⇒ : ¬ Γ ⊢ sucᵘ t ⇒ u ∷ A
+  ¬sucᵘ⇒ (conv d _) = ¬sucᵘ⇒ d
+
 ------------------------------------------------------------------------
 -- The reduction relations are contained in the equality relations
 
@@ -178,6 +182,11 @@ opaque
   -- relation _⊢_≡_∷_.
 
   subsetTerm : Γ ⊢ t ⇒ u ∷ A → Γ ⊢ t ≡ u ∷ A
+  subsetTerm (maxᵘ-zeroˡ ⊢l) = maxᵘ-zeroˡ ⊢l
+  subsetTerm (maxᵘ-zeroʳ ⊢l) = maxᵘ-zeroʳ (sucᵘⱼ ⊢l)
+  subsetTerm (maxᵘ-sucᵘ ⊢l₁ ⊢l₂) = maxᵘ-sucᵘ ⊢l₁ ⊢l₂
+  subsetTerm (maxᵘ-substˡ t⇒t′ ⊢u) = maxᵘ-cong (subsetTerm t⇒t′) (refl ⊢u)
+  subsetTerm (maxᵘ-substʳ ⊢t u⇒u′) = maxᵘ-cong (refl (sucᵘⱼ ⊢t)) (subsetTerm u⇒u′)
   subsetTerm (natrec-subst z s n⇒n′) =
     natrec-cong (refl (⊢∙→⊢ (wfTerm s))) (refl z) (refl s)
       (subsetTerm n⇒n′)
@@ -223,11 +232,11 @@ opaque
             ([]-cong′ ⊢A t≡t′)))
     where
     open EP ([]-cong→Erased ok)
-  subsetTerm (unitrec-subst A u t⇒t′ ok no-η) =
-    unitrec-cong (refl A) (subsetTerm t⇒t′) (refl u) ok no-η
-  subsetTerm (unitrec-β A u ok₁ ok₂) = unitrec-β A u ok₁ ok₂
-  subsetTerm (unitrec-β-η A t u ok₁ ok₂) =
-   unitrec-β-η A t u ok₁ ok₂
+  subsetTerm (unitrec-subst ⊢l A u t⇒t′ ok no-η) =
+    unitrec-cong ⊢l ⊢l (refl ⊢l) (refl A) (subsetTerm t⇒t′) (refl u) ok no-η
+  subsetTerm (unitrec-β ⊢l A u ok₁ ok₂) = unitrec-β ⊢l A u ok₁ ok₂
+  subsetTerm (unitrec-β-η ⊢l A t u ok₁ ok₂) =
+   unitrec-β-η ⊢l A t u ok₁ ok₂
 
 opaque
 
@@ -369,6 +378,11 @@ opaque
   neRedTerm : Γ ⊢ t ⇒ u ∷ A → ¬ Neutral t
   neRedTerm = λ where
     (conv d _)                → neRedTerm d
+    (maxᵘ-zeroˡ _)            → (λ { (inj₁ ()); (inj₂ (t′ , () , _)) }) ∘→ inv-ne-maxᵘ
+    (maxᵘ-zeroʳ _)            → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-ne-maxᵘ
+    (maxᵘ-sucᵘ _ _)           → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-ne-maxᵘ
+    (maxᵘ-substˡ d _)         → (λ { (inj₁ n) → neRedTerm d n; (inj₂ (t′ , PE.refl , n)) → ¬sucᵘ⇒ d }) ∘→ inv-ne-maxᵘ
+    (maxᵘ-substʳ _ d)         → (λ { (inj₁ ()); (inj₂ (t′ , PE.refl , n)) → neRedTerm d n }) ∘→ inv-ne-maxᵘ
     (app-subst d _)           → neRedTerm d ∘→ inv-ne-∘
     (β-red _ _ _ _ _)         → (λ ()) ∘→ inv-ne-∘
     (natrec-subst _ _ d)      → neRedTerm d ∘→ inv-ne-natrec
@@ -387,9 +401,9 @@ opaque
     (J-β _ _ _ _ _ _)         → (λ ()) ∘→ inv-ne-J
     (K-β _ _ _)               → (λ ()) ∘→ inv-ne-K
     ([]-cong-β _ _ _ _ _)     → (λ ()) ∘→ inv-ne-[]-cong
-    (unitrec-subst _ _ d _ _) → neRedTerm d ∘→ proj₂ ∘→ inv-ne-unitrec
-    (unitrec-β _ _ _ _)       → (λ ()) ∘→ proj₂ ∘→ inv-ne-unitrec
-    (unitrec-β-η _ _ _ _ ok)  → (_$ ok) ∘→ proj₁ ∘→ inv-ne-unitrec
+    (unitrec-subst _ _ _ d _ _) → neRedTerm d ∘→ proj₂ ∘→ inv-ne-unitrec
+    (unitrec-β _ _ _ _ _)       → (λ ()) ∘→ proj₂ ∘→ inv-ne-unitrec
+    (unitrec-β-η _ _ _ _ _ ok)  → (_$ ok) ∘→ proj₁ ∘→ inv-ne-unitrec
 
 opaque
 
@@ -408,6 +422,11 @@ opaque
   whnfRedTerm : Γ ⊢ t ⇒ u ∷ A → ¬ Whnf t
   whnfRedTerm = λ where
     (conv d _)                → whnfRedTerm d
+    (maxᵘ-zeroˡ _)            → (λ { (inj₁ ()); (inj₂ (t′ , () , _)) }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-zeroʳ _)            → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-sucᵘ _ _)           → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-substˡ d _)         → (λ { (inj₁ n) → neRedTerm d n; (inj₂ (t′ , PE.refl , n)) → ¬sucᵘ⇒ d }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-substʳ _ d)         → (λ { (inj₁ ()); (inj₂ (t′ , PE.refl , n)) → neRedTerm d n }) ∘→ inv-whnf-maxᵘ
     (app-subst d _)           → neRedTerm d ∘→ inv-whnf-∘
     (β-red _ _ _ _ _)         → (λ ()) ∘→ inv-whnf-∘
     (natrec-subst _ _ d)      → neRedTerm d ∘→ inv-whnf-natrec
@@ -426,10 +445,10 @@ opaque
     (J-β _ _ _ _ _ _)         → (λ ()) ∘→ inv-whnf-J
     (K-β _ _ _)               → (λ ()) ∘→ inv-whnf-K
     ([]-cong-β _ _ _ _ _)     → (λ ()) ∘→ inv-whnf-[]-cong
-    (unitrec-subst _ _ d _ _) → neRedTerm d ∘→ proj₂ ∘→
+    (unitrec-subst _ _ _ d _ _) → neRedTerm d ∘→ proj₂ ∘→
                                 inv-whnf-unitrec
-    (unitrec-β _ _ _ _)       → (λ ()) ∘→ proj₂ ∘→ inv-whnf-unitrec
-    (unitrec-β-η _ _ _ _ ok)  → (_$ ok) ∘→ proj₁ ∘→ inv-whnf-unitrec
+    (unitrec-β _ _ _ _ _)       → (λ ()) ∘→ proj₂ ∘→ inv-whnf-unitrec
+    (unitrec-β-η _ _ _ _ _ ok)  → (_$ ok) ∘→ proj₁ ∘→ inv-whnf-unitrec
 
 opaque
 
@@ -467,6 +486,28 @@ opaque
   whrDetTerm = λ where
     (conv d _) d′ →
       whrDetTerm d d′
+    (maxᵘ-zeroˡ _) (maxᵘ-zeroˡ _) → PE.refl
+    d@(maxᵘ-zeroˡ _) (conv d′ _) → whrDetTerm d d′
+    (maxᵘ-zeroˡ _) (maxᵘ-substˡ d _) → ⊥-elim (whnfRedTerm d zeroᵘₙ)
+    (maxᵘ-zeroʳ _) (maxᵘ-zeroʳ _) → PE.refl
+    d@(maxᵘ-zeroʳ _) (conv d′ _) → whrDetTerm d d′
+    (maxᵘ-zeroʳ _) (maxᵘ-substˡ d _) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-zeroʳ _) (maxᵘ-substʳ _ d) → ⊥-elim (whnfRedTerm d zeroᵘₙ)
+    (maxᵘ-sucᵘ _ _) (maxᵘ-sucᵘ _ _) → PE.refl
+    d@(maxᵘ-sucᵘ _ _) (conv d′ _) → whrDetTerm d d′
+    (maxᵘ-sucᵘ _ _) (maxᵘ-substˡ d _) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-sucᵘ _ _) (maxᵘ-substʳ _ d) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-substˡ d _) (maxᵘ-substˡ d′ _) → PE.cong (_maxᵘ _) (whrDetTerm d d′)
+    d@(maxᵘ-substˡ _ _) (conv d′ _) → whrDetTerm d d′
+    (maxᵘ-substˡ d _) (maxᵘ-zeroˡ _) → ⊥-elim (whnfRedTerm d zeroᵘₙ)
+    (maxᵘ-substˡ d _) (maxᵘ-zeroʳ _) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-substˡ d _) (maxᵘ-sucᵘ _ _) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-substˡ d _) (maxᵘ-substʳ _ d′) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-substʳ _ d) (maxᵘ-substʳ _ d′) → PE.cong (_ maxᵘ_) (whrDetTerm d d′)
+    d@(maxᵘ-substʳ _ _) (conv d′ _) → whrDetTerm d d′
+    (maxᵘ-substʳ _ d) (maxᵘ-zeroʳ _) → ⊥-elim (whnfRedTerm d zeroᵘₙ)
+    (maxᵘ-substʳ _ d) (maxᵘ-sucᵘ _ _) → ⊥-elim (whnfRedTerm d sucᵘₙ)
+    (maxᵘ-substʳ _ d) (maxᵘ-substˡ d′ _) → ⊥-elim (whnfRedTerm d′ sucᵘₙ)
     (app-subst d _) d′ →
       case inv-⇒-∘ d′ of λ where
         (inj₁ (_ , _ , d′ , PE.refl)) →
@@ -527,18 +568,18 @@ opaque
       case inv-⇒-emptyrec d′ of λ where
         (_ , _ , d′ , PE.refl) →
           PE.cong (emptyrec _ _) (whrDetTerm d d′)
-    (unitrec-subst _ _ d _ no-η) d′ →
+    (unitrec-subst _ _ _ d _ no-η) d′ →
       case inv-⇒-unitrec d′ of λ where
         (inj₁ (_ , _ , d′ , PE.refl , _)) →
           PE.cong (λ t → unitrec _ _ _ _ t _) (whrDetTerm d d′)
         (inj₂ (inj₁ (PE.refl , _))) → ⊥-elim (whnfRedTerm d starₙ)
         (inj₂ (inj₂ (_ , η)))       → ⊥-elim (no-η η)
-    (unitrec-β _ _ _ no-η) d′ →
+    (unitrec-β _ _ _ _ no-η) d′ →
       case inv-⇒-unitrec d′ of λ where
         (inj₁ (_ , _ , d′ , _))         → ⊥-elim (whnfRedTerm d′ starₙ)
         (inj₂ (inj₁ (_ , PE.refl , _))) → PE.refl
         (inj₂ (inj₂ (_ , η)))           → ⊥-elim (no-η η)
-    (unitrec-β-η _ _ _ _ η) d′ →
+    (unitrec-β-η _ _ _ _ _ η) d′ →
       case inv-⇒-unitrec d′ of λ where
         (inj₁ (_ , _ , _ , _ , no-η)) → ⊥-elim (no-η η)
         (inj₂ (inj₁ (_ , _ , no-η)))  → ⊥-elim (no-η η)
@@ -730,3 +771,28 @@ opaque
 
   ⊢⇒⇔⊢⇒∷U : Γ ⊢ A ⇒ B ⇔ ∃ λ l → Γ ⊢ A ⇒ B ∷ U l
   ⊢⇒⇔⊢⇒∷U = inverseUnivRed , univ ∘→ proj₂
+
+------------------------------------------------------------------------
+-- Some lemmas related to maxᵘ
+
+opaque
+
+  -- A variant of maxᵘ-substˡ.
+
+  maxᵘ-substˡ* :
+    Γ ⊢ t ⇒* t′ ∷ Level →
+    Γ ⊢ u ∷ Level →
+    Γ ⊢ t maxᵘ u ⇒* t′ maxᵘ u ∷ Level
+  maxᵘ-substˡ* (id ⊢t) ⊢u = id (maxᵘⱼ ⊢t ⊢u)
+  maxᵘ-substˡ* (d ⇨ t⇒*t′) ⊢u = maxᵘ-substˡ d ⊢u ⇨ maxᵘ-substˡ* t⇒*t′ ⊢u
+
+opaque
+
+  -- A variant of maxᵘ-substʳ.
+
+  maxᵘ-substʳ* :
+    Γ ⊢ t ∷ Level →
+    Γ ⊢ u ⇒* u′ ∷ Level →
+    Γ ⊢ sucᵘ t maxᵘ u ⇒* sucᵘ t maxᵘ u′ ∷ Level
+  maxᵘ-substʳ* ⊢t (id ⊢u) = id (maxᵘⱼ (sucᵘⱼ ⊢t) ⊢u)
+  maxᵘ-substʳ* ⊢t (d ⇨ u⇒*u′) = maxᵘ-substʳ ⊢t d ⇨ maxᵘ-substʳ* ⊢t u⇒*u′
