@@ -17,7 +17,6 @@ module
 open EqRelSet eqrel
 open Type-restrictions R
 
-open import Definition.LogicalRelation R
 open import Definition.LogicalRelation.Hidden R
 open import Definition.LogicalRelation.Irrelevance R
 open import Definition.LogicalRelation.ShapeView R
@@ -41,10 +40,9 @@ import Tools.PropositionalEquality as PE
 
 private variable
   Γ Δ                 : Con Term _
-  A B t t₁ t₂ u u₁ u₂ : Term _
+  A B l l′ l″ l‴ t t₁ t₂ u u₁ u₂ : Term _
   σ₁ σ₂               : Subst _ _
   p q                 : M
-  l l′ l″ l‴          : Universe-level
 
 ------------------------------------------------------------------------
 -- Some characterisation lemmas
@@ -64,6 +62,8 @@ opaque
      Γ ⊩⟨ l ⟩ fst p u ∷ A ×
      Γ ⊩⟨ l ⟩ snd p u ∷ B [ fst p u ]₀)
   ⊩∷Σˢ⇔ {Γ} {t} {p} {q} {A} {B} =
+    {!   !}
+    {-
       (λ (⊩Σ , ⊩t) →
          case B-elim _ ⊩Σ of λ
            ⊩Σ′ →
@@ -135,6 +135,7 @@ opaque
       , ⊩∷→⊩∷/ (⊩wk-B _ _)
           (PE.subst (_⊩⟨_⟩_∷_ _ _ _)
              (PE.sym $ PE.cong _[ _ ]₀ $ wk-lift-id B) ⊩snd-u) }
+  -}
 
 opaque
   unfolding _⊩⟨_⟩_≡_ _⊩⟨_⟩_≡_∷_
@@ -153,6 +154,8 @@ opaque
      Γ ⊩⟨ l ⟩ fst p u₁ ≡ fst p u₂ ∷ A ×
      Γ ⊩⟨ l ⟩ snd p u₁ ≡ snd p u₂ ∷ B [ fst p u₁ ]₀)
   ⊩≡∷Σˢ⇔ {Γ} {t₁} {t₂} {p} {q} {A} {B} =
+    {!   !}
+    {-
       (λ (⊩Σ , _ , _ , t₁≡t₂) →
          case B-elim _ ⊩Σ of λ
            ⊩Σ′ →
@@ -306,6 +309,7 @@ opaque
             (PE.subst (_⊩⟨_⟩_≡_∷_ _ _ _ _)
                (PE.sym $ PE.cong _[ _ ] $ wk-lift-id B) snd≡snd)
         ) }
+  -}
 
 ------------------------------------------------------------------------
 -- The projection fst
@@ -318,6 +322,8 @@ opaque
     Γ ⊩⟨ l ⟩ t₁ ≡ t₂ ∷ Σˢ p , q ▷ A ▹ B →
     Γ ⊩⟨ l ⟩ fst p t₁ ≡ fst p t₂ ∷ A
   ⊩fst≡fst {t₁} {t₂} {p} t₁≡t₂ =
+    {!   !}
+    {-
     case ⊩ΠΣ→ $ wf-⊩∷ $ wf-⊩≡∷ t₁≡t₂ .proj₁ of λ
       (_ , _ , ⊩B) →
     case escape-⊩ ⊩B of λ
@@ -328,6 +334,7 @@ opaque
     fst p u₁  ≡⟨ fst-u₁≡fst-u₂ ⟩⊩∷⇐*
     fst p u₂  ⇐*⟨ fst-subst* t₂⇒*u₂ ⟩∎
     fst p t₂  ∎
+    -}
 
 opaque
 
@@ -337,12 +344,15 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ Σˢ p , q ▷ A ▹ B →
     Γ ⊩ᵛ⟨ l ⟩ fst p t₁ ≡ fst p t₂ ∷ A
   fst-congᵛ t₁≡t₂ =
+    {!   !}
+    {-
     case ⊩ᵛΠΣ⇔ .proj₁ $ wf-⊩ᵛ∷ $ wf-⊩ᵛ≡∷ t₁≡t₂ .proj₁ of λ
       (_ , ⊩A , _) →
     ⊩ᵛ≡∷⇔ .proj₂
       ( ⊩A
       , ⊩fst≡fst ∘→ ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[]≡[]∷ t₁≡t₂
       )
+    -}
 
 opaque
 
@@ -351,7 +361,7 @@ opaque
   fstᵛ :
     Γ ⊩ᵛ⟨ l ⟩ t ∷ Σˢ p , q ▷ A ▹ B →
     Γ ⊩ᵛ⟨ l ⟩ fst p t ∷ A
-  fstᵛ ⊩t = ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₂ $ fst-congᵛ (refl-⊩ᵛ≡∷ ⊩t)
+  fstᵛ ⊩t = {!   !} -- ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₂ $ fst-congᵛ (refl-⊩ᵛ≡∷ ⊩t)
 
 ------------------------------------------------------------------------
 -- The projection snd
@@ -364,6 +374,8 @@ opaque
     Γ ⊩⟨ l ⟩ t₁ ≡ t₂ ∷ Σˢ p , q ▷ A ▹ B →
     Γ ⊩⟨ l ⟩ snd p t₁ ≡ snd p t₂ ∷ B [ fst p t₁ ]₀
   ⊩snd≡snd {t₁} {t₂} {p} {B} t₁≡t₂ =
+    {!   !}
+    {-
     case wf-⊩≡∷ t₁≡t₂ of λ
       (⊩t₁ , ⊩t₂) →
     case wf-⊩∷ ⊩t₁ of λ
@@ -382,6 +394,7 @@ opaque
                                    ⊩fst≡fst t₁≡t₂ ⟩⇒
     snd p u₂ ∷ B [ fst p t₂ ]₀  ⇐*⟨ snd-subst* t₂⇒*u₂ ⟩∎∷
     snd p t₂                    ∎
+    -}
 
 opaque
 
@@ -391,6 +404,8 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ Σˢ p , q ▷ A ▹ B →
     Γ ⊩ᵛ⟨ l ⟩ snd p t₁ ≡ snd p t₂ ∷ B [ fst p t₁ ]₀
   snd-congᵛ {B} t₁≡t₂ =
+    {!   !}
+    {-
     case wf-⊩ᵛ≡∷ t₁≡t₂ of λ
       (⊩t₁ , _) →
     case ⊩ᵛΠΣ⇔ .proj₁ $ wf-⊩ᵛ∷ ⊩t₁ of λ
@@ -400,6 +415,7 @@ opaque
       , PE.subst (_⊩⟨_⟩_≡_∷_ _ _ _ _) (PE.sym $ singleSubstLift B _) ∘→
         ⊩snd≡snd ∘→ ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[]≡[]∷ t₁≡t₂
       )
+    -}
 
 opaque
 
@@ -444,6 +460,8 @@ opaque
     Γ ⊩ᵛ⟨ l″ ⟩ u ∷ B [ t ]₀ →
     Γ ⊩ᵛ⟨ l ⟩ fst p (prodˢ p t u) ≡ t ∷ A
   Σ-β₁ᵛ {B} ok ⊩B ⊩t ⊩u =
+    {!   !}
+    {-
     ⊩ᵛ∷-⇐
       (λ ⊩σ →
          Σ-β₁ (escape-⊩ $ ⊩ᵛ→⊩ˢ∷→⊩[⇑] ⊩B ⊩σ)
@@ -452,6 +470,7 @@ opaque
             escape-⊩∷ $ ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩u ⊩σ)
            PE.refl ok)
       ⊩t
+      -}
 
 opaque
 
@@ -459,11 +478,13 @@ opaque
 
   Σ-β₂ᵛ :
     Σˢ-allowed p q →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ B →
     Γ ⊩ᵛ⟨ l′ ⟩ t ∷ A →
     Γ ⊩ᵛ⟨ l″ ⟩ u ∷ B [ t ]₀ →
     Γ ⊩ᵛ⟨ l ⟩ snd p (prodˢ p t u) ≡ u ∷ B [ fst p (prodˢ p t u) ]₀
   Σ-β₂ᵛ {B} ok ⊩B ⊩t ⊩u =
+    {!   !}
+    {-
     ⊩ᵛ∷-⇐
       (λ ⊩σ →
          PE.subst (_⊢_⇒_∷_ _ _ _) (PE.sym $ singleSubstLift B _) $
@@ -477,6 +498,7 @@ opaque
           ⊩ᵛ≡→⊩ᵛ≡∷→⊩ᵛ[]₀≡[]₀ (refl-⊩ᵛ≡ ⊩B) $
           Σ-β₁ᵛ ok ⊩B ⊩t ⊩u)
          ⊩u)
+    -}
 
 opaque
 
@@ -489,6 +511,8 @@ opaque
     Γ ⊩ᵛ⟨ l‴ ⟩ snd p t₁ ≡ snd p t₂ ∷ B [ fst p t₁ ]₀ →
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ Σˢ p , q ▷ A ▹ B
   Σ-ηᵛ {t₁} {p} {B} {t₂} ⊩t₁ ⊩t₂ fst-t₁≡fst-t₂ snd-t₁≡snd-t₂ =
+    {!   !}
+    {-
     case wf-⊩ᵛ∷ ⊩t₁ of λ
       ⊩ΣAB →
     case ⊩ᵛΠΣ⇔ .proj₁ ⊩ΣAB of λ
@@ -543,6 +567,7 @@ opaque
             , fst-u₁≡fst-u₂ , snd-u₁≡snd-u₂
             )
       )
+      -}
 
 ------------------------------------------------------------------------
 -- Pairs
@@ -617,11 +642,11 @@ private opaque
 
   ⊩prodˢ[]≡prodˢ[] :
     Σˢ-allowed p q →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ B →
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ A →
     Γ ⊩ᵛ⟨ l′ ⟩ u₁ ≡ u₂ ∷ B [ t₁ ]₀ →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    Δ ⊩⟨ l ⟩ prodˢ p t₁ u₁ [ σ₁ ] ≡ prodˢ p t₂ u₂ [ σ₂ ] ∷
+    Δ ⊩⟨ l [ σ₁ ] ⟩ prodˢ p t₁ u₁ [ σ₁ ] ≡ prodˢ p t₂ u₂ [ σ₂ ] ∷
       (Σˢ p , q ▷ A ▹ B) [ σ₁ ]
   ⊩prodˢ[]≡prodˢ[] {B} ok ⊩B t₁≡t₂ u₁≡u₂ σ₁≡σ₂ =
     case wf-⊩ᵛ∷ $ wf-⊩ᵛ≡∷ t₁≡t₂ .proj₁ of λ
@@ -639,15 +664,18 @@ opaque
 
   prodˢ-congᵛ :
     Σˢ-allowed p q →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ B →
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ A →
     Γ ⊩ᵛ⟨ l′ ⟩ u₁ ≡ u₂ ∷ B [ t₁ ]₀ →
     Γ ⊩ᵛ⟨ l ⟩ prodˢ p t₁ u₁ ≡ prodˢ p t₂ u₂ ∷ Σˢ p , q ▷ A ▹ B
   prodˢ-congᵛ ok ⊩B t₁≡t₂ u₁≡u₂ =
+    {!   !}
+    {-
     ⊩ᵛ≡∷⇔ .proj₂
       ( ΠΣᵛ ok (wf-⊩ᵛ∷ $ wf-⊩ᵛ≡∷ t₁≡t₂ .proj₁) ⊩B
       , ⊩prodˢ[]≡prodˢ[] ok ⊩B t₁≡t₂ u₁≡u₂
       )
+    -}
 
 opaque
 
@@ -655,10 +683,13 @@ opaque
 
   prodˢᵛ :
     Σˢ-allowed p q →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ B →
     Γ ⊩ᵛ⟨ l ⟩ t ∷ A →
     Γ ⊩ᵛ⟨ l′ ⟩ u ∷ B [ t ]₀ →
     Γ ⊩ᵛ⟨ l ⟩ prodˢ p t u ∷ Σˢ p , q ▷ A ▹ B
   prodˢᵛ ok ⊩B ⊩t ⊩u =
+    {!   !}
+    {-
     ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₂ $
     prodˢ-congᵛ ok ⊩B (refl-⊩ᵛ≡∷ ⊩t) (refl-⊩ᵛ≡∷ ⊩u)
+    -}

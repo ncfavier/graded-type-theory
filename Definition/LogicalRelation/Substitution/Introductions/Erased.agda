@@ -19,13 +19,13 @@ module Definition.LogicalRelation.Substitution.Introductions.Erased
   ⦃ eqrel : EqRelSet R ⦄
   where
 
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Hidden R
-open import Definition.LogicalRelation.Substitution R
+open import Definition.LogicalRelation.Hidden R {{eqrel}}
+open import Definition.LogicalRelation.Substitution R {{eqrel}}
 open import
-  Definition.LogicalRelation.Substitution.Introductions.Pi-Sigma R
+  Definition.LogicalRelation.Substitution.Introductions.Pi-Sigma R {{eqrel}}
 open import
-  Definition.LogicalRelation.Substitution.Introductions.Sigma R
+  Definition.LogicalRelation.Substitution.Introductions.Sigma R {{eqrel}}
+open import Definition.LogicalRelation.Substitution.Introductions.Level R {{eqrel}}
 open import Definition.LogicalRelation.Substitution.Introductions.Unit R
 open import Definition.Typed.Properties R
 open import Definition.Typed.Weakening R
@@ -38,23 +38,25 @@ import Tools.PropositionalEquality as PE
 
 private variable
   Γ           : Con Term _
-  A A₁ A₂ t u : Term _
-  l           : Universe-level
+  A A₁ A₂ l t u : Term _
 
 opaque
+  unfolding _⊩⟨_⟩_
 
   -- Reducibility for Erased.
 
   ⊩Erased : Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩ Erased A
-  ⊩Erased ⊩A =
+  ⊩Erased ⊩A@(⊩l , _) =
     ⊩ΠΣ⇔ .proj₂
       ( Σ-ok
-      , wf (escape-⊩ ⊩A)
+      , ⊩l
       , λ ρ⊇ →
             wk-⊩ ρ⊇ ⊩A
-          , λ _ → refl-⊩≡ $ emb-⊩ 0≤ᵘ $ ⊩Unit (wf-∷ʷ⊇ ρ⊇) Unit-ok
+          , λ _ → refl-⊩≡ $ emb-⊩ {! 0≤   !} $
+              ⊩Unit (⊩Levelzeroᵘ∷Level (wf-∷ʷ⊇ ρ⊇)) Unit-ok
       )
 
+{-
 opaque
 
   -- Reducibility of equality between applications of Erased.
@@ -137,3 +139,4 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ t ∷ A →
     Γ ⊩ᵛ⟨ l ⟩ [ t ] ∷ Erased A
   []ᵛ = ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₂ ∘→ []-congᵛ ∘→ ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₁
+-}

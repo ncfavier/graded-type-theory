@@ -20,27 +20,28 @@ open import Definition.Typed R
 open import Definition.Typed.Properties R
 open import Definition.Typed.Well-formed R
 open import Definition.Untyped M
+open import Definition.Untyped.Properties M
 open import Definition.Untyped.Neutral M type-variant
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Hidden R
-open import Definition.LogicalRelation.Irrelevance R
+open import Definition.LogicalRelation.Hidden R {{eqrel}} as H
+open import Definition.LogicalRelation.Irrelevance R {{eqrel}}
 open import Definition.LogicalRelation.Properties R
-open import Definition.LogicalRelation.ShapeView R
-open import Definition.LogicalRelation.Substitution R
+open import Definition.LogicalRelation.ShapeView R {{eqrel}}
+open import Definition.LogicalRelation.Substitution R {{eqrel}}
+open import Definition.LogicalRelation.Substitution.Introductions.Level R {{eqrel}}
 
 open import Tools.Function
-open import Tools.Nat using (Nat; 1+; 2+)
+open import Tools.Nat as N using (Nat; 1+; 2+)
 open import Tools.Product as Σ
 open import Tools.Empty
 import Tools.PropositionalEquality as PE
 
 private
   variable
-    n    : Nat
-    Γ    : Con Term n
-    A B  : Term n
-    l l′ : Universe-level
-    k    : LogRelKit
+    n            : Nat
+    Γ            : Con Term n
+    A B l l′ t u : Term n
+    k            : LogRelKit
+    ℓ            : Universe-level
 
 ------------------------------------------------------------------------
 -- Some characterisation lemmas
@@ -56,54 +57,45 @@ private
     l PE.≡ l′        □
 
 opaque
+  unfolding _⊩⟨_⟩_ _⊩_<_∷Level
 
   -- A characterisation lemma for _⊩⟨_⟩_.
 
   ⊩U⇔ :
-    Γ ⊩⟨ l ⟩ U l′ ⇔
-    (l′ <ᵘ l × ⊢ Γ)
+    Γ ⊩⟨ l ⟩ U t ⇔
+    Γ ⊩ t < l ∷Level
   ⊩U⇔ =
-      lemma ∘→ U-elim
-    , (λ (l′<l , ⊢Γ) →
-        Uᵣ (Uᵣ _ l′<l (id (Uⱼ ⊢Γ))))
-    where
-    lemma :
-      Γ ⊩⟨ l ⟩U U l′ →
-      l′ <ᵘ l × ⊢ Γ
-    lemma (noemb (Uᵣ _ l′<l U⇒*U)) =
-      case U⇒*U→≡ U⇒*U of λ {
-        PE.refl →
-      l′<l , wfEq (subset* U⇒*U) }
-    lemma (emb ≤ᵘ-refl     ⊩U) = Σ.map ≤ᵘ-step idᶠ (lemma ⊩U)
-    lemma (emb (≤ᵘ-step p) ⊩U) = Σ.map ≤ᵘ-step idᶠ (lemma (emb p ⊩U))
+      (λ (⊩l , ⊩Ut) →
+        case U-elim ⊩Ut of λ {
+          (Uᵣ (Uᵣ l′ [l′] l′< U⇒*U)) →
+        case U⇒*U→≡ U⇒*U of λ {
+          PE.refl →
+        [l′] , ⊩l , l′< }})
+    , λ ([t] , [l] , t<l) →
+        [l] , Uᵣ′ _ [t] t<l (id (Uⱼ (escapeLevel [t])))
 
 opaque
-  unfolding _⊩⟨_⟩_∷_
+  unfolding _⊩⟨_⟩_∷_ _⊩_<_∷Level
 
   -- A characterisation lemma for _⊩⟨_⟩_∷_.
 
   ⊩∷U⇔ :
-    Γ ⊩⟨ l ⟩ A ∷ U l′ ⇔
-    (l′ <ᵘ l × Γ ⊩⟨ l′ ⟩ A ×
-     ∃ λ B → Γ ⊢ A ⇒* B ∷ U l′ × Type B × Γ ⊢≅ B ∷ U l′)
+    Γ ⊩⟨ l ⟩ A ∷ U t ⇔
+    (Γ ⊩ t < l ∷Level × Γ ⊩⟨ t ⟩ A ×
+    ∃ λ B → Γ ⊢ A ⇒* B ∷ U t × Type B × Γ ⊢≅ B ∷ U t)
   ⊩∷U⇔ =
-      (λ (⊩U , ⊩A) →
-         lemma (U-elim ⊩U) (irrelevanceTerm ⊩U (U-intr (U-elim ⊩U)) ⊩A))
-    , (λ (l′<l , ⊩A , _ , A⇒*B , B-type , B≅B) →
-           Uᵣ (Uᵣ _ l′<l (id (Uⱼ (wfEqTerm (subset*Term A⇒*B)))))
-         , Uₜ _ A⇒*B B-type B≅B (⊩<⇔⊩ l′<l .proj₂ ⊩A))
-    where
-    lemma :
-      (⊩U : Γ ⊩⟨ l ⟩U U l′) →
-      Γ ⊩⟨ l ⟩ A ∷ U l′ / U-intr ⊩U →
-      (l′ <ᵘ l × Γ ⊩⟨ l′ ⟩ A ×
-       ∃ λ B → Γ ⊢ A ⇒* B ∷ U l′ × Type B × Γ ⊢≅ B ∷ U l′)
-    lemma (noemb (Uᵣ _ l′<l U⇒*U)) (Uₜ _ A⇒*B B-type B≅B ⊩A) =
-      case U⇒*U→≡ U⇒*U of λ {
-         PE.refl →
-      l′<l , ⊩<⇔⊩ l′<l .proj₁ ⊩A , _ , A⇒*B , B-type , B≅B }
-    lemma (emb ≤ᵘ-refl     ⊩U) = Σ.map ≤ᵘ-step idᶠ ∘→ lemma ⊩U
-    lemma (emb (≤ᵘ-step p) ⊩U) = Σ.map ≤ᵘ-step idᶠ ∘→ lemma (emb p ⊩U)
+      (λ ((⊩l , ⊩U) , ⊩A) →
+        case U-elim ⊩U of λ {
+          (Uᵣ (Uᵣ k [k] k< U⇒*U)) →
+        case ⊩A of λ
+          (Uₜ _ A⇒*B B-type B≅B ⊩A) →
+        case U⇒*U→≡ U⇒*U of λ {
+          PE.refl →
+          ([k] , ⊩l , k<)
+        , ⊩-intro-< k< ⊩A , _ , A⇒*B , B-type , B≅B }})
+    , (λ (([t] , [l] , t<l) , ⊩A , _ , A⇒*B , B-type , B≅B) →
+          ([l] , Uᵣ′ _ [t] t<l (id (Uⱼ (escapeLevel [t]))))
+          , Uₜ _ A⇒*B B-type B≅B (⊩→⊩< t<l ⊩A))
 
 opaque
 
@@ -111,110 +103,79 @@ opaque
 
   Type→⊩∷U⇔ :
     Type A →
-    Γ ⊩⟨ l ⟩ A ∷ U l′ ⇔
-    (l′ <ᵘ l × (Γ ⊩⟨ l′ ⟩ A) × Γ ⊢≅ A ∷ U l′)
-  Type→⊩∷U⇔ {A} {Γ} {l} {l′} A-type =
-    Γ ⊩⟨ l ⟩ A ∷ U l′                                     ⇔⟨ ⊩∷U⇔ ⟩
-
-    l′ <ᵘ l × (Γ ⊩⟨ l′ ⟩ A) ×
-    (∃ λ B → Γ ⊢ A ⇒* B ∷ U l′ × Type B × Γ ⊢≅ B ∷ U l′)  ⇔⟨ id⇔
-                                                               ×-cong-⇔
-                                                             id⇔
-                                                               ×-cong-⇔
-                                                             ( (λ (_ , A⇒*B , _ , B≅B) →
-                                                                 case whnfRed*Term A⇒*B (typeWhnf A-type) of λ {
-                                                                   PE.refl →
-                                                                 B≅B })
-                                                             , (λ ≅A → _ , id (wf-⊢≡∷ (≅ₜ-eq ≅A) .proj₂ .proj₁) , A-type , ≅A)
-                                                             )
-                                                           ⟩
-
-    l′ <ᵘ l × (Γ ⊩⟨ l′ ⟩ A) × Γ ⊢≅ A ∷ U l′               □⇔
+    Γ ⊩⟨ l ⟩ A ∷ U t ⇔
+    (Γ ⊩ t < l ∷Level × (Γ ⊩⟨ t ⟩ A) ×
+    Γ ⊢≅ A ∷ U t)
+  Type→⊩∷U⇔ {A} {Γ} {l} {t} A-type =
+    Γ ⊩⟨ l ⟩ A ∷ U t                                        ⇔⟨ ⊩∷U⇔ ⟩
+    (Γ ⊩ t < l ∷Level × Γ ⊩⟨ t ⟩ A ×
+     ∃ λ B → Γ ⊢ A ⇒* B ∷ U t × Type B × Γ ⊢≅ B ∷ U t) ⇔⟨
+      id⇔ ×-cong-⇔ id⇔ ×-cong-⇔
+        ((λ (_ , A⇒*B , _ , B≅B) → case whnfRed*Term A⇒*B (typeWhnf A-type) of λ where
+          PE.refl → B≅B)
+        , λ A≅A → _ , id (wf-⊢≡∷ (≅ₜ-eq A≅A) .proj₂ .proj₁) , A-type , A≅A) ⟩
+    (Γ ⊩ t < l ∷Level × (Γ ⊩⟨ t ⟩ A) × Γ ⊢≅ A ∷ U t) □⇔
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_≡_ _⊩_<_∷Level
 
   -- A characterisation lemma for _⊩⟨_⟩_≡_.
 
   ⊩U≡⇔ :
-    Γ ⊩⟨ l ⟩ U l′ ≡ A ⇔
-    (l′ <ᵘ l × Γ ⊢ A ⇒* U l′)
-  ⊩U≡⇔ =
-      (λ (⊩U , _ , U≡A) →
-         lemma (U-elim ⊩U)
-           (irrelevanceEq ⊩U (U-intr (U-elim ⊩U)) U≡A))
-    , (λ (p , A⇒*U) →
-         let _ , ⊢U = wf-⊢≡ (subset* A⇒*U) in
-           Uᵣ (Uᵣ _ p (id ⊢U))
-         , wf-⊩≡ (⊩-⇐* A⇒*U (⊩U⇔ .proj₂ (p , wf ⊢U))) .proj₁
-         , A⇒*U)
-    where
-    lemma :
-      (⊩U : Γ ⊩⟨ l ⟩U U l′) →
-      Γ ⊩⟨ l ⟩ U l′ ≡ A / U-intr ⊩U →
-      l′ <ᵘ l × Γ ⊢ A ⇒* U l′
-    lemma (noemb (Uᵣ _ p U⇒*U)) A≡U =
-      case U⇒*U→≡ U⇒*U of λ {
-        PE.refl →
-      p , A≡U }
-    lemma (emb ≤ᵘ-refl ⊩U) A≡U =
-      Σ.map ≤ᵘ-step idᶠ (lemma ⊩U A≡U)
-    lemma (emb (≤ᵘ-step p) ⊩U) A≡U =
-      Σ.map ≤ᵘ-step idᶠ (lemma (emb p ⊩U) A≡U)
+    Γ ⊩⟨ l ⟩ U t ≡ A ⇔
+    (Γ ⊩ t < l ∷Level ×
+    ∃ λ u → Γ ⊢ A ⇒* U u × Γ ⊩Level t ≡ u ∷Level × Γ ⊩⟨ l ⟩ A)
+  ⊩U≡⇔ {Γ} {t} {A} =
+      (λ ((⊩l , ⊩U) , ⊩A , U≡A) →
+        case U-elim ⊩U of λ {
+          (Uᵣ (Uᵣ k [k] k< U⇒*U)) →
+        case U≡A of λ
+          (U₌ k′ D k≡k′) →
+        case U⇒*U→≡ U⇒*U of λ {
+          PE.refl →
+        ([k] , ⊩l , k<) , k′ , D , k≡k′ , ⊩A }})
+      , λ (([t] , [l] , t<l) , u , A⇒*U , t≡u , ⊩A) →
+        ([l] , Uᵣ′ _ [t] t<l (id (Uⱼ (escapeLevel [t]))))
+        , ⊩A
+        , U₌ u A⇒*U t≡u
 
 opaque
-  unfolding _⊩⟨_⟩_≡_ _⊩⟨_⟩_≡_∷_
+  unfolding _⊩⟨_⟩_≡_ _⊩⟨_⟩_≡_∷_ _⊩_<_∷Level
 
   -- A characterisation lemma for _⊩⟨_⟩_≡_∷_.
 
   ⊩≡∷U⇔ :
-    Γ ⊩⟨ l ⟩ A ≡ B ∷ U l′ ⇔
-    (l′ <ᵘ l × Γ ⊩⟨ l′ ⟩ A ≡ B ×
+    Γ ⊩⟨ l ⟩ A ≡ B ∷ U t ⇔
+    (Γ ⊩ t < l ∷Level × Γ ⊩⟨ t ⟩ A ≡ B ×
      ∃₂ λ A′ B′ →
-     Γ ⊢ A ⇒* A′ ∷ U l′ ×
-     Γ ⊢ B ⇒* B′ ∷ U l′ ×
+     Γ ⊢ A ⇒* A′ ∷ U t ×
+     Γ ⊢ B ⇒* B′ ∷ U t ×
      Type A′ ×
      Type B′ ×
-     Γ ⊢ A′ ≅ B′ ∷ U l′)
-  ⊩≡∷U⇔ =
-      (λ (⊩U , _ , _ , A≡B) →
-          lemma (U-elim ⊩U)
-            (irrelevanceEqTerm ⊩U (U-intr (U-elim ⊩U)) A≡B))
-    , (λ (l′<l , (⊩A , ⊩B , A≡B) , _ , _ ,
-          A⇒*A′ , B⇒*B′ , A′-type , B′-type , A′≅B′) →
-         let ⊩A        = ⊩<⇔⊩ l′<l .proj₂ ⊩A
-             ⊩B        = ⊩<⇔⊩ l′<l .proj₂ ⊩B
-             ≅A′ , ≅B′ = wf-⊢≅∷ A′≅B′
-         in
-           Uᵣ (Uᵣ _ l′<l (id (Uⱼ (wfEqTerm (subset*Term A⇒*A′)))))
-         , Uₜ _ A⇒*A′ A′-type ≅A′ ⊩A
-         , Uₜ _ B⇒*B′ B′-type ≅B′ ⊩B
-         , Uₜ₌ _ _ A⇒*A′ B⇒*B′ A′-type B′-type A′≅B′ ⊩A ⊩B
-             (⊩<≡⇔⊩≡′ l′<l .proj₂ A≡B))
-    where
-    lemma :
-      (⊩U : Γ ⊩⟨ l ⟩U U l′) →
-      Γ ⊩⟨ l ⟩ A ≡ B ∷ U l′ / U-intr ⊩U →
-      l′ <ᵘ l × Γ ⊩⟨ l′ ⟩ A ≡ B ×
-      ∃₂ λ A′ B′ →
-      Γ ⊢ A ⇒* A′ ∷ U l′ ×
-      Γ ⊢ B ⇒* B′ ∷ U l′ ×
-      Type A′ ×
-      Type B′ ×
-      Γ ⊢ A′ ≅ B′ ∷ U l′
-    lemma
-      (noemb (Uᵣ _ l′<l U⇒*U))
-      (Uₜ₌ _ _ A⇒*A′ B⇒*B′ A′-type B′-type A′≅B′ ⊩A ⊩B A≡B) =
+     Γ ⊢ A′ ≅ B′ ∷ U t)
+  ⊩≡∷U⇔ {Γ} {A} {B} {t} =
+      (λ ((⊩l , ⊩U) , _ , _ , A≡B) →
+        case U-elim ⊩U of λ {
+          (Uᵣ (Uᵣ k [k] k< U⇒*U)) →
+        case A≡B of λ
+          (Uₜ₌ _ _ A⇒*A′ B⇒*B′ A′-type B′-type A′≅B′ ⊩A ⊩B A≡B) →
         case U⇒*U→≡ U⇒*U of λ {
           PE.refl →
-          l′<l
-        , ( ⊩<⇔⊩ l′<l .proj₁ ⊩A
-          , ⊩<⇔⊩ l′<l .proj₁ ⊩B
-          , ⊩<≡⇔⊩≡ l′<l .proj₁ A≡B
-          )
-        , _ , _ , A⇒*A′ , B⇒*B′ , A′-type , B′-type , A′≅B′ }
-    lemma (emb ≤ᵘ-refl     ⊩U) = Σ.map ≤ᵘ-step idᶠ ∘→ lemma ⊩U
-    lemma (emb (≤ᵘ-step p) ⊩U) = Σ.map ≤ᵘ-step idᶠ ∘→ lemma (emb p ⊩U)
+          ([k] , ⊩l , k<)
+        , ⊩≡-intro-< k< ⊩A ⊩B A≡B
+        , _ , _ , A⇒*A′ , B⇒*B′ , A′-type , B′-type , A′≅B′ }})
+    , (λ (([t] , [l] , t<l) , A≡B@(⊩A , ⊩B , _) , _ , _ ,
+          A⇒*A′ , B⇒*B′ , A′-type , B′-type , A′≅B′) →
+         let ⊩A< = ⊩→⊩< t<l ⊩A
+             ⊩B< = ⊩→⊩< t<l ⊩B
+             A≡B< = ⊩≡→⊩<≡/ t<l ⊩A< A≡B
+             ≅A′ , ≅B′ = wf-⊢≅∷ A′≅B′
+         in
+           ([l] , Uᵣ′ _ [t] t<l (id (Uⱼ (escapeLevel [t]))))
+         , Uₜ _ A⇒*A′ A′-type ≅A′ ⊩A<
+         , Uₜ _ B⇒*B′ B′-type ≅B′ ⊩B<
+         , Uₜ₌ _ _ A⇒*A′ B⇒*B′ A′-type B′-type A′≅B′ ⊩A< ⊩B< A≡B<
+      )
 
 opaque
 
@@ -223,30 +184,31 @@ opaque
   Type→⊩≡∷U⇔ :
     Type A →
     Type B →
-    Γ ⊩⟨ l ⟩ A ≡ B ∷ U l′ ⇔
-    (l′ <ᵘ l × (Γ ⊩⟨ l′ ⟩ A ≡ B) × Γ ⊢ A ≅ B ∷ U l′)
-  Type→⊩≡∷U⇔ {A} {B} {Γ} {l} {l′} A-type B-type =
-    Γ ⊩⟨ l ⟩ A ≡ B ∷ U l′          ⇔⟨ ⊩≡∷U⇔ ⟩
-
-    l′ <ᵘ l × (Γ ⊩⟨ l′ ⟩ A ≡ B) ×
-    (∃₂ λ A′ B′ →
-     Γ ⊢ A ⇒* A′ ∷ U l′ ×
-     Γ ⊢ B ⇒* B′ ∷ U l′ ×
+    Γ ⊩⟨ l ⟩ A ≡ B ∷ U t ⇔
+    (Γ ⊩ t < l ∷Level × (Γ ⊩⟨ t ⟩ A ≡ B) ×
+     Γ ⊢ A ≅ B ∷ U t)
+  Type→⊩≡∷U⇔ {A} {B} {Γ} {l} {t} A-type B-type =
+    Γ ⊩⟨ l ⟩ A ≡ B ∷ U t          ⇔⟨ ⊩≡∷U⇔ ⟩
+    (Γ ⊩ t < l ∷Level × Γ ⊩⟨ t ⟩ A ≡ B ×
+     ∃₂ λ A′ B′ →
+     Γ ⊢ A ⇒* A′ ∷ U t ×
+     Γ ⊢ B ⇒* B′ ∷ U t ×
      Type A′ ×
      Type B′ ×
-     Γ ⊢ A′ ≅ B′ ∷ U l′)           ⇔⟨ (λ (l′<l , A≡B , A′ , B′ , DA , DB , A′-type , B′-type , A′≅B′) →
-                                         case whnfRed*Term DA (typeWhnf A-type) of λ {
-                                           PE.refl →
-                                         case whnfRed*Term DB (typeWhnf B-type) of λ {
-                                           PE.refl →
-                                         (l′<l , A≡B , A′≅B′)}})
-                                    , (λ (l′<l , A≡B , A≅B) →
-                                         let _ , ⊢A , ⊢B = wf-⊢≡∷ (≅ₜ-eq A≅B) in
-                                           l′<l , A≡B , _ , _ , id ⊢A , id ⊢B
-                                         , A-type , B-type , A≅B)
-                                    ⟩
-    l′ <ᵘ l × (Γ ⊩⟨ l′ ⟩ A ≡ B) ×
-    Γ ⊢ A ≅ B ∷ U l′               □⇔
+     Γ ⊢ A′ ≅ B′ ∷ U t)
+      ⇔⟨ id⇔ ×-cong-⇔ id⇔ ×-cong-⇔
+        ( (λ (A′ , B′ , A⇒*A′ , B⇒*B′ , _ , _ , A′≅B′) →
+          case whnfRed*Term A⇒*A′ (typeWhnf A-type) of λ {
+            PE.refl →
+          case whnfRed*Term B⇒*B′ (typeWhnf B-type) of λ {
+            PE.refl →
+          A′≅B′ } })
+        , λ A≅B →
+          let _ , ⊢A , ⊢B = wf-⊢≡∷ (≅ₜ-eq A≅B)
+          in
+          _ , _ , id ⊢A , id ⊢B , A-type , B-type , A≅B) ⟩
+    (Γ ⊩ t < l ∷Level × (Γ ⊩⟨ t ⟩ A ≡ B) ×
+     Γ ⊢ A ≅ B ∷ U t) □⇔
 
 ------------------------------------------------------------------------
 -- Validity
@@ -255,57 +217,97 @@ opaque
 
   -- Validity of U.
 
-  ⊩ᵛU : ⊩ᵛ Γ → Γ ⊩ᵛ⟨ 1+ l ⟩ U l
-  ⊩ᵛU {Γ} {l} ⊩Γ =
+  ⊩ᵛU : Γ ⊩ᵛ⟨ l ⟩ t ∷ Level → Γ ⊩ᵛ⟨ sucᵘ t ⟩ U t
+  ⊩ᵛU {Γ} {t} ⊩t =
     ⊩ᵛ⇔ .proj₂
-      ( ⊩Γ
-      , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
-          Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ            →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
-          ⊢ Δ                         →⟨ (λ ⊢Δ → ≤ᵘ-refl , id (Uⱼ ⊢Δ)) ⟩
-          l <ᵘ 1+ l × Δ ⊢ U l ⇒* U l  ⇔˘⟨ ⊩U≡⇔ ⟩→
-          Δ ⊩⟨ 1+ l ⟩ U l ≡ U l       □
+      ( sucᵘᵛᵘ (⊩ᵛ∷Level⇔ .proj₁ ⊩t .proj₂)
+      , λ {_} {Δ} {σ₁} {σ₂} →
+          λ σ₁≡σ₂ →
+            let (_ , ⊩t[σ₁] , ⊩t[σ₂] , ⊩t≡) = ⊩≡∷Level⇔ .proj₁ (⊩ᵛ∷⇔ .proj₁ ⊩t .proj₂ σ₁≡σ₂)
+                ⊢Δ = escape-⊩ˢ≡∷ σ₁≡σ₂ .proj₁
+            in
+            ⊩U≡⇔ .proj₂ $
+                <-sucᵘ ⊩t[σ₁]
+              , t [ σ₂ ]
+              , id (Uⱼ (escapeLevel ⊩t[σ₂]))
+              , ⊩t≡
+              , ⊩U⇔ .proj₂ (≡-<-Level (symLevel ⊩t≡) (<-sucᵘ ⊩t[σ₁]))
       )
 
 opaque
 
   -- Validity of U, seen as a term former.
 
-  ⊩ᵛU∷U : ⊩ᵛ Γ → Γ ⊩ᵛ⟨ 2+ l ⟩ U l ∷ U (1+ l)
-  ⊩ᵛU∷U {Γ} {l} ⊩Γ =
+  ⊩ᵛU∷U : Γ ⊩ᵛ⟨ l ⟩ t ∷ Level → Γ ⊩ᵛ⟨ sucᵘ (sucᵘ t) ⟩ U t ∷ U (sucᵘ t)
+  ⊩ᵛU∷U {Γ} {t} ⊩t =
     ⊩ᵛ∷⇔ .proj₂
-      ( ⊩ᵛU ⊩Γ
-      , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
-          Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ                                        →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
-
-          ⊢ Δ                                                     →⟨ (λ ⊢Δ → ≤ᵘ-refl , ⊩U⇔ .proj₂ (≤ᵘ-refl , ⊢Δ) , ≅-Urefl ⊢Δ) ⟩
-
-          1+ l <ᵘ 2+ l × (Δ ⊩⟨ 1+ l ⟩ U l) × Δ ⊢≅ U l ∷ U (1+ l)  →⟨ Type→⊩∷U⇔ Uₙ .proj₂ ⟩
-
-          Δ ⊩⟨ 2+ l ⟩ U l ∷ U (1+ l)                              →⟨ refl-⊩≡∷ ⟩
-
-          Δ ⊩⟨ 2+ l ⟩ U l ≡ U l ∷ U (1+ l)                        □
+      ( ⊩ᵛU (sucᵘᵛ ⊩t)
+      , λ {_} {Δ} {σ₁} {σ₂} σ₁≡σ₂ →
+          let ⊩t[σ₁]≡t[σ₂] = ⊩ᵛ∷⇔ .proj₁ ⊩t .proj₂ σ₁≡σ₂
+              (_ , ⊩t[σ₁] , ⊩t[σ₂] , ⊩t≡) = ⊩≡∷Level⇔ .proj₁ ⊩t[σ₁]≡t[σ₂]
+          in
+            Type→⊩≡∷U⇔ Uₙ Uₙ .proj₂ $
+              <-sucᵘ (⊩Levelsucᵘ∷Level ⊩t[σ₁])
+            , ⊩ᵛ⇔ .proj₁ (⊩ᵛU ⊩t) .proj₂ σ₁≡σ₂
+            , ≅ₜ-U-cong (escapeLevelEq ⊩t≡)
       )
+
+opaque
+
+  -- An inversion lemma for _⊩ᵛ⟨_⟩_.
+
+  ⊩ᵛU→⊩ᵛᵘ : Γ ⊩ᵛ⟨ l ⟩ U t → Γ ⊩ᵛᵘ t
+  ⊩ᵛU→⊩ᵛᵘ ⊩U =
+    ⊩ᵛᵘ⇔ .proj₂
+      ( wf-⊩ᵛ ⊩U
+      , λ σ₁≡σ₂ →
+          case ⊩U≡⇔ .proj₁ (⊩ᵛ⇔ .proj₁ ⊩U .proj₂ σ₁≡σ₂) of λ
+            (_ , _ , D , t[σ₁]≡t[σ₂] , _) →
+          case U⇒*U→≡ D of λ where
+            PE.refl → t[σ₁]≡t[σ₂]
+      )
+
+opaque
+  unfolding _⊩ᵛᵘ_<_
+
+  -- Another inversion lemma for _⊩ᵛ⟨_⟩_.
+
+  ⊩ᵛU→⊩ᵛᵘ< : Γ ⊩ᵛ⟨ l ⟩ U t → Γ ⊩ᵛᵘ t < l
+  ⊩ᵛU→⊩ᵛᵘ< ⊩U =
+      ⊩ᵛU→⊩ᵛᵘ ⊩U
+    , wfᵘ-⊩ᵛ ⊩U
+    , ⊩U⇔ .proj₁ ∘→ ⊩ᵛ→⊩ˢ∷→⊩[] ⊩U
 
 opaque
 
   -- Validity of one of the typing rules called univ.
 
-  ⊩ᵛ≡∷U→⊩ᵛ≡ :
-    Γ ⊩ᵛ⟨ l ⟩ A ≡ B ∷ U l′ →
-    Γ ⊩ᵛ⟨ l′ ⟩ A ≡ B
-  ⊩ᵛ≡∷U→⊩ᵛ≡ A≡B∷U =
-    case ⊩ᵛ≡∷⇔ .proj₁ A≡B∷U of λ
-      (⊩U , A≡B∷U) →
-    ⊩ᵛ≡⇔ .proj₂
-      ( wf-⊩ᵛ ⊩U
-      , proj₁ ∘→ proj₂ ∘→ ⊩≡∷U⇔ .proj₁ ∘→ A≡B∷U
+  ⊩ᵛ∷U→⊩ᵛ :
+    Γ ⊩ᵛ⟨ l ⟩ A ∷ U t →
+    Γ ⊩ᵛ⟨ t ⟩ A
+  ⊩ᵛ∷U→⊩ᵛ ⊩A∷U =
+    case ⊩ᵛ∷⇔ .proj₁ ⊩A∷U of λ
+      (⊩U , A≡A∷U) →
+    ⊩ᵛ⇔ .proj₂
+      ( ⊩ᵛU→⊩ᵛᵘ ⊩U
+      , λ σ₁≡σ₂ →
+        let (_ , A≡A , _) = ⊩≡∷U⇔ .proj₁ (A≡A∷U σ₁≡σ₂) in
+        A≡A
       )
 
 opaque
 
   -- Validity of another of the typing rules called univ.
 
-  ⊩ᵛ∷U→⊩ᵛ :
-    Γ ⊩ᵛ⟨ l ⟩ A ∷ U l′ →
-    Γ ⊩ᵛ⟨ l′ ⟩ A
-  ⊩ᵛ∷U→⊩ᵛ = ⊩ᵛ⇔⊩ᵛ≡ .proj₂ ∘→ ⊩ᵛ≡∷U→⊩ᵛ≡ ∘→ ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₁
+  ⊩ᵛ≡∷U→⊩ᵛ≡ :
+    Γ ⊩ᵛ⟨ l ⟩ A ≡ B ∷ U t →
+    Γ ⊩ᵛ⟨ t ⟩ A ≡ B
+  ⊩ᵛ≡∷U→⊩ᵛ≡ A≡B∷U =
+    case ⊩ᵛ≡∷⇔ .proj₁ A≡B∷U of λ
+      (⊩U , A≡B∷U) →
+    ⊩ᵛ≡⇔ .proj₂
+      ( ⊩ᵛU→⊩ᵛᵘ ⊩U
+      , λ σ₁≡σ₂ →
+        let (_ , A≡B , _) = ⊩≡∷U⇔ .proj₁ (A≡B∷U σ₁≡σ₂) in
+        A≡B
+      )

@@ -21,7 +21,6 @@ open import Definition.Untyped.Neutral M type-variant
 open import Definition.Untyped.Properties M
 open import Definition.Typed R
 open import Definition.Typed.Properties R
-open import Definition.LogicalRelation R
 open import Definition.LogicalRelation.Hidden R
 open import Definition.LogicalRelation.Substitution R
 
@@ -32,10 +31,9 @@ import Tools.PropositionalEquality as PE
 
 private
   variable
-    x : Fin _
-    Γ : Con Term _
-    A : Term _
-    l : Universe-level
+    x   : Fin _
+    Γ   : Con Term _
+    A l : Term _
 
 opaque
 
@@ -60,24 +58,24 @@ opaque
     ∃ λ l → Γ ⊩ᵛ⟨ l ⟩ var x ∷ A
   varᵛ (here {A}) ⊩Γ∙A =
     case wf-⊩ᵛ-∙ ⊩Γ∙A of λ
-      (l , ⊩A) →
+      (⊩l , ⊩A) →
     case wk1-⊩ᵛ ⊩A ⊩A of λ
       ⊩wk1-A →
-      l
+      _
     , ⊩ᵛ∷⇔ .proj₂
         ( ⊩wk1-A
         , λ σ₁≡σ₂ →
             case ⊩ˢ≡∷∙⇔ .proj₁ σ₁≡σ₂ of λ
-              ((_ , _ , σ₁₀≡σ₂₀) , _) →
+              (_ , _ , _ , σ₁₀≡σ₂₀) →
             level-⊩≡∷
               (⊩ᵛ→⊩ˢ∷→⊩[] ⊩wk1-A (wf-⊩ˢ≡∷ σ₁≡σ₂ .proj₁))
               (PE.subst (_⊩⟨_⟩_≡_∷_ _ _ _ _) (PE.sym $ wk1-tail A)
-                 σ₁₀≡σ₂₀)
+                σ₁₀≡σ₂₀)
         )
   varᵛ (there x∈Γ) ⊩Γ∙B =
-    case wf-⊩ᵛ-∙ ⊩Γ∙B .proj₂ of λ
-      ⊩B →
-    Σ.map idᶠ (wk1-⊩ᵛ∷ ⊩B) (varᵛ x∈Γ (wf-⊩ᵛ ⊩B))
+    case wf-⊩ᵛ-∙ ⊩Γ∙B of λ
+      (_ , ⊩B) →
+    Σ.map wk1 (wk1-⊩ᵛ∷ ⊩B) (varᵛ x∈Γ (wf-⊩ᵛ ⊩B))
 
 opaque
 

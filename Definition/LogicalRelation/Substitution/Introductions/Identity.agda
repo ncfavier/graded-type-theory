@@ -16,7 +16,6 @@ module Definition.LogicalRelation.Substitution.Introductions.Identity
 open EqRelSet eqrel
 open Type-restrictions R
 
-open import Definition.LogicalRelation R
 open import Definition.LogicalRelation.Irrelevance R
 open import Definition.LogicalRelation.Hidden R
 open import Definition.LogicalRelation.Properties R
@@ -46,7 +45,7 @@ private variable
   Γ Δ                                             : Con Term _
   A A₁ A₂ B B₁ B₂ t t₁ t₂ u u₁ u₂ v v₁ v₂ w w₁ w₂ : Term _
   σ σ₁ σ₂                                         : Subst _ _
-  l l′ l′₁ l′₂ l′₃ l′₄ l′₅ l″ l‴ l⁗               : Universe-level
+  l l′ l′₁ l′₂ l′₃ l′₄ l′₅ l″ l‴ l⁗               : Term _
   n                                               : Nat
   p q                                             : M
   s                                               : Strength
@@ -73,6 +72,8 @@ opaque
     Γ ⊩⟨ l ⟩ Id A t u ⇔
     (Γ ⊩⟨ l ⟩ t ∷ A × Γ ⊩⟨ l ⟩ u ∷ A)
   ⊩Id⇔ {A} {t} {u} =
+    ?
+    {-
       (λ ⊩Id → lemma (Id-elim ⊩Id))
     , (λ ((⊩A , ⊩t) , (⊩A′ , ⊩u)) →
          Idᵣ
@@ -95,6 +96,7 @@ opaque
       (⊩Ty , ⊩lhs) , (⊩Ty , ⊩rhs) }
       where
       open _⊩ₗId_ ⊩Id
+-}
 
 opaque
 
@@ -106,6 +108,8 @@ opaque
     Γ ⊩⟨ l‴ ⟩ u ∷ A →
     Γ ⊩⟨ l′ ⟩ Id A t u ∷ U l
   →⊩Id∷U {Γ} {l′} {A} {l} {l″} {t} {l‴} {u} ⊩A ⊩t ⊩u =
+    ?
+    {-
                                                    $⟨ ⊩A , ⊩t , ⊩u ⟩
     Γ ⊩⟨ l′ ⟩ A ∷ U l ×
     Γ ⊩⟨ l″ ⟩ t ∷ A ×
@@ -124,11 +128,12 @@ opaque
     Γ ⊢≅ Id A t u ∷ U l                            ⇔˘⟨ Type→⊩∷U⇔ Idₙ ⟩→
 
     Γ ⊩⟨ l′ ⟩ Id A t u ∷ U l                       □
+    -}
 
 -- A variant of ⊩Id∷-view.
 
 data ⊩Id∷-view′
-       (Γ : Con Term n) (l : Universe-level) (A t u : Term n) :
+       (Γ : Con Term n) (l A t u : Term n) :
        Term n → Set a where
   rflᵣ : Γ ⊩⟨ l ⟩ t ≡ u ∷ A →
          ⊩Id∷-view′ Γ l A t u rfl
@@ -149,6 +154,8 @@ opaque
      Γ ⊩⟨ l ⟩ u ∷ A ×
      ⊩Id∷-view′ Γ l A t u w)
   ⊩∷Id⇔ =
+    ?
+    {-
       (λ (⊩Id , ⊩v) →
          lemma (Id-elim ⊩Id)
            (irrelevanceTerm ⊩Id (Id-intr (Id-elim ⊩Id)) ⊩v))
@@ -200,6 +207,7 @@ opaque
            (ne w-ne w~w)  → ne w-ne w~w) }
       where
       open _⊩ₗId_ ⊩Id
+      -}
 
 opaque
 
@@ -245,6 +253,8 @@ opaque
      Γ ⊩⟨ l ⟩ t ≡ t′ ∷ A ×
      Γ ⊩⟨ l ⟩ u ≡ u′ ∷ A)
   ⊩Id≡⇔ =
+    ?
+    {-
       (λ (⊩Id , ⊩B , Id≡B) →
            ⊩Id
          , lemma₁ ≤ᵘ-refl (Id-elim ⊩Id) ⊩B
@@ -330,6 +340,7 @@ opaque
           (irrelevanceEqTerm ⊩A‴ ⊩Ty u≡u′) }
       where
       open _⊩ₗId_ ⊩Id
+      -}
 
 opaque
 
@@ -375,6 +386,8 @@ opaque
     Γ ⊩⟨ l‴ ⟩ u₁ ≡ u₂ ∷ A₁ →
     Γ ⊩⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U l
   →⊩Id≡Id∷U {Γ} {l′} {A₁} {A₂} {l} {l″} {t₁} {t₂} {l‴} {u₁} {u₂} A₁≡A₂∷U t₁≡t₂ u₁≡u₂ =
+    ?
+    {-
                                                                      $⟨ A₁≡A₂∷U , t₁≡t₂ , u₁≡u₂ ⟩
     Γ ⊩⟨ l′ ⟩ A₁ ≡ A₂ ∷ U l ×
     Γ ⊩⟨ l″ ⟩ t₁ ≡ t₂ ∷ A₁ ×
@@ -406,11 +419,12 @@ opaque
 
 
     Γ ⊩⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U l                        □
+    -}
 
 -- A variant of ⊩Id≡∷-view.
 
 data ⊩Id≡∷-view′
-       (Γ : Con Term n) (l : Universe-level) (A t u : Term n) :
+       (Γ : Con Term n) (l A t u : Term n) :
        Term n → Term n → Set a where
   rfl₌ : Γ ⊩⟨ l ⟩ t ≡ u ∷ A →
          ⊩Id≡∷-view′ Γ l A t u rfl rfl
@@ -432,6 +446,8 @@ opaque
      Γ ⊩⟨ l ⟩ u ∷ A ×
      ⊩Id≡∷-view′ Γ l A t u v′ w′)
   ⊩≡∷Id⇔ =
+    ?
+    {-
       (λ (⊩Id , _ , _ , ⊩v) →
          lemma (Id-elim ⊩Id)
            (irrelevanceEqTerm ⊩Id (Id-intr (Id-elim ⊩Id)) ⊩v))
@@ -492,6 +508,7 @@ opaque
            (ne v′-ne w′-ne v′~w′) → ne v′-ne w′-ne v′~w′) }
       where
       open _⊩ₗId_ ⊩Id
+-}
 
 opaque
 
@@ -537,6 +554,8 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ Id A t u ⇔
     (Γ ⊩ᵛ⟨ l ⟩ t ∷ A × Γ ⊩ᵛ⟨ l ⟩ u ∷ A)
   ⊩ᵛId⇔ {Γ} {l} {A} {t} {u} =
+    ?
+    {-
     (Γ ⊩ᵛ⟨ l ⟩ Id A t u)                                 ⇔⟨ ⊩ᵛ⇔ ⟩
 
     ⊩ᵛ Γ ×
@@ -578,6 +597,7 @@ opaque
       Δ ⊩⟨ l ⟩ u U.[ σ₁ ] ≡ u U.[ σ₂ ] ∷ A U.[ σ₁ ]))    ⇔˘⟨ ⊩ᵛ∷⇔ ×-cong-⇔ ⊩ᵛ∷⇔ ⟩
 
     Γ ⊩ᵛ⟨ l ⟩ t ∷ A × Γ ⊩ᵛ⟨ l ⟩ u ∷ A                    □⇔
+-}
 
 ------------------------------------------------------------------------
 -- Id
@@ -592,6 +612,8 @@ opaque
     Γ ⊩ᵛ⟨ l″ ⟩ u₁ ≡ u₂ ∷ A₁ →
     Γ ⊩ᵛ⟨ l ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂
   Id-congᵛ A₁≡A₂ t₁≡t₂ u₁≡u₂ =
+    ?
+    {-
     case ⊩ᵛ≡⇔″ .proj₁ A₁≡A₂ of λ
       (⊩A₁ , _ , A₁≡A₂) →
     ⊩ᵛ≡⇔ .proj₂
@@ -603,6 +625,7 @@ opaque
             , ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[]≡[]∷ (level-⊩ᵛ≡∷ ⊩A₁ u₁≡u₂) σ₁≡σ₂
             )
       )
+      -}
 
 opaque
 
@@ -659,6 +682,8 @@ opaque
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ rfl ∷ Id A t u
   ⊩rfl′ t≡u =
+    ?
+    {-
     case wf-⊩≡∷ t≡u of λ
       (⊩t , ⊩u) →
     case escape-⊩∷ ⊩t of λ
@@ -669,6 +694,7 @@ opaque
              (≅ₜ-eq (escape-⊩≡∷ t≡u)))
       , ⊩t , ⊩u , rflᵣ t≡u
       )
+    -}
 
 opaque
 
@@ -736,6 +762,8 @@ opaque
   ⊩[]-cong≡[]-cong
     {s} {A₁} {A₂} {t₁} {t₂} {u₁} {u₂} {v₁} {v₂}
     ok A₁≡A₂ t₁≡t₂ u₁≡u₂ v₁≡v₂ =
+    ?
+    {-
     case escape-⊩≡ A₁≡A₂ of λ
       A₁≅A₂ →
     case wf-⊩≡ A₁≡A₂ of λ
@@ -805,6 +833,7 @@ opaque
         []-cong s A₂ t₂ u₂ v₂                                  ∎)
     where
     open E ok
+    -}
 
 opaque
 
@@ -836,6 +865,8 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ []-cong s A₁ t₁ u₁ v₁ ≡ []-cong s A₂ t₂ u₂ v₂ ∷
       Id (Erased A₁) [ t₁ ] [ u₁ ]
   []-cong-congᵛ ok A₁≡A₂ t₁≡t₂ u₁≡u₂ v₁≡v₂ =
+    ?
+    {-
     ⊩ᵛ≡∷⇔ .proj₂
       ( wf-⊩ᵛ≡
           (Id-congᵛ (Erased-congᵛ A₁≡A₂) ([]-congᵛ′ t₁≡t₂)
@@ -849,6 +880,7 @@ opaque
       )
     where
     open E ok
+    -}
 
 opaque
 
@@ -878,6 +910,8 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ t ∷ A →
     Γ ⊩ᵛ⟨ l ⟩ []-cong s A t t rfl ≡ rfl ∷ Id (Erased A) [ t ] [ t ]
   []-cong-βᵛ {s} {t} {A} ok ⊩t =
+    ?
+    {-
     ⊩ᵛ∷-⇐
       (λ ⊩σ →
          case ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩t ⊩σ of λ
@@ -888,6 +922,7 @@ opaque
       (rflᵛ ([]ᵛ ⊩t))
     where
     open E ok
+    -}
 
 ------------------------------------------------------------------------
 -- The K rule
@@ -909,6 +944,8 @@ opaque
   ⊩K≡K
     {A₁} {A₂} {t₁} {t₂} {B₁} {B₂} {u₁} {u₂} {v₁} {v₂} {σ₁} {σ₂} {p}
     ok A₁≡A₂ t₁≡t₂ B₁≡B₂ u₁≡u₂ v₁≡v₂ σ₁≡σ₂ =
+    ?
+    {-
 
     -- Some definitions related to σ₁ and σ₂.
     case wf-⊩ˢ≡∷ σ₁≡σ₂ of λ
@@ -1027,6 +1064,7 @@ opaque
           (escape-⊩≡∷ $ ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[]≡[]∷ t₁≡t₂ σ₁≡σ₂)
           (escape-⊩≡ $ ⊩ᵛ≡→⊩ˢ≡∷→⊩[⇑]≡[⇑] B₁≡B₂ σ₁≡σ₂)
           (escape-⊩≡∷ u₁[σ₁]≡u₂[σ₂]) v₁′~v₂′ ok
+-}
 
 opaque
 
@@ -1036,15 +1074,18 @@ opaque
     K-allowed →
     Γ ⊩ᵛ⟨ l′ ⟩ A₁ ≡ A₂ →
     Γ ⊩ᵛ⟨ l″ ⟩ t₁ ≡ t₂ ∷ A₁ →
-    Γ ∙ Id A₁ t₁ t₁ ⊩ᵛ⟨ l ⟩ B₁ ≡ B₂ →
+    Γ ∙ Id A₁ t₁ t₁ ⊩ᵛ⟨ wk1 l ⟩ B₁ ≡ B₂ →
     Γ ⊩ᵛ⟨ l‴ ⟩ u₁ ≡ u₂ ∷ B₁ [ rfl ]₀ →
     Γ ⊩ᵛ⟨ l⁗ ⟩ v₁ ≡ v₂ ∷ Id A₁ t₁ t₁ →
     Γ ⊩ᵛ⟨ l ⟩ K p A₁ t₁ B₁ u₁ v₁ ≡ K p A₂ t₂ B₂ u₂ v₂ ∷ B₁ [ v₁ ]₀
   K-congᵛ ok A₁≡A₂ t₁≡t₂ B₁≡B₂ u₁≡u₂ v₁≡v₂ =
+    ?
+    {-
     ⊩ᵛ≡∷⇔ .proj₂
       ( ⊩ᵛ→⊩ᵛ∷→⊩ᵛ[]₀ (wf-⊩ᵛ≡ B₁≡B₂ .proj₁) (wf-⊩ᵛ≡∷ v₁≡v₂ .proj₁)
       , ⊩K≡K ok A₁≡A₂ t₁≡t₂ B₁≡B₂ u₁≡u₂ v₁≡v₂
       )
+    -}
 
 opaque
 

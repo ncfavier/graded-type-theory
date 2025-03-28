@@ -16,7 +16,6 @@ module Definition.LogicalRelation.Substitution.Introductions.Pi
 open EqRelSet eqrel
 open Type-restrictions R
 
-open import Definition.LogicalRelation R
 open import Definition.LogicalRelation.Hidden R
 open import Definition.LogicalRelation.Irrelevance R
 open import Definition.LogicalRelation.Properties R
@@ -46,11 +45,10 @@ open import Tools.Reasoning.PropositionalEquality
 private variable
   m n                 : Nat
   Γ Δ                 : Con Term _
-  A B t t₁ t₂ u u₁ u₂ : Term _
+  A B l l′ l″ t t₁ t₂ u u₁ u₂ : Term _
   ρ                   : Wk _ _
   σ σ₁ σ₂             : Subst _ _
   p q                 : M
-  l l′ l″             : Universe-level
 
 ------------------------------------------------------------------------
 -- Some characterisation lemmas
@@ -70,10 +68,12 @@ opaque
      Γ ⊢≅ u ∷ Π p , q ▷ A ▹ B ×
      ∀ {m} {ρ : Wk m n} {Δ : Con Term m} {v₁ v₂} →
      ρ ∷ʷ Δ ⊇ Γ →
-     Δ ⊩⟨ l ⟩ v₁ ≡ v₂ ∷ wk ρ A →
-     Δ ⊩⟨ l ⟩ wk ρ u ∘⟨ p ⟩ v₁ ≡ wk ρ u ∘⟨ p ⟩ v₂ ∷
+     Δ ⊩⟨ wk ρ l ⟩ v₁ ≡ v₂ ∷ wk ρ A →
+     Δ ⊩⟨ wk ρ l ⟩ wk ρ u ∘⟨ p ⟩ v₁ ≡ wk ρ u ∘⟨ p ⟩ v₂ ∷
        wk (lift ρ) B [ v₁ ]₀)
   ⊩∷Π⇔ {n} {Γ} {t} {p} {q} {A} {B} =
+    {!   !}
+    {-
       (λ (⊩Π , ⊩t) →
          case B-elim _ ⊩Π of λ
            ⊩Π′ →
@@ -184,6 +184,7 @@ opaque
            proj₁ $ wf-⊩≡∷ $
            rest ρ⊇ $
            refl-⊩≡∷ (⊩wk-ρ-A′ , irrelevanceTerm ⊩wk-ρ-A ⊩wk-ρ-A′ ⊩v)) }
+  -}
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_
@@ -202,10 +203,12 @@ opaque
      Γ ⊢ u₁ ≅ u₂ ∷ Π p , q ▷ A ▹ B ×
      ∀ {m} {ρ : Wk m n} {Δ : Con Term m} {v₁ v₂} →
      ρ ∷ʷ Δ ⊇ Γ →
-     Δ ⊩⟨ l ⟩ v₁ ≡ v₂ ∷ wk ρ A →
-     Δ ⊩⟨ l ⟩ wk ρ u₁ ∘⟨ p ⟩ v₁ ≡ wk ρ u₂ ∘⟨ p ⟩ v₂ ∷
+     Δ ⊩⟨ wk ρ l ⟩ v₁ ≡ v₂ ∷ wk ρ A →
+     Δ ⊩⟨ wk ρ l ⟩ wk ρ u₁ ∘⟨ p ⟩ v₁ ≡ wk ρ u₂ ∘⟨ p ⟩ v₂ ∷
        wk (lift ρ) B [ v₁ ]₀)
   ⊩≡∷Π⇔ {n} {Γ} {t₁} {t₂} {p} {q} {A} {B} =
+    {!   !}
+    {-
       (λ (⊩Π , _ , _ , t₁≡t₂) →
          case B-elim _ ⊩Π of λ
            ⊩Π′ →
@@ -363,6 +366,7 @@ opaque
             refl-⊩≡∷ $ emb-⊩∷ l′≤l $
             ⊩∷-intro (⊩wk-A ρ⊇) ⊩v
         ) }
+-}
 
 ------------------------------------------------------------------------
 -- Lambdas
@@ -375,12 +379,14 @@ opaque
     {σ₁ σ₂ : Subst m n} →
     Π-allowed p q →
     Γ ⊩ᵛ⟨ l ⟩ A →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ t₁ ≡ t₂ ∷ B →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    Δ ⊩⟨ l ⟩ lam p t₁ [ σ₁ ] ≡ lam p t₂ [ σ₂ ] ∷
+    Δ ⊩⟨ l [ σ₁ ] ⟩ lam p t₁ [ σ₁ ] ≡ lam p t₂ [ σ₂ ] ∷
       (Π p , q ▷ A ▹ B) [ σ₁ ]
   ⊩lam≡lam
     {m} {p} {l} {A} {t₁} {t₂} {B} {Δ} {σ₁} {σ₂} ok ⊩A t₁≡t₂ σ₁≡σ₂ =
+      {!   !}
+      {-
     case wf-⊩ˢ≡∷ σ₁≡σ₂ of λ
       (⊩σ₁ , ⊩σ₂) →
     case wf-⊩ᵛ≡∷ t₁≡t₂ of λ
@@ -460,6 +466,7 @@ opaque
            ⊩var here (wk-⊩ (W.stepʷ W.id ⊢A[σ₁]) ⊩A[σ₁]))
       , lemma _ _ _ _ _
       )
+  -}
 
 opaque
 
@@ -468,7 +475,7 @@ opaque
   lam-congᵛ :
     Π-allowed p q →
     Γ ⊩ᵛ⟨ l ⟩ A →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ t₁ ≡ t₂ ∷ B →
     Γ ⊩ᵛ⟨ l ⟩ lam p t₁ ≡ lam p t₂ ∷ Π p , q ▷ A ▹ B
   lam-congᵛ ok ⊩A t₁≡t₂ =
     ⊩ᵛ≡∷⇔ .proj₂
@@ -500,9 +507,11 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ Π p , q ▷ A ▹ B →
     Γ ⊩ᵛ⟨ l′ ⟩ u₁ ≡ u₂ ∷ A →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    Δ ⊩⟨ l ⟩ (t₁ ∘⟨ p ⟩ u₁) [ σ₁ ] ≡ (t₂ ∘⟨ p ⟩ u₂) [ σ₂ ] ∷
+    Δ ⊩⟨ l [ σ₁ ] ⟩ (t₁ ∘⟨ p ⟩ u₁) [ σ₁ ] ≡ (t₂ ∘⟨ p ⟩ u₂) [ σ₂ ] ∷
       B [ u₁ ]₀ [ σ₁ ]
   ⊩∘≡∘ {t₁} {t₂} {p} {B} {u₁} {u₂} {σ₁} {σ₂} t₁≡t₂ u₁≡u₂ σ₁≡σ₂ =
+    {!   !}
+    {-
     case ⊩ᵛ≡∷⇔″ .proj₁ t₁≡t₂ of λ
       (⊩t₁ , _ , t₁[]≡t₂[]) →
     case wf-⊩ᵛ≡∷ u₁≡u₂ of λ
@@ -533,6 +542,7 @@ opaque
                                                             conv-⊩∷ (sym-⊩≡ $ ⊩ᵛ⇔ .proj₁ ⊩A .proj₂ σ₁≡σ₂) $
                                                             ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩u₂ ⊩σ₂ ⟩∎∷
     (t₂ ∘⟨ p ⟩ u₂) [ σ₂ ]                               ∎
+-}
 
 opaque
 
@@ -543,12 +553,15 @@ opaque
     Γ ⊩ᵛ⟨ l′ ⟩ u₁ ≡ u₂ ∷ A →
     Γ ⊩ᵛ⟨ l ⟩ t₁ ∘⟨ p ⟩ u₁ ≡ t₂ ∘⟨ p ⟩ u₂ ∷ B [ u₁ ]₀
   ∘-congᵛ t₁≡t₂ u₁≡u₂ =
+    {!   !}
+    {-
     case ⊩ᵛΠΣ⇔ .proj₁ $ wf-⊩ᵛ∷ $ wf-⊩ᵛ≡∷ t₁≡t₂ .proj₁ of λ
       (_ , _ , ⊩B) →
     ⊩ᵛ≡∷⇔ .proj₂
       ( ⊩ᵛ→⊩ᵛ∷→⊩ᵛ[]₀ ⊩B (wf-⊩ᵛ≡∷ u₁≡u₂ .proj₁)
       , ⊩∘≡∘ t₁≡t₂ u₁≡u₂
       )
+      -}
 
 opaque
 
@@ -571,10 +584,12 @@ opaque
 
   β-redᵛ :
     Π-allowed p q →
-    Γ ∙ A ⊩ᵛ⟨ l ⟩ t ∷ B →
+    Γ ∙ A ⊩ᵛ⟨ wk1 l ⟩ t ∷ B →
     Γ ⊩ᵛ⟨ l′ ⟩ u ∷ A →
     Γ ⊩ᵛ⟨ l ⟩ lam p t ∘⟨ p ⟩ u ≡ t [ u ]₀ ∷ B [ u ]₀
   β-redᵛ {t} {B} ok ⊩t ⊩u =
+    {!   !}
+    {-
     case wf-⊩ᵛ∷ ⊩t of λ
       ⊩B →
     ⊩ᵛ∷-⇐
@@ -585,6 +600,7 @@ opaque
            (escape-⊩∷ $ ⊩ᵛ∷→⊩ˢ∷→⊩[⇑]∷ ⊩t ⊩σ)
            (escape-⊩∷ $ ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩u ⊩σ) PE.refl ok)
       (⊩ᵛ∷→⊩ᵛ∷→⊩ᵛ[]₀∷ ⊩t ⊩u)
+-}
 
 private opaque
 
@@ -612,6 +628,8 @@ opaque
     Γ ∙ A ⊩ᵛ⟨ l″ ⟩ wk1 t₁ ∘⟨ p ⟩ var x0 ≡ wk1 t₂ ∘⟨ p ⟩ var x0 ∷ B →
     Γ ⊩ᵛ⟨ l ⟩ t₁ ≡ t₂ ∷ Π p , q ▷ A ▹ B
   η-eqᵛ {l} {t₁} {p} {A} {B} {t₂} ⊩t₁ ⊩t₂ wk1-t₁∘0≡wk1-t₂∘0 =
+    {!   !}
+    {-
     case wf-⊩ᵛ∷ ⊩t₁ of λ
       ⊩ΠAB →
     case ⊩ᵛΠΣ⇔ .proj₁ ⊩ΠAB of λ
@@ -680,3 +698,4 @@ opaque
             , lemma _ _ _ _ _
             )
       )
+      -}

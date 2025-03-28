@@ -38,8 +38,7 @@ import Tools.PropositionalEquality as PE
 private
   variable
     Γ Δ : Con Term _
-    A A₁ A₂ t t₁ t₂ : Term _
-    l l′ : Universe-level
+    A A₁ A₂ l l′ t t₁ t₂ : Term _
     σ σ₁ σ₂ : Subst _ _
     p : M
 
@@ -55,10 +54,12 @@ opaque
     Γ ⊩ᵛ⟨ l ⟩ A₁ ≡ A₂ →
     Γ ⊩ᵛ⟨ l′ ⟩ t₁ ≡ t₂ ∷ Empty →
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
-    Δ ⊩⟨ l ⟩ emptyrec p A₁ t₁ [ σ₁ ] ≡ emptyrec p A₂ t₂ [ σ₂ ] ∷ A₁ [ σ₁ ]
+    Δ ⊩⟨ l [ σ₁ ] ⟩ emptyrec p A₁ t₁ [ σ₁ ] ≡ emptyrec p A₂ t₂ [ σ₂ ] ∷ A₁ [ σ₁ ]
   ⊩emptyrec≡emptyrec
     {A₁} {A₂} {t₁} {t₂} {σ₁} {σ₂} {p}
     A₁≡A₂ t₁≡t₂ σ₁≡σ₂ =
+    {!   !}
+    {-
     case ⊩ᵛ≡→⊩ˢ≡∷→⊩[]≡[] A₁≡A₂ of λ
       A₁≡A₂ →
     case ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[]≡[]∷ t₁≡t₂ of λ
@@ -84,6 +85,7 @@ opaque
                                                          ⟨ ≅-eq ⊢A₁[σ₁]≡A₂[σ₂] ⟩⇒
         emptyrec p (A₂ [ σ₂ ]) t₂′         ∷ A₂ [ σ₂ ] ⇐*⟨ emptyrec-subst* t₂[σ₂]⇒*t₂′ ⊢A₂[σ₂] ⟩∎∷
         emptyrec p (A₂ [ σ₂ ]) (t₂ [ σ₂ ])             ∎
+    -}
 
 opaque
 
@@ -94,10 +96,11 @@ opaque
     Γ ⊩ᵛ⟨ l′ ⟩ t₁ ≡ t₂ ∷ Empty →
     Γ ⊩ᵛ⟨ l ⟩ emptyrec p A₁ t₁ ≡ emptyrec p A₂ t₂ ∷ A₁
   emptyrec-congᵛ A₁≡A₂ t₁≡t₂ =
-    ⊩ᵛ≡∷⇔ .proj₂
-      ( wf-⊩ᵛ≡ A₁≡A₂ .proj₁
-      , ⊩emptyrec≡emptyrec A₁≡A₂ t₁≡t₂
-      )
+    {!   !}
+    -- ⊩ᵛ≡∷⇔ .proj₂
+    --   ( wf-⊩ᵛ≡ A₁≡A₂ .proj₁
+    --   , ⊩emptyrec≡emptyrec A₁≡A₂ t₁≡t₂
+    --   )
 
 opaque
 

@@ -22,11 +22,12 @@ open import Definition.Untyped.Properties M
 open import Definition.Typed R
 open import Definition.Typed.Properties R
 open import Definition.Typed.Reasoning.Reduction R
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Hidden R
+open import Definition.LogicalRelation.Hidden R {{eqrel}}
 open import Definition.LogicalRelation.Properties R
+open import Definition.LogicalRelation.Properties.Primitive R
 open import Definition.LogicalRelation.ShapeView R
-open import Definition.LogicalRelation.Substitution R
+open import Definition.LogicalRelation.Substitution R {{eqrel}}
+open import Definition.LogicalRelation.Substitution.Introductions.Level R {{eqrel}}
 open import Definition.LogicalRelation.Substitution.Introductions.Universe R
 open import Definition.LogicalRelation.Irrelevance R
 
@@ -43,37 +44,30 @@ private
     Γ Δ : Con Term n
     σ σ₁ σ₂ : Subst _ _
     s s₁ s₂ : Strength
-    l l′ l″ l‴ l₁ l₂ : Universe-level
-    A A₁ A₂ t t₁ t₂ u u₁ u₂ : Term n
+    ℓ : Universe-level
+    A A₁ A₂ l l′ l″ l‴ l₁ l₂ t t₁ t₂ u u₁ u₂ : Term n
     p q : M
 
 ------------------------------------------------------------------------
 -- Characterisation lemmas
 
 opaque
-  unfolding emb-⊩
+  unfolding _⊩_≤_∷Level _⊩⟨_⟩_
 
   -- A characterisation lemma for _⊩⟨_⟩_.
 
   ⊩Unit⇔ :
     Γ ⊩⟨ l′ ⟩ Unit s l ⇔
-    (l ≤ᵘ l′ × ⊢ Γ × Unit-allowed s)
-  ⊩Unit⇔ =
-      (λ ⊩Unit → lemma (Unit-elim ⊩Unit))
-    , (λ (l≤l′ , ⊢Γ , ok) →
-         emb-⊩ l≤l′ $
-         Unitᵣ (Unitₜ (id (Unitⱼ ⊢Γ ok)) ok))
-    where
-    lemma :
-      Γ ⊩⟨ l′ ⟩Unit⟨ s ⟩ Unit s l →
-      l ≤ᵘ l′ × ⊢ Γ × Unit-allowed s
-    lemma (emb p ⊩Unit) =
-      Σ.map (flip ≤ᵘ-trans (<ᵘ→≤ᵘ p)) idᶠ (lemma ⊩Unit)
-    lemma (noemb (Unitₜ Unit⇒*Unit ok)) =
-      case Unit-PE-injectivity $
-           whnfRed* Unit⇒*Unit Unitₙ of λ {
-        (_ , PE.refl) →
-      ≤ᵘ-refl , wfEq (subset* Unit⇒*Unit) , ok }
+    (Γ ⊩ l ≤ l′ ∷Level × Unit-allowed s)
+  ⊩Unit⇔ {Γ} {l′} {l} =
+      (λ (⊩l′ , ⊩Unit) →
+        case Unit-elim ⊩Unit of λ {
+          (Unitᵣ (Unitᵣ k ⊩k k≤ Unit⇒*Unit ok)) →
+        case Unit-PE-injectivity $ whnfRed* Unit⇒*Unit Unitₙ of λ {
+          (PE.refl , PE.refl) →
+        (⊩k , ⊩l′ , k≤) , ok }})
+    , (λ ((⊩l , ⊩l′ , l≤l′) , ok) →
+        ⊩l′ , Unitᵣ′ _ ⊩l l≤l′ (id (Unitⱼ (escapeLevel ⊩l) ok)) ok)
 
 opaque
   unfolding _⊩⟨_⟩_∷_ ⊩Unit⇔
@@ -82,62 +76,44 @@ opaque
 
   ⊩∷Unit⇔ :
     Γ ⊩⟨ l′ ⟩ t ∷ Unit s l ⇔
-    (l ≤ᵘ l′ × Unit-allowed s × Γ ⊩Unit⟨ l , s ⟩ t ∷Unit)
-  ⊩∷Unit⇔ =
-      (λ (⊩Unit , ⊩t) →
-         lemma₁ (Unit-elim ⊩Unit)
-           (irrelevanceTerm ⊩Unit (Unit-intr (Unit-elim ⊩Unit)) ⊩t))
-    , (λ (l≤l′ , ok , ⊩t@(Unitₜ _ _ ≅n _)) →
-         emb-⊩∷ l≤l′
-           (⊩Unit⇔ .proj₂ (≤ᵘ-refl , wfEqTerm (≅ₜ-eq ≅n) , ok) , ⊩t))
-    where
-    lemma₁ :
-      (⊩Unit : Γ ⊩⟨ l′ ⟩Unit⟨ s ⟩ Unit s l) →
-      Γ ⊩⟨ l′ ⟩ t ∷ Unit s l / Unit-intr ⊩Unit →
-      l ≤ᵘ l′ × Unit-allowed s × Γ ⊩Unit⟨ l , s ⟩ t ∷Unit
-    lemma₁ (emb ≤ᵘ-refl     ⊩Unit) = Σ.map ≤ᵘ-step idᶠ ∘→ lemma₁ ⊩Unit
-    lemma₁ (emb (≤ᵘ-step p) ⊩Unit) =
-      Σ.map ≤ᵘ-step idᶠ ∘→ lemma₁ (emb p ⊩Unit)
-    lemma₁ (noemb (Unitₜ Unit⇒*Unit ok)) ⊩t =
-      case Unit-PE-injectivity $
-           whnfRed* Unit⇒*Unit Unitₙ of λ {
-        (_ , PE.refl) →
-      ≤ᵘ-refl , ok , ⊩t }
+    (Γ ⊩ l ≤ l′ ∷Level × Unit-allowed s × Γ ⊩Unit⟨ s ⟩ t ∷ Unit s l / l)
+  ⊩∷Unit⇔ {Γ} {l′} {l} =
+      (λ ((⊩l′ , ⊩Unit) , ⊩t) →
+        case Unit-elim ⊩Unit of λ {
+          (Unitᵣ (Unitᵣ k ⊩k k≤ Unit⇒*Unit ok)) →
+        case Unit-PE-injectivity $ whnfRed* Unit⇒*Unit Unitₙ of λ {
+          (PE.refl , PE.refl) →
+        (⊩k , ⊩l′ , k≤) , ok , ⊩t }})
+    , (λ (l≤l′ , ok , ⊩t) →
+        ⊩Unit⇔ .proj₂ (l≤l′ , ok) , ⊩t)
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_≡_ _⊩⟨_⟩_ _⊩_≤_∷Level
 
   -- A characterisation lemma for _⊩⟨_⟩_≡_.
 
   ⊩Unit≡⇔ :
     Γ ⊩⟨ l′ ⟩ Unit s l ≡ A ⇔
-    (l ≤ᵘ l′ × ⊢ Γ × Unit-allowed s × Γ ⊩Unit⟨ l , s ⟩ Unit s l ≡ A)
-  ⊩Unit≡⇔ {s} {l} {A} =
-      (λ (⊩Unit₁ , _ , Unit₁≡Unit₂) →
-         case Unit-elim ⊩Unit₁ of λ
-           ⊩Unit₁′ →
-         lemma ⊩Unit₁′
-           (irrelevanceEq ⊩Unit₁ (Unit-intr ⊩Unit₁′) Unit₁≡Unit₂))
-    , (λ (l≤l′ , ⊢Γ , ok , A⇒*Unit) →
-         sym-⊩≡
+    (Γ ⊩ l ≤ l′ ∷Level × Unit-allowed s × ∃ λ k → Γ ⊢ A ⇒* Unit s k × Γ ⊩Level l ≡ k ∷Level)
+  ⊩Unit≡⇔ {Γ} {l′} {s} {l} {A} =
+      (λ ((⊩l′ , ⊩Unit₁) , ⊩A , Unit₁≡A) →
+        case Unit-elim ⊩Unit₁ of λ {
+          (Unitᵣ (Unitᵣ l ⊩l l≤ Unit⇒*Unit ok)) →
+        case Unit₁≡A of λ
+          (Unit₌ k A⇒*Unit l≡k) →
+        case Unit-PE-injectivity $ whnfRed* Unit⇒*Unit Unitₙ of λ {
+          (PE.refl , PE.refl) →
+        (⊩l , ⊩l′ , l≤) , ok , k , A⇒*Unit , l≡k }})
+      , (λ (l≤l′@(⊩l , ⊩l′ , p) , ok , k , A⇒*Unit , l≡k) →
+        let ⊩k = wf-⊩Level l≡k .proj₂
+            Unitl≡Unitk
+              = (⊩l′ , Unitᵣ′ _ ⊩l p (id (Unitⱼ (escapeLevel ⊩l) ok)) ok)
+              , (⊩l′ , Unitᵣ′ _ ⊩k (PE.subst (_≤ᵘ ↑ᵘ ⊩l′) (↑ᵘ-cong ⊩l ⊩k l≡k) p) (id (Unitⱼ (escapeLevel ⊩k) ok)) ok)
+              , Unit₌ _ (id (Unitⱼ (escapeLevel ⊩k) ok)) l≡k
+        in sym-⊩≡
            (A         ⇒*⟨ A⇒*Unit ⟩⊩
-            Unit s l  ∎⟨ ⊩Unit⇔ .proj₂ (l≤l′ , ⊢Γ , ok) ⟩⊩))
-    where
-    lemma :
-      (⊩Unit : Γ ⊩⟨ l′ ⟩Unit⟨ s ⟩ Unit s l) →
-      Γ ⊩⟨ l′ ⟩ Unit s l ≡ A / Unit-intr ⊩Unit →
-      l ≤ᵘ l′ × ⊢ Γ × Unit-allowed s × Γ ⊩Unit⟨ l , s ⟩ Unit s l ≡ A
-    lemma (emb ≤ᵘ-refl ⊩Unit) =
-      Σ.map ≤ᵘ-step idᶠ ∘→ lemma ⊩Unit
-    lemma (emb (≤ᵘ-step l<) ⊩Unit) =
-      Σ.map ≤ᵘ-step idᶠ ∘→ lemma (emb l< ⊩Unit)
-    lemma ⊩Unit@(noemb (Unitₜ Unit⇒*Unit _)) A⇒*Unit =
-      case ⊩Unit⇔ .proj₁ $ Unit-intr ⊩Unit of λ
-        (l≤l′ , ⊢Γ , ok) →
-      case Unit-PE-injectivity $
-           whnfRed* Unit⇒*Unit Unitₙ of λ {
-        (_ , PE.refl) →
-      l≤l′ , ⊢Γ , ok , A⇒*Unit }
+            Unit s k  ≡⟨ sym-⊩≡ Unitl≡Unitk ⟩⊩
+            Unit s l  ∎⟨ ⊩Unit⇔ .proj₂ (l≤l′ , ok) ⟩⊩))
 
 opaque
 
@@ -145,14 +121,19 @@ opaque
 
   ⊩Unit≡Unit⇔ :
     Γ ⊩⟨ l ⟩ Unit s₁ l₁ ≡ Unit s₂ l₂ ⇔
-    (l₁ ≤ᵘ l × ⊢ Γ × Unit-allowed s₁ × s₁ PE.≡ s₂ × l₁ PE.≡ l₂)
+    (Γ ⊩ l₁ ≤ l ∷Level × Unit-allowed s₁ × s₁ PE.≡ s₂ × Γ ⊩Level l₁ ≡ l₂ ∷Level)
   ⊩Unit≡Unit⇔ {Γ} {l} {s₁} {l₁} {s₂} {l₂} =
-    Γ ⊩⟨ l ⟩ Unit s₁ l₁ ≡ Unit s₂ l₂                                ⇔⟨ ⊩Unit≡⇔ ⟩
-    l₁ ≤ᵘ l × ⊢ Γ × Unit-allowed s₁ × Γ ⊢ Unit s₂ l₂ ⇒* Unit s₁ l₁  ⇔⟨ (Σ-cong-⇔ λ _ → Σ-cong-⇔ λ ⊢Γ → Σ-cong-⇔ λ ok →
-                                                                          Σ.map PE.sym PE.sym ∘→ Unit-PE-injectivity ∘→ flip whnfRed* Unitₙ
-                                                                        , (λ { (PE.refl , PE.refl) → id (Unitⱼ ⊢Γ ok) }))
-                                                                     ⟩
-    l₁ ≤ᵘ l × ⊢ Γ × Unit-allowed s₁ × s₁ PE.≡ s₂ × l₁ PE.≡ l₂       □⇔
+      (λ Unit≡Unit →
+        case ⊩Unit≡⇔ .proj₁ Unit≡Unit of λ
+          (l₁≤l , ok , k , D , l₁≡k) →
+        case Unit-PE-injectivity (whnfRed* D Unitₙ) of λ {
+          (s₂≡s₁ , PE.refl) → l₁≤l , ok , PE.sym s₂≡s₁ , l₁≡k })
+    , λ { (l₁≤l , ok , PE.refl , l₁≡l₂) →
+          ⊩Unit≡⇔ .proj₂
+            ( l₁≤l , ok , _
+            , id (Unitⱼ (escapeLevel (wf-⊩Level l₁≡l₂ .proj₂)) ok)
+            , l₁≡l₂
+            ) }
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_ ⊩Unit⇔
@@ -161,46 +142,20 @@ opaque
 
   ⊩≡∷Unit⇔ :
     Γ ⊩⟨ l′ ⟩ t ≡ u ∷ Unit s l ⇔
-    (l ≤ᵘ l′ ×
+    (Γ ⊩ l ≤ l′ ∷Level ×
      Unit-allowed s ×
-     Γ ⊩Unit⟨ l , s ⟩ t ∷Unit ×
-     Γ ⊩Unit⟨ l , s ⟩ u ∷Unit ×
-     Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷Unit)
-  ⊩≡∷Unit⇔ {s} =
-      (λ (⊩Unit , ⊩t , ⊩u , t≡u) →
-         lemma (Unit-elim ⊩Unit)
-           (irrelevanceTerm ⊩Unit (Unit-intr (Unit-elim ⊩Unit)) ⊩t)
-           (irrelevanceTerm ⊩Unit (Unit-intr (Unit-elim ⊩Unit)) ⊩u)
-           (irrelevanceEqTerm ⊩Unit (Unit-intr (Unit-elim ⊩Unit)) t≡u))
+     Γ ⊩Unit⟨ s ⟩ t ∷ Unit s l / l ×
+     Γ ⊩Unit⟨ s ⟩ u ∷ Unit s l / l ×
+     Γ ⊩Unit⟨ s ⟩ t ≡ u ∷ Unit s l / l)
+  ⊩≡∷Unit⇔ {Γ} {l′} {s} {l} =
+      (λ ((⊩l′ , ⊩Unit) , ⊩t , ⊩u , t≡u) →
+        case Unit-elim ⊩Unit of λ {
+          (Unitᵣ (Unitᵣ k ⊩k k≤ Unit⇒*Unit ok)) →
+        case Unit-PE-injectivity $ whnfRed* Unit⇒*Unit Unitₙ of λ {
+          (PE.refl , PE.refl) →
+        (⊩k , ⊩l′ , k≤) , ok , ⊩t , ⊩u , t≡u }})
     , (λ (l≤l′ , ok , ⊩t , ⊩u , t≡u) →
-         case
-           (case t≡u of λ where
-              (Unitₜ₌ˢ ⊢t _ _)           → wfTerm ⊢t
-              (Unitₜ₌ʷ _ _ _ _ k≅k′ _ _) → wfEqTerm (≅ₜ-eq k≅k′))
-         of λ
-           ⊢Γ →
-         emb-⊩≡∷ l≤l′ $
-         ⊩Unit⇔ .proj₂ (≤ᵘ-refl , ⊢Γ , ok) , ⊩t , ⊩u , t≡u)
-    where
-    lemma :
-      (⊩Unit : Γ ⊩⟨ l′ ⟩Unit⟨ s ⟩ Unit s l) →
-      Γ ⊩⟨ l′ ⟩ t ∷ Unit s l / Unit-intr ⊩Unit →
-      Γ ⊩⟨ l′ ⟩ u ∷ Unit s l / Unit-intr ⊩Unit →
-      Γ ⊩⟨ l′ ⟩ t ≡ u ∷ Unit s l / Unit-intr ⊩Unit →
-      l ≤ᵘ l′ ×
-      Unit-allowed s ×
-      Γ ⊩Unit⟨ l , s ⟩ t ∷Unit ×
-      Γ ⊩Unit⟨ l , s ⟩ u ∷Unit ×
-      Γ ⊩Unit⟨ l , s ⟩ t ≡ u ∷Unit
-    lemma (emb ≤ᵘ-refl ⊩Unit) ⊩t ⊩u t≡u =
-      Σ.map ≤ᵘ-step idᶠ (lemma ⊩Unit ⊩t ⊩u t≡u)
-    lemma (emb (≤ᵘ-step p) ⊩Unit) ⊩t ⊩u t≡u =
-      Σ.map ≤ᵘ-step idᶠ (lemma (emb p ⊩Unit) ⊩t ⊩u t≡u)
-    lemma (noemb (Unitₜ Unit⇒*Unit ok)) ⊩t ⊩u t≡u =
-      case Unit-PE-injectivity $
-           whnfRed* Unit⇒*Unit Unitₙ of λ {
-        (_ , PE.refl) →
-      ≤ᵘ-refl , ok , ⊩t , ⊩u , t≡u }
+        ⊩Unit⇔ .proj₂ (l≤l′ , ok) , ⊩t , ⊩u , t≡u)
 
 ------------------------------------------------------------------------
 -- Unit
@@ -213,37 +168,39 @@ opaque
     Γ ⊩ᵛ⟨ l′ ⟩ Unit s l →
     Unit-allowed s
   ⊩ᵛUnit→Unit-allowed {Γ} {l′} {s} {l} =
-    Γ ⊩ᵛ⟨ l′ ⟩ Unit s l             →⟨ ⊩ᵛ→⊩ ⟩
-    Γ ⊩⟨ l′ ⟩ Unit s l              ⇔⟨ ⊩Unit⇔ ⟩→
-    l ≤ᵘ l′ × ⊢ Γ × Unit-allowed s  →⟨ proj₂ ∘→ proj₂ ⟩
-    Unit-allowed s                  □
+    Γ ⊩ᵛ⟨ l′ ⟩ Unit s l                 →⟨ ⊩ᵛ→⊩ ⟩
+    Γ ⊩⟨ l′ ⟩ Unit s l                  ⇔⟨ ⊩Unit⇔ ⟩→
+    Γ ⊩ l ≤ l′ ∷Level × Unit-allowed s  →⟨ proj₂ ⟩
+    Unit-allowed s                      □
 
 opaque
 
   -- Reducibility for Unit.
 
   ⊩Unit :
-    ⊢ Γ →
+    Γ ⊩Level l ∷Level →
     Unit-allowed s →
     Γ ⊩⟨ l ⟩ Unit s l
-  ⊩Unit ⊢Γ ok = ⊩Unit⇔ .proj₂ (≤ᵘ-refl , ⊢Γ , ok)
+  ⊩Unit ⊩l ok = ⊩Unit⇔ .proj₂ (≤-reflᵘ ⊩l , ok)
 
 opaque
 
   -- Validity for Unit, seen as a type former.
 
   Unitᵛ :
-    ⊩ᵛ Γ →
+    Γ ⊩ᵛ⟨ l′ ⟩ l ∷ Level →
     Unit-allowed s →
     Γ ⊩ᵛ⟨ l ⟩ Unit s l
-  Unitᵛ {Γ} {s} {l} ⊩Γ ok =
+  Unitᵛ {Γ} {l′} {l} {s} ⊩l ok =
+    let ⊩ᵛᵘl = ⊩ᵛ∷Level⇔ .proj₁ ⊩l .proj₂ in
     ⊩ᵛ⇔ .proj₂
-      ( ⊩Γ
-      , λ {_} {Δ = Δ} {σ₁ = σ₁} {σ₂ = σ₂} →
-          Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ              →⟨ proj₁ ∘→ escape-⊩ˢ≡∷ ⟩
-          ⊢ Δ                           →⟨ flip ⊩Unit ok ⟩
-          (Δ ⊩⟨ l ⟩ Unit s l)           →⟨ refl-⊩≡ ⟩
-          Δ ⊩⟨ l ⟩ Unit s l ≡ Unit s l  □
+      ( ⊩ᵛᵘl
+      , λ σ₁≡σ₂ →
+          let l[σ₁]≡l[σ₂] = ⊩ᵛᵘ→⊩ˢ≡∷→⊩[]≡[] ⊩ᵛᵘl σ₁≡σ₂ in
+          ⊩Unit≡Unit⇔ .proj₂
+            ( ≤-reflᵘ (wf-⊩Level l[σ₁]≡l[σ₂] .proj₁)
+            , ok , PE.refl , l[σ₁]≡l[σ₂]
+            )
       )
 
 opaque
@@ -251,17 +208,21 @@ opaque
   -- Validity for Unit, seen as a term former.
 
   Unitᵗᵛ :
-    ⊩ᵛ Γ →
+    Γ ⊩ᵛ⟨ l′ ⟩ l ∷ Level →
     Unit-allowed s →
-    Γ ⊩ᵛ⟨ 1+ l ⟩ Unit s l ∷ U l
-  Unitᵗᵛ ⊩Γ ok =
+    Γ ⊩ᵛ⟨ sucᵘ l ⟩ Unit s l ∷ U l
+  Unitᵗᵛ ⊩l ok =
+    let ⊩ᵛᵘl = ⊩ᵛ∷Level⇔ .proj₁ ⊩l .proj₂ in
     ⊩ᵛ∷⇔ .proj₂
-      ( ⊩ᵛU ⊩Γ
+      ( ⊩ᵛU ⊩l
       , λ σ₁≡σ₂ →
-          case escape-⊩ˢ≡∷ σ₁≡σ₂ of λ
-            (⊢Δ , _) →
+          case ⊩ᵛᵘ→⊩ˢ≡∷→⊩[]≡[] ⊩ᵛᵘl σ₁≡σ₂ of λ
+            l[σ₁]≡l[σ₂] →
           Type→⊩≡∷U⇔ Unitₙ Unitₙ .proj₂
-            (≤ᵘ-refl , refl-⊩≡ (⊩Unit ⊢Δ ok) , ≅ₜ-Unitrefl ⊢Δ ok)
+            ( <-sucᵘ (wf-⊩Level l[σ₁]≡l[σ₂] .proj₁)
+            , ⊩ᵛ⇔ .proj₁ (Unitᵛ ⊩l ok) .proj₂ σ₁≡σ₂
+            , ≅ₜ-Unit-cong (escapeLevelEq l[σ₁]≡l[σ₂]) ok
+            )
       )
 
 ------------------------------------------------------------------------
@@ -272,16 +233,18 @@ opaque
   -- Reducibility for star.
 
   ⊩star :
-    ⊢ Γ →
+    Γ ⊩Level l ∷Level →
     Unit-allowed s →
     Γ ⊩⟨ l ⟩ star s l ∷ Unit s l
-  ⊩star ⊢Γ ok =
+  ⊩star ⊩l ok =
+    let ⊢l = escapeLevel ⊩l in
     ⊩∷Unit⇔ .proj₂
-      ( ≤ᵘ-refl
+      ( ≤-reflᵘ ⊩l
       , ok
-      , Unitₜ _ (id (starⱼ ⊢Γ ok)) (≅ₜ-starrefl ⊢Γ ok) starᵣ
+      , Unitₜ _ (id (starⱼ ⊢l ok)) (≅ₜ-starrefl ⊢l ok) (starᵣ (reflLevel ⊩l))
       )
 
+{-
 opaque
 
   -- Validity of star.
@@ -543,3 +506,4 @@ opaque
          (⊩ᵛ≡→⊩ᵛ≡∷→⊩ᵛ[]₀≡[]₀ (refl-⊩ᵛ≡ ⊩A) $
           η-unitᵛ (starᵛ ⊩Γ ok) ⊩t (inj₂ η))
          ⊩u)
+-}

@@ -173,6 +173,24 @@ opaque mutual
   ↑ᵘ-prop (sucᵘᵣ x) = 1+ (↑ᵘ x)
   ↑ᵘ-prop (ne _)    = 0
 
+-- Level term inequality
+
+opaque
+
+  _⊩_≤_∷Level : Con Term ℓ → Term ℓ → Term ℓ → Set a
+  Γ ⊩ t ≤ u ∷Level =
+    ∃ λ (⊩t : Γ ⊩Level t ∷Level) →
+    ∃ λ (⊩u : Γ ⊩Level u ∷Level) →
+    ↑ᵘ ⊩t ≤ᵘ ↑ᵘ ⊩u
+
+opaque
+
+  _⊩_<_∷Level : Con Term ℓ → Term ℓ → Term ℓ → Set a
+  Γ ⊩ t < u ∷Level =
+    ∃ λ (⊩t : Γ ⊩Level t ∷Level) →
+    ∃ λ (⊩u : Γ ⊩Level u ∷Level) →
+    ↑ᵘ ⊩t <ᵘ ↑ᵘ ⊩u
+
 -- Reducibility of natural numbers:
 
 -- Natural number type
