@@ -25,6 +25,7 @@ open import Definition.LogicalRelation R
 open import Definition.LogicalRelation.Hidden R
 import Definition.LogicalRelation.Hidden.Restricted R as R
 open import Definition.LogicalRelation.Substitution R
+open import Definition.LogicalRelation.Substitution.Introductions.Level R
 open import
   Definition.LogicalRelation.Substitution.Introductions.Pi-Sigma R
 open import
@@ -53,10 +54,10 @@ opaque
   ⊩Erased ⊩A =
     ⊩ΠΣ⇔ .proj₂
       ( ≅-ΠΣ-cong (escape-⊩≡ $ refl-⊩≡ ⊩A)
-          (≅-Unitrefl (∙ escape-⊩ ⊩A) Unit-ok) Σ-ok
+          (≅-Unit-cong (≅ₜ-zeroᵘrefl (∙ escape-⊩ ⊩A)) Unit-ok) Σ-ok
       , λ ρ⊇ →
             wk-⊩ ρ⊇ ⊩A
-          , λ _ → refl-⊩≡ $ emb-⊩ 0≤ᵘ $ ⊩Unit (wf-∷ʷʳ⊇ ρ⊇) Unit-ok
+          , λ _ → refl-⊩≡ $ {! ⊩Unit ? Unit-ok  !}
       )
 
 opaque
@@ -73,11 +74,11 @@ opaque
       ( ⊩Erased ⊩A₁
       , ⊩Erased ⊩A₂
       , ≅-ΠΣ-cong (escape-⊩≡ A₁≡A₂)
-          (≅-Unitrefl (∙ escape-⊩ ⊩A₁) Unit-ok) Σ-ok
+          {!   !} Σ-ok
       , PE.refl , PE.refl , PE.refl
       , λ ρ⊇ →
             wk-⊩≡ ρ⊇ A₁≡A₂
-          , λ _ → refl-⊩≡ $ emb-⊩ 0≤ᵘ $ ⊩Unit (wf-∷ʷʳ⊇ ρ⊇) Unit-ok
+          , λ _ → {!   !}
       )
 
 opaque
@@ -113,8 +114,8 @@ opaque
       ⊩A →
     case escape-⊩ ⊩A of λ
       ⊢A →
-    ⊩prod≡prod (Unitⱼ (∙ ⊢A) Unit-ok) (⊩Erased ⊩A) t≡u
-      (refl-⊩≡∷ (⊩star (wf ⊢A) Unit-ok))
+    ⊩prod≡prod (Unitⱼ (zeroᵘⱼ (∙ ⊢A)) Unit-ok) (⊩Erased ⊩A) t≡u
+      (refl-⊩≡∷ (⊩star (⊩Levelzeroᵘ∷Level (wf ⊢A)) Unit-ok))
 
 opaque
 

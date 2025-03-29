@@ -14,6 +14,7 @@ module Definition.LogicalRelation.Substitution.Introductions
 open import Definition.LogicalRelation.Substitution.Introductions.Empty R public
 open import Definition.LogicalRelation.Substitution.Introductions.Emptyrec R public
 open import Definition.LogicalRelation.Substitution.Introductions.Identity R public
+open import Definition.LogicalRelation.Substitution.Introductions.Level R public
 open import Definition.LogicalRelation.Substitution.Introductions.Nat R public
 open import Definition.LogicalRelation.Substitution.Introductions.Pi R public
 open import Definition.LogicalRelation.Substitution.Introductions.Pi-Sigma R public

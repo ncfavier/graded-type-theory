@@ -18,6 +18,7 @@ open Type-restrictions R
 
 open import Definition.LogicalRelation.Weakening.Restricted R
 open import Definition.Untyped Mod as U hiding (K)
+open import Definition.Untyped.Properties Mod
 open import Definition.Untyped.Neutral Mod type-variant
 open import Definition.Typed.Properties R
 open import Definition.Typed R
@@ -138,14 +139,19 @@ _⊩Level_∷Level : Con Term ℓ → Term ℓ → Set a
 -- Level reflection
 
 opaque mutual
+  ↑ᵘ′_ : Γ ⊩Level t ≡ u ∷Level → Nat
+  ↑ᵘ′ t≡u = ↑ᵘ′-prop (t≡u ._⊩Level_≡_∷Level.prop)
 
-  ↑ᵘ_ : Γ ⊩Level t ≡ u ∷Level → Universe-level
-  ↑ᵘ t≡u = ↑ᵘ-prop (t≡u ._⊩Level_≡_∷Level.prop)
+  ↑ᵘ′-prop : [Level]-prop Γ t u → Nat
+  ↑ᵘ′-prop zeroᵘᵣ    = 0
+  ↑ᵘ′-prop (sucᵘᵣ x) = 1+ (↑ᵘ′ x)
+  ↑ᵘ′-prop (ne _)    = 0
 
-  ↑ᵘ-prop : [Level]-prop Γ t u → Universe-level
-  ↑ᵘ-prop zeroᵘᵣ    = 0
-  ↑ᵘ-prop (sucᵘᵣ x) = 1+ (↑ᵘ x)
-  ↑ᵘ-prop (ne _)    = 0
+↑ᵘ_ : Γ ⊩Level t ≡ u ∷Level → Universe-level
+↑ᵘ t≡u = 0ᵘ+ ↑ᵘ′ t≡u
+
+↑ᵘ-prop : [Level]-prop Γ t u → Universe-level
+↑ᵘ-prop t≡u = 0ᵘ+ ↑ᵘ′-prop t≡u
 
 -- Reducibility of natural numbers:
 
@@ -574,18 +580,13 @@ pattern Bᵣ′ W a b c d e f g h = Bᵣ W (Bᵣ a b c d e f g h)
 pattern Πᵣ′ a b c d e f g h = Bᵣ′ BΠ! a b c d e f g h
 pattern Σᵣ′ a b c d e f g h = Bᵣ′ BΣ! a b c d e f g h
 
-mutual
+-- A LogRelKit for the given Universe-level.
 
-  -- A LogRelKit for the given Universe-level.
+kit′ : ∀ {n m} → n <ᵘ m → LogRelKit
+kit′ p = <ᵘ-recBuilder _ LogRel.kit _ p
 
-  kit : Universe-level → LogRelKit
-  kit ℓ = LogRel.kit ℓ kit′
-
-  -- A LogRelKit for m.
-
-  kit′ : {n m : Universe-level} → m <ᵘ n → LogRelKit
-  kit′ {m = m} ≤ᵘ-refl = kit m
-  kit′ (≤ᵘ-step p) = kit′ p
+kit : Universe-level → LogRelKit
+kit = <ᵘ-rec _ LogRel.kit
 
 _⊩′⟨_⟩U_ : Con Term ℓ → Universe-level → Term ℓ → Set a
 Γ ⊩′⟨ l ⟩U A = Γ ⊩U A where open LogRelKit (kit l)

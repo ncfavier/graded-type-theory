@@ -90,16 +90,7 @@ opaque
       in
       Levelₜ₌ _ _ (id (conv ⊢n A≡Level)) (id (conv ⊢n A≡Level)) n≡n
         (ne (neNfₜ₌ inc n-ne n-ne n~n′))
-    neuTerm′ (Uᵣ′ l [l] ≤ᵘ-refl D) =
-      let A≡U  = subset* D
-          n≡n  = ~-to-≅ₜ (~-conv ~n A≡U)
-      in
-      ⊩U∷U⇔⊩U≡∷U .proj₁
-        (Uₜ _ (id (conv ⊢n A≡U)) (ne n-ne) n≡n
-           (neu inc n-ne (~-to-≅ (~-conv ~n A≡U))))
-    neuTerm′ (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) =
-      irrelevanceTerm (Uᵣ′ _ _ p A⇒*U) (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U)
-        (neuTerm inc (Uᵣ′ _ _ p A⇒*U) n-ne ~n)
+    neuTerm′ (Uᵣ′ _ _ p A⇒*U) = {!  !}
     neuTerm′ (ℕᵣ D) =
       let A≡ℕ  = subset* D
           n~n′ = ~-conv ~n A≡ℕ
@@ -200,19 +191,7 @@ opaque
       in
       Levelₜ₌ _ _ (id (conv ⊢n A≡Level)) (id (conv ⊢n′ A≡Level))
         n≡n′ (ne (neNfₜ₌ inc n-ne n′-ne n~n′₁))
-    neuEqTerm′ (Uᵣ′ l [l] ≤ᵘ-refl D) =
-      let A≡U = subset* D
-          n~n′₁ = ~-conv n~n′ A≡U
-          ≅n , ≅n′ = wf-⊢≅ (~-to-≅ n~n′₁)
-          n≡n′ = ~-to-≅ₜ n~n′₁
-          wfn = neu inc n-ne ≅n
-      in
-      Uₜ₌ _ _ (id (conv ⊢n A≡U)) (id (conv ⊢n′ A≡U))
-        (ne n-ne) (ne n′-ne) n≡n′ wfn (neu inc n′-ne ≅n′)
-        (neuEq wfn n-ne n′-ne (≅-univ n≡n′))
-    neuEqTerm′ (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) =
-      irrelevanceEqTerm (Uᵣ′ _ _ p A⇒*U) (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U)
-        (neuEqTerm inc (Uᵣ′ _ _ p A⇒*U) n-ne n′-ne n~n′)
+    neuEqTerm′ (Uᵣ′ _ _ p A⇒*U) = {!  !}
     neuEqTerm′ (ℕᵣ D) =
       let A≡ℕ = subset* D
           n~n′₁ = ~-conv n~n′ A≡ℕ

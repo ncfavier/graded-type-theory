@@ -249,19 +249,7 @@ transEqT (Idᵥ ⊩A ⊩B@record{} ⊩C@record{}) A≡B B≡C =
        (_⊩ₗId_≡_/_.rhs≡rhs′ B≡C)) }}
 
 transEqTerm (Levelᵣ D) [t≡u] [u≡v] = transEqTermLevel [t≡u] [u≡v]
-transEqTerm (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) B≡C C≡D =
-  irrelevanceEqTerm (Uᵣ′ _ _ p A⇒*U) (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U)
-    (transEqTerm (Uᵣ′ _ _ p A⇒*U)
-       (irrelevanceEqTerm (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) (Uᵣ′ _ _ p A⇒*U) B≡C)
-       (irrelevanceEqTerm (Uᵣ′ _ _ (≤ᵘ-step p) A⇒*U) (Uᵣ′ _ _ p A⇒*U) C≡D))
-transEqTerm (Uᵣ′ l′ [l′] ≤ᵘ-refl D)
-            (Uₜ₌ A B d d′ typeA typeB A≡B [t] [u] [t≡u])
-            (Uₜ₌ A₁ B₁ d₁ d₁′ typeA₁ typeB₁ B≡B₁ [u]′ [v] [u≡v]) =
-                case transEq [t] [u]′ [v] [t≡u] [u≡v] of λ
-                  [t≡v] →
-                case whrDet*Term (d₁ , typeWhnf typeA₁) (d′ , typeWhnf typeB) of λ where
-                  PE.refl →
-                    Uₜ₌ A B₁ d d₁′ typeA typeB₁ (≅ₜ-trans A≡B B≡B₁) [t] [v] [t≡v]
+transEqTerm (Uᵣ′ _ _ p A⇒*U) B≡C C≡D = {! !}
 transEqTerm (ℕᵣ D) [t≡u] [u≡v] = transEqTermℕ [t≡u] [u≡v]
 transEqTerm (Emptyᵣ D) [t≡u] [u≡v] = transEqTermEmpty [t≡u] [u≡v]
 transEqTerm

@@ -86,9 +86,10 @@ opaque
 
   ⊢Bool∷U :
     ⊢ Γ →
-    Γ ⊢ Bool ∷ U 0
+    Γ ⊢ Bool ∷ U zeroᵘ
   ⊢Bool∷U ⊢Γ =
-    ΠΣⱼ (ℕⱼ ⊢Γ) (Erasedⱼ-U Erased-ok (⊢OK∷U (var₀ (ℕⱼ ⊢Γ)))) Σ-ok
+    -- ΠΣⱼ (ℕⱼ ⊢Γ) (Erasedⱼ-U Erased-ok (⊢OK∷U (var₀ (ℕⱼ ⊢Γ)))) Σ-ok
+    ?
 
 opaque
 
@@ -111,8 +112,8 @@ opaque
     prodⱼ (⊢Erased-OK (var₀ (ℕⱼ ⊢Γ)))
       (sucⱼ (zeroⱼ ⊢Γ))
       ([]ⱼ Erased-ok $
-       _⊢_∷_.conv (starⱼ ⊢Γ Unitʷ-ok)
-         (Unitʷ 0                    ≡˘⟨ OK-1≡ ⊢Γ ⟩⊢∎≡
+       _⊢_∷_.conv (starⱼ (zeroᵘⱼ ⊢Γ) Unitʷ-ok)
+         (Unitʷ zeroᵘ                ≡˘⟨ OK-1≡ ⊢Γ ⟩⊢∎≡
           OK (suc zero)              ≡˘⟨ B.OK-[] ⟩
           OK (var x0) [ suc zero ]₀  ∎))
       Σ-ok
@@ -130,8 +131,8 @@ opaque
   ⊢false ⊢Γ =
     prodⱼ (⊢Erased-OK (var₀ (ℕⱼ ⊢Γ))) (zeroⱼ ⊢Γ)
       ([]ⱼ Erased-ok $
-       _⊢_∷_.conv (starⱼ ⊢Γ Unitʷ-ok)
-         (Unitʷ 0                ≡˘⟨ OK-0≡ ⊢Γ ⟩⊢∎≡
+       _⊢_∷_.conv (starⱼ (zeroᵘⱼ ⊢Γ) Unitʷ-ok)
+         (Unitʷ zeroᵘ            ≡˘⟨ OK-0≡ ⊢Γ ⟩⊢∎≡
           OK zero                ≡˘⟨ B.OK-[] ⟩
           OK (var x0) [ zero ]₀  ∎))
       Σ-ok
@@ -206,17 +207,17 @@ private
 
     opaque
 
-      ⊢Unitʷ : Γ ⊢ Unitʷ 0
-      ⊢Unitʷ = Unitⱼ ⊢Γ Unitʷ-ok
+      ⊢Unitʷ : Γ ⊢ Unitʷ zeroᵘ
+      ⊢Unitʷ = Unitⱼ (zeroᵘⱼ ⊢Γ) Unitʷ-ok
 
     opaque
 
-      ⊢[starʷ] : Γ ⊢ [ starʷ 0 ] ∷ Erased (Unitʷ 0)
-      ⊢[starʷ] = []ⱼ Erased-ok (starⱼ ⊢Γ Unitʷ-ok)
+      ⊢[starʷ] : Γ ⊢ [ starʷ zeroᵘ ] ∷ Erased (Unitʷ zeroᵘ)
+      ⊢[starʷ] = []ⱼ Erased-ok (starⱼ (zeroᵘⱼ ⊢Γ) Unitʷ-ok)
 
     opaque
 
-      ⊢Erased-Unitʷ : Γ ⊢ Erased (Unitʷ 0)
+      ⊢Erased-Unitʷ : Γ ⊢ Erased (Unitʷ zeroᵘ)
       ⊢Erased-Unitʷ = syntacticTerm ⊢[starʷ]
 
     opaque
@@ -239,11 +240,11 @@ private
 
       Π-[]₀-lemma :
         Γ ⊢ t [ u ]₀ ∷ ℕ →
-        Γ ⊢ OK (t [ u ]₀) ≡ Unitʷ 0 →
+        Γ ⊢ OK (t [ u ]₀) ≡ Unitʷ zeroᵘ →
         Γ ⊢
           (Π 𝟙 , p ▷ Erased (OK t) ▹ Target 2 A₁ (wk1 t) (var x0))
             [ u ]₀ ≡
-          Π 𝟙 , p ▷ Erased (Unitʷ 0) ▹ Target 1 A₂ (wk1 (t [ u ]₀))
+          Π 𝟙 , p ▷ Erased (Unitʷ zeroᵘ) ▹ Target 1 A₂ (wk1 (t [ u ]₀))
             (var x0)
       Π-[]₀-lemma {t} ⊢t[u]₀ OK-t[u]₀≡Unit =
         let ⊢OK = ⊢Erased-OK ⊢t[u]₀ in
@@ -262,7 +263,7 @@ private
 
       Target-lemma-0 :
         drop k Δ PE.≡ Γ →
-        Δ ∙ B ⊢ t ∷ Erased (Unitʷ 0) →
+        Δ ∙ B ⊢ t ∷ Erased (Unitʷ zeroᵘ) →
         Δ ∙ B ⊢
           Target (1+ k) A₁ zero t ≡
           Target (1+ k) A₂ zero t
@@ -275,7 +276,7 @@ private
 
       Target-lemma-1 :
         drop k Δ PE.≡ Γ →
-        Δ ∙ B ⊢ t ∷ Erased (Unitʷ 0) →
+        Δ ∙ B ⊢ t ∷ Erased (Unitʷ zeroᵘ) →
         Δ ∙ B ⊢
           Target (1+ k) A₁ (suc zero) t ≡
           Target (1+ k) A₂ (suc zero) t
@@ -291,7 +292,7 @@ private
         drop k Δ PE.≡ Γ →
         ⊢ Δ →
         Δ ⊢ wk[ k ]′ t₁ ≡ wk[ k ]′ t₂ ∷
-          Target (1+ k) A₁ (suc zero) [ var x0 ] [ starʷ 0 ]₀
+          Target (1+ k) A₁ (suc zero) [ var x0 ] [ starʷ zeroᵘ ]₀
       wk-t₁≡wk-t₂ PE.refl ⊢Δ =
         PE.subst (_⊢_≡_∷_ _ _ _)
           (PE.sym $ PE.trans (Target-[₀⇑] 0) Target-wk[]′) $
@@ -304,7 +305,7 @@ private
         drop k Δ PE.≡ Γ →
         ⊢ Δ →
         Δ ⊢ wk[ k ]′ u₁ ≡ wk[ k ]′ u₂ ∷
-          Target (1+ k) A₁ zero [ var x0 ] [ starʷ 0 ]₀
+          Target (1+ k) A₁ zero [ var x0 ] [ starʷ zeroᵘ ]₀
       wk-u₁≡wk-u₂ PE.refl ⊢Δ =
         PE.subst (_⊢_≡_∷_ _ _ _)
           (PE.sym $ PE.trans (Target-[₀⇑] 0) Target-wk[]′) $
@@ -315,19 +316,20 @@ private
       unitrec-lemma-0 :
         drop k Δ PE.≡ Γ →
         ⊢ Δ →
-        Δ ∙ Unitʷ 0 ⊢
-          unitrec 0 𝟘 𝟘 (Target (2+ k) A₁ zero [ var x0 ])
+        Δ ∙ Unitʷ zeroᵘ ⊢
+          unitrec 𝟘 𝟘 zeroᵘ (Target (2+ k) A₁ zero [ var x0 ])
             (var x0) (wk[ 1+ k ]′ u₁) ≡
-          unitrec 0 𝟘 𝟘 (Target (2+ k) A₂ zero [ var x0 ])
+          unitrec 𝟘 𝟘 zeroᵘ (Target (2+ k) A₂ zero [ var x0 ])
             (var x0) (wk[ 1+ k ]′ u₂) ∷
           Target (1+ k) A₁ zero (var x0) [ [ var x0 ] ]↑
       unitrec-lemma-0 ≡Γ ⊢Δ =
-        let ⊢Unitʷ = Unitⱼ ⊢Δ Unitʷ-ok in
+        let ⊢Unitʷ = Unitⱼ (zeroᵘⱼ ⊢Δ) Unitʷ-ok in
         PE.subst (_⊢_≡_∷_ _ _ _)
           (PE.trans (Target-[₀⇑] 0) $ PE.sym $ Target-[↑⇑] 0) $
         unitrec-cong′
+          ?
           (Target-lemma-0 ≡Γ $
-           []ⱼ Erased-ok (var₀ (Unitⱼ (∙ ⊢Unitʷ) Unitʷ-ok)))
+           []ⱼ Erased-ok (var₀ (Unitⱼ (zeroᵘⱼ (∙ ⊢Unitʷ)) Unitʷ-ok)))
           (refl (var₀ ⊢Unitʷ))
           (wk-u₁≡wk-u₂ ≡Γ (∙ ⊢Unitʷ))
 
@@ -336,19 +338,20 @@ private
       unitrec-lemma-1 :
         drop k Δ PE.≡ Γ →
         ⊢ Δ →
-        Δ ∙ Unitʷ 0 ⊢
-          unitrec 0 𝟘 𝟘 (Target (2+ k) A₁ (suc zero) [ var x0 ])
+        Δ ∙ Unitʷ zeroᵘ ⊢
+          unitrec 𝟘 𝟘 zeroᵘ (Target (2+ k) A₁ (suc zero) [ var x0 ])
             (var x0) (wk[ 1+ k ]′ t₁) ≡
-          unitrec 0 𝟘 𝟘 (Target (2+ k) A₂ (suc zero) [ var x0 ])
+          unitrec 𝟘 𝟘 zeroᵘ (Target (2+ k) A₂ (suc zero) [ var x0 ])
             (var x0) (wk[ 1+ k ]′ t₂) ∷
           Target (1+ k) A₁ (suc zero) (var x0) [ [ var x0 ] ]↑
       unitrec-lemma-1 ≡Γ ⊢Δ =
-        let ⊢Unitʷ = Unitⱼ ⊢Δ Unitʷ-ok in
+        let ⊢Unitʷ = Unitⱼ (zeroᵘⱼ ⊢Δ) Unitʷ-ok in
         PE.subst (_⊢_≡_∷_ _ _ _)
           (PE.trans (Target-[₀⇑] 0) $ PE.sym $ Target-[↑⇑] 0) $
         unitrec-cong′
+          ?
           (Target-lemma-1 ≡Γ $
-           []ⱼ Erased-ok (var₀ (Unitⱼ (∙ ⊢Unitʷ) Unitʷ-ok)))
+           []ⱼ Erased-ok (var₀ (Unitⱼ (zeroᵘⱼ (∙ ⊢Unitʷ)) Unitʷ-ok)))
           (refl (var₀ ⊢Unitʷ))
           (wk-t₁≡wk-t₂ ≡Γ (∙ ⊢Unitʷ))
 

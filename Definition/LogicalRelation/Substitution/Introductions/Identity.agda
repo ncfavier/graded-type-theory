@@ -50,7 +50,7 @@ import Tools.Reasoning.PropositionalEquality
 
 private variable
   Γ Δ                                             : Con Term _
-  A A₁ A₂ B B₁ B₂ t t₁ t₂ u u₁ u₂ v v₁ v₂ w w₁ w₂ : Term _
+  A A₁ A₂ B B₁ B₂ k t t₁ t₂ u u₁ u₂ v v₁ v₂ w w₁ w₂ : Term _
   σ σ₁ σ₂                                         : Subst _ _
   l l′ l′₁ l′₂ l′₃ l′₄ l′₅ l″ l‴ l⁗               : Universe-level
   n                                               : Nat
@@ -99,29 +99,31 @@ opaque
   -- A corollary.
 
   →⊩Id∷U :
-    Γ ⊩⟨ l′ ⟩ A ∷ U l →
+    Γ ⊩⟨ l′ ⟩ A ∷ U k →
     Γ ⊩⟨ l″ ⟩ t ∷ A →
     Γ ⊩⟨ l‴ ⟩ u ∷ A →
-    Γ ⊩⟨ l′ ⟩ Id A t u ∷ U l
-  →⊩Id∷U {Γ} {l′} {A} {l} {l″} {t} {l‴} {u} ⊩A ⊩t ⊩u =
+    Γ ⊩⟨ l′ ⟩ Id A t u ∷ U k
+  →⊩Id∷U {Γ} {l′} {A} {k} {l″} {t} {l‴} {u} ⊩A ⊩t ⊩u =
                                                    $⟨ ⊩A , ⊩t , ⊩u ⟩
-    Γ ⊩⟨ l′ ⟩ A ∷ U l ×
+    Γ ⊩⟨ l′ ⟩ A ∷ U k ×
     Γ ⊩⟨ l″ ⟩ t ∷ A ×
     Γ ⊩⟨ l‴ ⟩ u ∷ A                                →⟨ (λ (⊩A∷U , ⊩t , ⊩u) →
                                                          case ⊩∷U⇔ .proj₁ ⊩A∷U of λ
-                                                           (l′<l , ⊩A , _) →
-                                                           l′<l
+                                                           ([k] , k< , ⊩A , _) →
+                                                         [k]
+                                                         , k<
                                                          , (level-⊩∷ ⊩A ⊩t , level-⊩∷ ⊩A ⊩u)
                                                          , ≅ₜ-Id-cong (escape-⊩≡∷ (refl-⊩≡∷ ⊩A∷U))
-                                                             (escape-⊩≡∷ (refl-⊩≡∷ ⊩t)) (escape-⊩≡∷ (refl-⊩≡∷ ⊩u)))
+                                                           (escape-⊩≡∷ (refl-⊩≡∷ ⊩t))
+                                                           (escape-⊩≡∷ (refl-⊩≡∷ ⊩u)))
                                                    ⟩
-    l <ᵘ l′ × (Γ ⊩⟨ l ⟩ t ∷ A × Γ ⊩⟨ l ⟩ u ∷ A) ×
-    Γ ⊢≅ Id A t u ∷ U l                            ⇔˘⟨ id⇔ ×-cong-⇔ ⊩Id⇔ ×-cong-⇔ id⇔ ⟩→
+    (∃ λ ([k] : Γ ⊩Level k ∷Level) → ↑ᵘ [k] <ᵘ l′ × (Γ ⊩⟨ ↑ᵘ [k] ⟩ t ∷ A × Γ ⊩⟨ ↑ᵘ [k] ⟩ u ∷ A) ×
+    Γ ⊢≅ Id A t u ∷ U k)                            ⇔˘⟨ (Σ-cong-⇔ λ _ → id⇔ ×-cong-⇔ ⊩Id⇔ ×-cong-⇔ id⇔) ⟩→
 
-    l <ᵘ l′ × (Γ ⊩⟨ l ⟩ Id A t u) ×
-    Γ ⊢≅ Id A t u ∷ U l                            ⇔˘⟨ Type→⊩∷U⇔ Idₙ ⟩→
+    (∃ λ ([k] : Γ ⊩Level k ∷Level) → ↑ᵘ [k] <ᵘ l′ × (Γ ⊩⟨ ↑ᵘ [k] ⟩ Id A t u) ×
+    Γ ⊢≅ Id A t u ∷ U k)                            ⇔˘⟨ Type→⊩∷U⇔ Idₙ ⟩→
 
-    Γ ⊩⟨ l′ ⟩ Id A t u ∷ U l                       □
+    Γ ⊩⟨ l′ ⟩ Id A t u ∷ U k                       □
 
 opaque
   unfolding _⊩⟨_⟩_≡_ _⊩⟨_⟩_≡_∷_ wf-⊩≡∷
@@ -223,11 +225,13 @@ opaque
   -- A corollary.
 
   →⊩Id≡Id∷U :
-    Γ ⊩⟨ l′ ⟩ A₁ ≡ A₂ ∷ U l →
+    Γ ⊩⟨ l′ ⟩ A₁ ≡ A₂ ∷ U k →
     Γ ⊩⟨ l″ ⟩ t₁ ≡ t₂ ∷ A₁ →
     Γ ⊩⟨ l‴ ⟩ u₁ ≡ u₂ ∷ A₁ →
-    Γ ⊩⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U l
-  →⊩Id≡Id∷U {Γ} {l′} {A₁} {A₂} {l} {l″} {t₁} {t₂} {l‴} {u₁} {u₂} A₁≡A₂∷U t₁≡t₂ u₁≡u₂ =
+    Γ ⊩⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U k
+  →⊩Id≡Id∷U {Γ} {l′} {A₁} {A₂} {k} {l″} {t₁} {t₂} {l‴} {u₁} {u₂} A₁≡A₂∷U t₁≡t₂ u₁≡u₂ =
+    {!   !}
+    {-
                                                                      $⟨ A₁≡A₂∷U , t₁≡t₂ , u₁≡u₂ ⟩
     Γ ⊩⟨ l′ ⟩ A₁ ≡ A₂ ∷ U l ×
     Γ ⊩⟨ l″ ⟩ t₁ ≡ t₂ ∷ A₁ ×
@@ -259,6 +263,7 @@ opaque
 
 
     Γ ⊩⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U l                        □
+    -}
 
 -- A variant of ⊩Id≡∷-view.
 
@@ -554,10 +559,10 @@ opaque
   -- Validity of equality preservation for Id, seen as a term former.
 
   Id-congᵗᵛ :
-    Γ ⊩ᵛ⟨ l′ ⟩ A₁ ≡ A₂ ∷ U l →
+    Γ ⊩ᵛ⟨ l′ ⟩ A₁ ≡ A₂ ∷ U k →
     Γ ⊩ᵛ⟨ l″ ⟩ t₁ ≡ t₂ ∷ A₁ →
     Γ ⊩ᵛ⟨ l‴ ⟩ u₁ ≡ u₂ ∷ A₁ →
-    Γ ⊩ᵛ⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U l
+    Γ ⊩ᵛ⟨ l′ ⟩ Id A₁ t₁ u₁ ≡ Id A₂ t₂ u₂ ∷ U k
   Id-congᵗᵛ A₁≡A₂∷U t₁≡t₂ u₁≡u₂ =
     case ⊩ᵛ≡∷⇔ʰ .proj₁ A₁≡A₂∷U of λ
       (⊩U , A₁≡A₂∷U) →
@@ -574,10 +579,10 @@ opaque
   -- Validity of Id, seen as a term former.
 
   Idᵗᵛ :
-    Γ ⊩ᵛ⟨ l′ ⟩ A ∷ U l →
+    Γ ⊩ᵛ⟨ l′ ⟩ A ∷ U k →
     Γ ⊩ᵛ⟨ l″ ⟩ t ∷ A →
     Γ ⊩ᵛ⟨ l‴ ⟩ u ∷ A →
-    Γ ⊩ᵛ⟨ l′ ⟩ Id A t u ∷ U l
+    Γ ⊩ᵛ⟨ l′ ⟩ Id A t u ∷ U k
   Idᵗᵛ ⊩A∷U ⊩t ⊩u =
     ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₂ $
     Id-congᵗᵛ (refl-⊩ᵛ≡∷ ⊩A∷U) (refl-⊩ᵛ≡∷ ⊩t) (refl-⊩ᵛ≡∷ ⊩u)

@@ -93,20 +93,7 @@ opaque
   redSubst*Term t⇒u (Levelᵣ A⇒*Level) (Levelₜ₌ v v′ u⇒*v u⇒*v′ v≅v′ v≡v′) =
     let t⇒u′ = conv* t⇒u (subset* A⇒*Level) in
     Levelₜ₌ v v′ (t⇒u′ ⇨∷* u⇒*v) u⇒*v′ v≅v′ v≡v′
-  redSubst*Term t⇒u (Uᵣ′ k [k] ≤ᵘ-refl D) ⊩u =
-    let Uₜ A d typeA A≡A [u] = ⊩U∷U⇔⊩U≡∷U .proj₂ ⊩u
-        A≡K = subset* D
-        d′ = conv* t⇒u A≡K ⇨∷* d
-        [t] , t≡u = redSubst* (univ* (conv* t⇒u A≡K)) [u]
-    in
-    Uₜ₌ A A d′ d typeA typeA A≡A [t] [u] t≡u
-  redSubst*Term t⇒u ⊩U@(Uᵣ′ k [k] (≤ᵘ-step k<) D) ⊩u =
-    let Uₜ A D′ typeA A≡A [u] = ⊩U∷U⇔⊩U≡∷U .proj₂ ⊩u
-        Un = Uᵣ′ k [k] k< D
-        eq = redSubst*Term t⇒u Un
-               (⊩U∷U⇔⊩U≡∷U .proj₁ (Uₜ A D′ typeA A≡A [u]))
-    in
-    irrelevanceEqTerm Un ⊩U eq
+  redSubst*Term t⇒u ⊩U@(Uᵣ′ k [k] k< D) ⊩u = {!  !}
   redSubst*Term t⇒u (ℕᵣ D) ⊩u =
     let ℕₜ n d n≡n prop = ⊩ℕ∷ℕ⇔⊩ℕ≡∷ℕ .proj₂ ⊩u
         t⇒u′ = conv* t⇒u (subset* D)
@@ -228,19 +215,7 @@ opaque
            (conv* t⇒*u (subset* A⇒*Level)) of λ
       u⇒*v′ →
     Levelₜ₌ v v′ t⇒*v u⇒*v′ v≅v′ v≡v′
-  redSubst*Term′ t⇒*u ⊩U@(Uᵣ′ k [k] ≤ᵘ-refl D) ⊩t =
-    let Uₜ A t⇒*A A-type A≅A ⊩t = ⊩U∷U⇔⊩U≡∷U .proj₂ ⊩t in
-    case whrDet↘Term (t⇒*A , typeWhnf A-type)
-           (conv* t⇒*u (subset* D)) of λ
-      u⇒*A →
-      case redSubst*′ (univ* (conv* t⇒*u (subset* D))) ⊩t of λ
-        (⊩u , t≡u) →
-    Uₜ₌ A A t⇒*A u⇒*A A-type A-type A≅A ⊩t ⊩u t≡u
-  redSubst*Term′ t⇒*u ⊩U@(Uᵣ′ k [k] (≤ᵘ-step k<) D) ⊩t =
-    let Uₜ A t⇒*A A-type A≅A ⊩t = ⊩U∷U⇔⊩U≡∷U .proj₂ ⊩t in
-    irrelevanceEqTerm (Uᵣ′ k [k] k< D) ⊩U
-      (redSubst*Term′ t⇒*u (Uᵣ′ k [k] k< D)
-         (⊩U∷U⇔⊩U≡∷U .proj₁ (Uₜ A t⇒*A A-type A≅A ⊩t)))
+  redSubst*Term′ t⇒*u ⊩U@(Uᵣ′ k [k] k< D) ⊩t = {!  !}
   redSubst*Term′ t⇒*u (ℕᵣ A⇒*ℕ) ⊩t =
     let ℕₜ v t⇒*v v≅v v-ok = ⊩ℕ∷ℕ⇔⊩ℕ≡∷ℕ .proj₂ ⊩t in
     case whrDet↘Term (t⇒*v , naturalWhnf (natural v-ok))

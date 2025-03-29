@@ -68,38 +68,45 @@ mutual
   wk[Level]-prop ρ (ne x) = ne (wkEqTermNe ρ x)
 
 opaque
-  unfolding ↑ᵘ_
+  unfolding ↑ᵘ′_
 
   -- Weakening preserves level reflection.
 
   mutual
-    wk-↑ᵘ
+    wk-↑ᵘ′
       : ([ρ] : ρ ∷ʷ Δ ⊇ Γ)
       → (t≡u : Γ ⊩Level t ≡ u ∷Level)
       → (wk-t≡u′ : Δ ⊩Level U.wk ρ t ≡ u′ ∷Level)
-      → ↑ᵘ wk-t≡u′ PE.≡ ↑ᵘ t≡u
-    wk-↑ᵘ {ρ} [ρ] (Levelₜ₌ t u d _ t≡u prop) (Levelₜ₌ t′ u′ d′ _ t′≡u′ prop′) =
+      → ↑ᵘ′ wk-t≡u′ PE.≡ ↑ᵘ′ t≡u
+    wk-↑ᵘ′ {ρ} [ρ] (Levelₜ₌ t u d _ t≡u prop) (Levelₜ₌ t′ u′ d′ _ t′≡u′ prop′) =
       case whrDet*Term (d′ , lsplit prop′ .proj₁) (wkRed*Term [ρ] d , wkWhnf ρ (lsplit prop .proj₁)) of λ {
         PE.refl →
-      wk-↑ᵘ-prop [ρ] prop prop′ PE.refl }
+      wk-↑ᵘ′-prop [ρ] prop prop′ PE.refl }
 
-    wk-↑ᵘ-prop
+    wk-↑ᵘ′-prop
       : ([ρ] : ρ ∷ʷ Δ ⊇ Γ)
       → (t≡u : [Level]-prop Γ t u)
       → (wk-t≡u : [Level]-prop Δ t′ u′)
       → t′ PE.≡ U.wk ρ t
-      → ↑ᵘ-prop wk-t≡u PE.≡ ↑ᵘ-prop t≡u
-    wk-↑ᵘ-prop [ρ] zeroᵘᵣ zeroᵘᵣ PE.refl = PE.refl
-    wk-↑ᵘ-prop [ρ] (sucᵘᵣ x) (sucᵘᵣ y) PE.refl = PE.cong 1+ (wk-↑ᵘ [ρ] x y)
-    wk-↑ᵘ-prop [ρ] (ne x) (ne y) q = PE.refl
-    wk-↑ᵘ-prop [ρ] zeroᵘᵣ (sucᵘᵣ y) ()
-    wk-↑ᵘ-prop [ρ] (sucᵘᵣ y) zeroᵘᵣ ()
-    wk-↑ᵘ-prop [ρ] zeroᵘᵣ (ne (neNfₜ₌ _ () _ _)) PE.refl
-    wk-↑ᵘ-prop [ρ] (sucᵘᵣ x) (ne (neNfₜ₌ _ () _ _)) PE.refl
-    wk-↑ᵘ-prop [ρ] (ne x) zeroᵘᵣ q with wk-zeroᵘ (PE.sym q)
-    wk-↑ᵘ-prop [ρ] (ne (neNfₜ₌ _ () _ _)) zeroᵘᵣ q | PE.refl
-    wk-↑ᵘ-prop [ρ] (ne x) (sucᵘᵣ y) q with wk-sucᵘ (PE.sym q)
-    wk-↑ᵘ-prop [ρ] (ne (neNfₜ₌ _ () _ _)) (sucᵘᵣ y) q | _ , PE.refl , _
+      → ↑ᵘ′-prop wk-t≡u PE.≡ ↑ᵘ′-prop t≡u
+    wk-↑ᵘ′-prop [ρ] zeroᵘᵣ zeroᵘᵣ PE.refl = PE.refl
+    wk-↑ᵘ′-prop [ρ] (sucᵘᵣ x) (sucᵘᵣ y) PE.refl = PE.cong 1+ (wk-↑ᵘ′ [ρ] x y)
+    wk-↑ᵘ′-prop [ρ] (ne x) (ne y) q = PE.refl
+    wk-↑ᵘ′-prop [ρ] zeroᵘᵣ (sucᵘᵣ y) ()
+    wk-↑ᵘ′-prop [ρ] (sucᵘᵣ y) zeroᵘᵣ ()
+    wk-↑ᵘ′-prop [ρ] zeroᵘᵣ (ne (neNfₜ₌ _ () _ _)) PE.refl
+    wk-↑ᵘ′-prop [ρ] (sucᵘᵣ x) (ne (neNfₜ₌ _ () _ _)) PE.refl
+    wk-↑ᵘ′-prop [ρ] (ne x) zeroᵘᵣ q with wk-zeroᵘ (PE.sym q)
+    wk-↑ᵘ′-prop [ρ] (ne (neNfₜ₌ _ () _ _)) zeroᵘᵣ q | PE.refl
+    wk-↑ᵘ′-prop [ρ] (ne x) (sucᵘᵣ y) q with wk-sucᵘ (PE.sym q)
+    wk-↑ᵘ′-prop [ρ] (ne (neNfₜ₌ _ () _ _)) (sucᵘᵣ y) q | _ , PE.refl , _
+
+  wk-↑ᵘ
+    : ([ρ] : ρ ∷ʷ Δ ⊇ Γ)
+    → (t≡u : Γ ⊩Level t ≡ u ∷Level)
+    → (wk-t≡u′ : Δ ⊩Level U.wk ρ t ≡ u′ ∷Level)
+    → ↑ᵘ wk-t≡u′ PE.≡ ↑ᵘ t≡u
+  wk-↑ᵘ [ρ] t≡u wk-t≡u′ = PE.cong 0ᵘ+_ (wk-↑ᵘ′ [ρ] t≡u wk-t≡u′)
 
 -- Weakening of reducible natural numbers
 
@@ -358,22 +365,9 @@ wkEq ρ∷⊇ (Idᵣ ⊩A) A≡B = Id₌′
 
 wkEqTerm ρ (Levelᵣ D) [t≡u] = wkEqTermLevel (∷ʷʳ⊇→∷ʷ⊇ ρ) [t≡u]
 wkEqTerm
-  {ρ} {l = 1+ l′} [ρ] (Uᵣ′ l [l] (≤ᵘ-step l<) D)
+  {ρ} [ρ] (Uᵣ′ l [l] l< D)
   (Uₜ₌ A B d d′ typeA typeB A≡B [t] [u] [t≡u]) =
-  let wkET′ = wkEqTerm {ρ = ρ} [ρ] (Uᵣ′ l [l] l< D)
-                (Uₜ₌ A B d d′ typeA typeB A≡B [t] [u] [t≡u])
-  in
-  irrelevanceEqTerm (wk [ρ] (Uᵣ′ l [l] l< D))
-    (wk [ρ] (Uᵣ′ l [l] (≤ᵘ-step l<) D)) wkET′
-wkEqTerm
-  {ρ} [ρ] (Uᵣ ⊩U@(Uᵣ l [l] ≤ᵘ-refl D))
-  (Uₜ₌ A B d d′ typeA typeB A≡B [t] [u] [t≡u]) =
-  let [ρ]′ = ∷ʷʳ⊇→∷ʷ⊇ [ρ] in
-  Uₜ₌ (U.wk ρ A) (U.wk ρ B) (wkRed*Term [ρ]′ d) (wkRed*Term [ρ]′ d′)
-    (wkType ρ typeA) (wkType ρ typeB) (≅ₜ-wk [ρ]′ A≡B)
-    (irrelevance-⊩< (PE.sym (wk-↑ᵘ [ρ]′ [l] (wkEqTermLevel [ρ]′ [l]))) ≤ᵘ-refl (wkU [ρ]′ ⊩U ._⊩₁U_.k<) (wk [ρ] [t]))
-    (irrelevance-⊩< (PE.sym (wk-↑ᵘ [ρ]′ [l] (wkEqTermLevel [ρ]′ [l]))) ≤ᵘ-refl (wkU [ρ]′ ⊩U ._⊩₁U_.k<) (wk [ρ] [u]))
-    (irrelevance-⊩<≡ (PE.sym (wk-↑ᵘ [ρ]′ [l] (wkEqTermLevel [ρ]′ [l]))) ≤ᵘ-refl (wkU [ρ]′ ⊩U ._⊩₁U_.k<) (wkEq [ρ] [t] [t≡u]))
+  {!   !}
 wkEqTerm ρ (ℕᵣ D) [t≡u] = wkEqTermℕ (∷ʷʳ⊇→∷ʷ⊇ ρ) [t≡u]
 wkEqTerm ρ (Emptyᵣ D) [t≡u] = wkEqTermEmpty (∷ʷʳ⊇→∷ʷ⊇ ρ) [t≡u]
 wkEqTerm ρ (Unitᵣ′ _ _ _ _ _) [t≡u] = wkEqTermUnit (∷ʷʳ⊇→∷ʷ⊇ ρ) [t≡u]

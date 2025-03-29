@@ -16,6 +16,9 @@ open import Tools.Relation
 open import Tools.PropositionalEquality
 open import Tools.Sum as ⊎
 
+open import Induction
+open import Induction.WellFounded
+
 private variable
   ℓ m n              : Nat
   A                  : Set _
@@ -155,7 +158,7 @@ opaque
   infix 4 _≟ᵘ_
 
   _≟ᵘ_ : Decidable (_≡_ {A = Universe-level})
-  _≟ᵘ_ = _≟_
+  _≟ᵘ_ = {!   !}
 
 ------------------------------------------------------------------------
 -- Properties related to _≤ᵘ_ and _<ᵘ_
@@ -164,43 +167,63 @@ opaque
 
   -- The level 0 is the lowest level.
 
-  0≤ᵘ : 0 ≤ᵘ l
-  0≤ᵘ = 0≤′
-
-opaque
-
-  -- The successor function is monotone for _≤ᵘ_.
-
-  1+≤ᵘ1+ : l₁ ≤ᵘ l₂ → 1+ l₁ ≤ᵘ 1+ l₂
-  1+≤ᵘ1+ = 1+≤′1+
-
-opaque
-
-  -- A level is bounded by its successor.
-
-  ≤ᵘ1+ : l ≤ᵘ 1+ l
-  ≤ᵘ1+ = ≤ᵘ-step ≤ᵘ-refl
+  0≤ᵘ : 0ᵘ ≤ᵘ l
+  0≤ᵘ = {!   !}
 
 opaque
 
   -- The relation _≤ᵘ_ is transitive.
 
   ≤ᵘ-trans : l₁ ≤ᵘ l₂ → l₂ ≤ᵘ l₃ → l₁ ≤ᵘ l₃
-  ≤ᵘ-trans = ≤′-trans
+  ≤ᵘ-trans = {!   !}
 
 opaque
 
   -- The relation _<ᵘ_ is transitive.
 
   <ᵘ-trans : l₁ <ᵘ l₂ → l₂ <ᵘ l₃ → l₁ <ᵘ l₃
-  <ᵘ-trans = <′-trans
+  <ᵘ-trans = {!   !}
+
+opaque
+
+  <ᵘ-≤ᵘ-trans : l₁ <ᵘ l₂ → l₂ ≤ᵘ l₃ → l₁ <ᵘ l₃
+  <ᵘ-≤ᵘ-trans = {!   !}
 
 opaque
 
   -- The relation _<ᵘ_ is contained in _≤ᵘ_.
 
   <ᵘ→≤ᵘ : l₁ <ᵘ l₂ → l₁ ≤ᵘ l₂
-  <ᵘ→≤ᵘ = <′→≤′
+  <ᵘ→≤ᵘ = {!   !}
+
+-- The relation _<ᵘ_ is well-founded.
+
+private
+  nat-accessible : ∀ n → Acc _<ᵘ_ (0ᵘ+ n)
+  nat-accessible′ : ∀ n → WfRec _<ᵘ_ (Acc _<ᵘ_) (0ᵘ+ n)
+  nat-accessible n = acc (nat-accessible′ n)
+  nat-accessible′ .(1+ n) (<ᵘ-nat {l = n} (≤′-refl)) = nat-accessible n
+  nat-accessible′ .(1+ n) (<ᵘ-nat (≤′-step {n} p)) = nat-accessible′ n (<ᵘ-nat p)
+
+  ωᵘ-accessible′ : WfRec _<ᵘ_ (Acc _<ᵘ_) ωᵘ
+  ωᵘ-accessible′ <ᵘ-ωᵘ = nat-accessible _
+
+  ωᵘ-accessible : Acc _<ᵘ_ ωᵘ
+  ωᵘ-accessible = acc ωᵘ-accessible′
+
+<ᵘ-wellFounded : WellFounded _<ᵘ_
+<ᵘ-wellFounded (0ᵘ+ n) = nat-accessible n
+<ᵘ-wellFounded ωᵘ = ωᵘ-accessible
+
+<ᵘ-Rec : ∀ {ℓ} → RecStruct Universe-level ℓ ℓ
+<ᵘ-Rec = WfRec _<ᵘ_
+
+module _ {ℓ} where
+  open All <ᵘ-wellFounded ℓ public
+    renaming ( wfRecBuilder to <ᵘ-recBuilder
+             ; wfRec        to <ᵘ-rec
+             )
+    hiding (wfRec-builder)
 
 ------------------------------------------------------------------------
 -- Properties related to _⊔ᵘ_
@@ -210,35 +233,35 @@ opaque
   -- The level l₁ is bounded by the maximum of l₁ and l₂.
 
   ≤ᵘ⊔ᵘʳ : l₁ ≤ᵘ l₁ ⊔ᵘ l₂
-  ≤ᵘ⊔ᵘʳ = ≤′⊔ˡ
+  ≤ᵘ⊔ᵘʳ = {!   !}
 
 opaque
 
   -- The level l₂ is bounded by the maximum of l₁ and l₂.
 
   ≤ᵘ⊔ᵘˡ : l₂ ≤ᵘ l₁ ⊔ᵘ l₂
-  ≤ᵘ⊔ᵘˡ = ≤′⊔ʳ
+  ≤ᵘ⊔ᵘˡ = {!   !}
 
 opaque
 
   -- The function _⊔ᵘ_ is monotone.
 
   ⊔ᵘ-mono : l₁ ≤ᵘ l₁′ → l₂ ≤ᵘ l₂′ → l₁ ⊔ᵘ l₂ ≤ᵘ l₁′ ⊔ᵘ l₂′
-  ⊔ᵘ-mono = flip ⊔-mono
+  ⊔ᵘ-mono = {!   !}
 
 opaque
 
   -- 0 is a left identity for _⊔ᵘ_.
 
-  ⊔ᵘ-identityˡ : 0 ⊔ᵘ l ≡ l
-  ⊔ᵘ-identityˡ = ⊔-identityʳ _
+  ⊔ᵘ-identityˡ : 0ᵘ ⊔ᵘ l ≡ l
+  ⊔ᵘ-identityˡ = {!   !}
 
 opaque
 
   -- The function _⊔ᵘ_ is idempotent.
 
   ⊔ᵘ-idem : l ⊔ᵘ l ≡ l
-  ⊔ᵘ-idem = ⊔-idem _
+  ⊔ᵘ-idem = {!   !}
 
 ------------------------------------------------------------------------
 -- Properties related to Empty-con and _or-empty_
