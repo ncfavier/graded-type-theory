@@ -93,7 +93,7 @@ symEqT (Unitᵥ (Unitᵣ _ _ _ A⇒*Unit _) (Unitᵣ _ _ _ B⇒*Unit₁ _)) (Uni
   Unit₌ _ A⇒*Unit (symLevel k≡k′) }
 symEqT
   (ne (ne _ _ D neK K≡K) (ne _ K₁ D₁ neK₁ K≡K₁)) (ne₌ inc M D′ neM K≡M)
-  rewrite whrDet* (D′ , ne neM) (D₁ , ne neK₁) =
+  rewrite whrDet* (D′ , ne (ne neM)) (D₁ , ne (ne neK₁)) =
   ne₌ inc _ D neK (≅-sym K≡M)
 symEqT
   {n} {Γ = Γ} {l′ = l′}
@@ -151,8 +151,7 @@ symEqT (Idᵥ ⊩A ⊩B@record{}) A≡B =
   where
   open _⊩ₗId_≡_/_ A≡B
 
-symEqTerm (Levelᵣ D) (Levelₜ₌ k k′ d d′ k≡k′ prop) =
-  Levelₜ₌ k′ k d′ d (≅ₜ-sym k≡k′) (symLevel-prop prop)
+symEqTerm (Levelᵣ D) t≡u = symLevel t≡u
 symEqTerm (ℕᵣ D) (ℕₜ₌ k k′ d d′ t≡u prop) =
   ℕₜ₌ k′ k d′ d (≅ₜ-sym t≡u) (symNatural-prop prop)
 symEqTerm (Emptyᵣ D) (Emptyₜ₌ k k′ d d′ t≡u prop) =

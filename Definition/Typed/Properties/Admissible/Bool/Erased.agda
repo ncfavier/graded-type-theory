@@ -89,7 +89,7 @@ opaque
     Γ ⊢ Bool ∷ U zeroᵘ
   ⊢Bool∷U ⊢Γ =
     -- ΠΣⱼ (ℕⱼ ⊢Γ) (Erasedⱼ-U Erased-ok (⊢OK∷U (var₀ (ℕⱼ ⊢Γ)))) Σ-ok
-    ?
+    {!   !}
 
 opaque
 
@@ -190,6 +190,7 @@ opaque
 
 -- Some lemmas used below.
 
+{-
 private
   module Boolrec
     (Π-ok : Π-allowed 𝟙 p)
@@ -1120,3 +1121,4 @@ opaque
     where
     open Boolrec Π-ok Π-𝟙-𝟘-ok Unitˢ-ok (refl ⊢A) (refl ⊢t) (refl ⊢u)
     open TmR
+-}

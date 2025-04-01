@@ -378,11 +378,11 @@ opaque
   neRedTerm : Γ ⊢ t ⇒ u ∷ A → ¬ Neutral t
   neRedTerm = λ where
     (conv d _)                → neRedTerm d
-    (maxᵘ-zeroˡ _)            → (λ { (inj₁ ()); (inj₂ (t′ , () , _)) }) ∘→ inv-ne-maxᵘ
-    (maxᵘ-zeroʳ _)            → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-ne-maxᵘ
-    (maxᵘ-sucᵘ _ _)           → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-ne-maxᵘ
-    (maxᵘ-substˡ d _)         → (λ { (inj₁ n) → neRedTerm d n; (inj₂ (t′ , PE.refl , n)) → ¬sucᵘ⇒ d }) ∘→ inv-ne-maxᵘ
-    (maxᵘ-substʳ _ d)         → (λ { (inj₁ ()); (inj₂ (t′ , PE.refl , n)) → neRedTerm d n }) ∘→ inv-ne-maxᵘ
+    (maxᵘ-zeroˡ _)            → λ ()
+    (maxᵘ-zeroʳ _)            → λ ()
+    (maxᵘ-sucᵘ _ _)           → λ ()
+    (maxᵘ-substˡ d _)         → λ ()
+    (maxᵘ-substʳ _ d)         → λ ()
     (app-subst d _)           → neRedTerm d ∘→ inv-ne-∘
     (β-red _ _ _ _ _)         → (λ ()) ∘→ inv-ne-∘
     (natrec-subst _ _ d)      → neRedTerm d ∘→ inv-ne-natrec
@@ -413,6 +413,26 @@ opaque
   neRed (univ x) N = neRedTerm x N
 
 ------------------------------------------------------------------------
+-- Some lemmas related to neutral levels
+
+opaque
+
+  -- Neutral terms do not reduce.
+
+  neLevelRedTerm : Γ ⊢ t ⇒ u ∷ A → ¬ NeutralLevel t
+  neLevelRedTerm (conv d _) n = neLevelRedTerm d n
+  neLevelRedTerm (maxᵘ-zeroˡ _) (maxᵘˡₙ (ne ()))
+  neLevelRedTerm (maxᵘ-zeroʳ _) (maxᵘˡₙ (ne ()))
+  neLevelRedTerm (maxᵘ-sucᵘ _ _) (maxᵘˡₙ (ne ()))
+  neLevelRedTerm (maxᵘ-substˡ d _) (maxᵘˡₙ n) = neLevelRedTerm d n
+  neLevelRedTerm (maxᵘ-substʳ _ d) (maxᵘˡₙ (ne ()))
+  neLevelRedTerm (maxᵘ-zeroʳ _) (maxᵘʳₙ (ne ()))
+  neLevelRedTerm (maxᵘ-sucᵘ _ _) (maxᵘʳₙ (ne ()))
+  neLevelRedTerm (maxᵘ-substˡ d _) (maxᵘʳₙ n) = ¬sucᵘ⇒ d
+  neLevelRedTerm (maxᵘ-substʳ _ d) (maxᵘʳₙ n) = neLevelRedTerm d n
+  neLevelRedTerm d (ne n) = neRedTerm d n
+
+------------------------------------------------------------------------
 -- Some lemmas related to WHNFs
 
 opaque
@@ -422,11 +442,11 @@ opaque
   whnfRedTerm : Γ ⊢ t ⇒ u ∷ A → ¬ Whnf t
   whnfRedTerm = λ where
     (conv d _)                → whnfRedTerm d
-    (maxᵘ-zeroˡ _)            → (λ { (inj₁ ()); (inj₂ (t′ , () , _)) }) ∘→ inv-whnf-maxᵘ
-    (maxᵘ-zeroʳ _)            → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-whnf-maxᵘ
-    (maxᵘ-sucᵘ _ _)           → (λ { (inj₁ ()); (inj₂ (t′ , _ , ())) }) ∘→ inv-whnf-maxᵘ
-    (maxᵘ-substˡ d _)         → (λ { (inj₁ n) → neRedTerm d n; (inj₂ (t′ , PE.refl , n)) → ¬sucᵘ⇒ d }) ∘→ inv-whnf-maxᵘ
-    (maxᵘ-substʳ _ d)         → (λ { (inj₁ ()); (inj₂ (t′ , PE.refl , n)) → neRedTerm d n }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-zeroˡ _)            → (λ { (inj₁ (ne ())); (inj₂ (t′ , () , _)) }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-zeroʳ _)            → (λ { (inj₁ (ne ())); (inj₂ (t′ , _ , (ne ()))) }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-sucᵘ _ _)           → (λ { (inj₁ (ne ())); (inj₂ (t′ , _ , (ne ()))) }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-substˡ d _)         → (λ { (inj₁ n) → neLevelRedTerm d n; (inj₂ (t′ , PE.refl , n)) → ¬sucᵘ⇒ d }) ∘→ inv-whnf-maxᵘ
+    (maxᵘ-substʳ _ d)         → (λ { (inj₁ (ne ())); (inj₂ (t′ , PE.refl , n)) → neLevelRedTerm d n }) ∘→ inv-whnf-maxᵘ
     (app-subst d _)           → neRedTerm d ∘→ inv-whnf-∘
     (β-red _ _ _ _ _)         → (λ ()) ∘→ inv-whnf-∘
     (natrec-subst _ _ d)      → neRedTerm d ∘→ inv-whnf-natrec

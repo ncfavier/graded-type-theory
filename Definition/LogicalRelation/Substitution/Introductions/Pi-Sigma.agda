@@ -25,7 +25,7 @@ open import Definition.LogicalRelation.ShapeView R
 open import Definition.LogicalRelation.Substitution R
 open import Definition.LogicalRelation.Substitution.Introductions.Level R
 open import
-  Definition.LogicalRelation.Substitution.Introductions.Universe R
+  Definition.LogicalRelation.Substitution.Introductions.Universe R {{eqrel}}
 open import Definition.LogicalRelation.Substitution.Introductions.Var R
 import Definition.LogicalRelation.Weakening R as W
 open import Definition.LogicalRelation.Weakening.Restricted R
@@ -525,7 +525,7 @@ opaque
     ⦃ inc : Neutrals-included or-empty Δ ⦄ →
     Δ ⊩ˢ σ ∷ Γ →
     Δ ⊩⟨ ωᵘ ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A ▹ B) [ σ ] ∷ U (t maxᵘ u) [ σ ]
-  ⊩ΠΣ∷U {A} {B} {u}  ⊢ΠΣ∷U ⊩t ⊩u ⊩A∷U ⊩B∷U ⊩σ =
+  ⊩ΠΣ∷U {A} {B} {t} {u} ⊢ΠΣ∷U ⊩t ⊩u ⊩A∷U ⊩B∷U ⊩σ =
     case R.⊩∷→ $ ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩A∷U ⊩σ of λ
       ⊩A[σ] →
     case ⊩∷Level⇔ .proj₁ $ R.⊩∷→ $ ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩t ⊩σ of λ
@@ -553,14 +553,14 @@ opaque
                 ρ⊇ = ∷ʷʳ⊇→∷ʷ⊇ ρ⊇
                 ([t] , t< , ⊩A , _) = ⊩∷U⇔ .proj₁ $ R.⊩∷→ $ ⊩ᵛ∷→⊩ˢ∷→⊩[]∷ ⊩A∷U $ ⊩ˢ∷-•ₛ ρ⊇ ⊩σ
             in
-              emb-⊩ {! [t]  !} (PE.subst (_⊩⟨_⟩_ _ _) (PE.sym $ wk-subst A) ⊩A)
+              emb-⊩ (PE.subst₂ _≤ᵘ_ (PE.sym $ W.wk-↑ᵘ ρ⊇ ⊩t[σ] [t] (PE.sym $ wk-subst t)) (PE.sym $ ↑ᵘ-maxᵘ ⊩t[σ] ⊩u[σ]) ≤ᵘ⊔ᵘʳ) (PE.subst (_⊩⟨_⟩_ _ _) (PE.sym $ wk-subst A) ⊩A)
             , λ t≡u →
                 let ([u] , u< , B≡B , _) = ⊩≡∷U⇔ .proj₁ $ R.⊩≡∷→ $
                       ⊩ᵛ∷⇔ .proj₁ ⊩B∷U .proj₂ $ ⊩ˢ≡∷∙⇔ .proj₂ $
                           ( _ , ⊩ᵛ∷U→⊩ᵛ ⊩A∷U
                           , (R.→⊩≡∷ $ emb-⊩≡∷ ≤ᵘ-ωᵘ $ PE.subst (_⊩⟨_⟩_≡_∷_ _ _ _ _) (wk-subst A) t≡u))
                         , refl-⊩ˢ≡∷ (⊩ˢ∷-•ₛ ρ⊇ ⊩σ)
-                in emb-⊩≡ {! [u]  !} $ PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
+                in emb-⊩≡ (PE.subst₂ _≤ᵘ_ (PE.sym $ W.wk-↑ᵘ ρ⊇ ⊩u[σ] [u] (PE.trans (wk1-tail u) (PE.sym $ wk-subst u))) (PE.sym $ ↑ᵘ-maxᵘ ⊩t[σ] ⊩u[σ]) ≤ᵘ⊔ᵘˡ) $ PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
                     (PE.sym $ singleSubstWkComp _ _ B)
                     (PE.sym $ singleSubstWkComp _ _ B)
                     B≡B
@@ -584,7 +584,7 @@ opaque
     Δ ⊩ˢ σ₁ ≡ σ₂ ∷ Γ →
     Δ ⊩⟨ ωᵘ ⟩ (ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ B₁) [ σ₁ ] ≡
       (ΠΣ⟨ b ⟩ p , q ▷ A₂ ▹ B₂) [ σ₂ ] ∷ U (t maxᵘ u) [ σ₁ ]
-  ⊩ΠΣ≡ΠΣ∷U {A₁} {B₁} {A₂} {B₂} {u} {Δ} {σ₁} ΠΣ≡ΠΣ ⊩t ⊩u A₁≡A₂∷U B₁≡B₂∷U σ₁≡σ₂ =
+  ⊩ΠΣ≡ΠΣ∷U {A₁} {B₁} {A₂} {B₂} {t} {u} {Δ} {σ₁} ΠΣ≡ΠΣ ⊩t ⊩u A₁≡A₂∷U B₁≡B₂∷U σ₁≡σ₂ =
     case wf-⊢≡∷ ΠΣ≡ΠΣ of λ
       (_ , ⊢ΠΣ₁ , ⊢ΠΣ₂) →
     case wf-⊩ˢ≡∷ σ₁≡σ₂ of λ
@@ -636,7 +636,7 @@ opaque
                 ([t] , t< , A≡A , _) = ⊩≡∷U⇔ .proj₁ $ R.⊩≡∷→ $
                   ⊩ᵛ≡∷→⊩ˢ≡∷→⊩[]≡[]∷ A₁≡A₂∷U $ ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂
             in
-              emb-⊩≡ {! [t]  !} (PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
+              emb-⊩≡ (PE.subst₂ _≤ᵘ_ (PE.sym $ W.wk-↑ᵘ ρ⊇ ⊩t[σ₁] [t] (PE.sym $ wk-subst t)) (PE.sym $ ↑ᵘ-maxᵘ ⊩t[σ₁] ⊩u[σ₁]) ≤ᵘ⊔ᵘʳ) (PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
                 (PE.sym $ wk-subst A₁) (PE.sym $ wk-subst A₂) A≡A)
             , λ ⊩t →
                 let ([u] , u< , B≡B , _) = ⊩≡∷U⇔ .proj₁ $ R.⊩≡∷→ $
@@ -644,7 +644,7 @@ opaque
                           ( _ , wf-⊩ᵛ≡ A₁≡A₂ .proj₁
                           , (R.emb-⊩≡∷ ≤ᵘ-ωᵘ $ R.refl-⊩≡∷ $ PE.subst (R._⊩⟨_⟩_∷_ _ _ _) (wk-subst A₁) $ R.→⊩∷ ⊩t))
                         , ⊩ˢ≡∷-•ₛ ρ⊇ σ₁≡σ₂
-                in emb-⊩≡ {! [u]  !} $ PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
+                in emb-⊩≡ (PE.subst₂ _≤ᵘ_ (PE.sym $ W.wk-↑ᵘ ρ⊇ ⊩u[σ₁] [u] (PE.trans (wk1-tail u) (PE.sym $ wk-subst u))) (PE.sym $ ↑ᵘ-maxᵘ ⊩t[σ₁] ⊩u[σ₁]) ≤ᵘ⊔ᵘˡ) $ PE.subst₂ (_⊩⟨_⟩_≡_ _ _)
                     (PE.sym $ singleSubstWkComp _ _ B₁)
                     (PE.sym $ singleSubstWkComp _ _ B₂)
                     B≡B

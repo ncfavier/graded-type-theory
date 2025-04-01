@@ -34,7 +34,7 @@ opaque
   lsplit : [Level]-prop Γ t u → Whnf t × Whnf u
   lsplit zeroᵘᵣ = zeroᵘₙ , zeroᵘₙ
   lsplit (sucᵘᵣ x) = sucᵘₙ , sucᵘₙ
-  lsplit (ne (neNfₜ₌ _ t-ne u-ne _)) = ne t-ne , ne u-ne
+  lsplit (ne (neLvlₜ₌ t-ne u-ne _)) = ne t-ne , ne u-ne
 
 opaque
 
@@ -58,4 +58,4 @@ opaque
 
   usplit : ∀ {k} → [Unitʷ]-prop Γ k t u → Whnf t × Whnf u
   usplit (starᵣ _ _)               = starₙ , starₙ
-  usplit (ne (neNfₜ₌ _ t-ne u-ne _)) = ne t-ne , ne u-ne
+  usplit (ne (neNfₜ₌ _ t-ne u-ne _)) = ne (ne t-ne) , ne (ne u-ne)

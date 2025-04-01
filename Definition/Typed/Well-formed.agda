@@ -181,8 +181,6 @@ opaque mutual
           _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ u₁≡u₂
       in
       ⊢Level , maxᵘⱼ ⊢t₁ ⊢u₁ , maxᵘⱼ ⊢t₂ ⊢u₂
-    (maxᵘ-assoc ⊢l₁ ⊢l₂ ⊢l₃) →
-      wf-⊢∷ ⊢l₁ , maxᵘⱼ (maxᵘⱼ ⊢l₁ ⊢l₂) ⊢l₃ , maxᵘⱼ ⊢l₁ (maxᵘⱼ ⊢l₂ ⊢l₃)
     (maxᵘ-zeroˡ ⊢l) →
       wf-⊢∷ ⊢l , maxᵘⱼ (zeroᵘⱼ (wfTerm ⊢l)) ⊢l , ⊢l
     (maxᵘ-zeroʳ ⊢l) →

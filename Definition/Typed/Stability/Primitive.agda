@@ -376,8 +376,6 @@ private module Inhabited where
         sucᵘ-cong (stability-⊢≡∷ Γ≡Δ t₁≡t₂)
       (maxᵘ-cong t₁≡t₂ u₁≡u₂) PE.refl →
         maxᵘ-cong (stability-⊢≡∷ Γ≡Δ t₁≡t₂) (stability-⊢≡∷ Γ≡Δ u₁≡u₂)
-      (maxᵘ-assoc l₁ l₂ l₃) PE.refl →
-        maxᵘ-assoc (stability-⊢∷ Γ≡Δ l₁) (stability-⊢∷ Γ≡Δ l₂) (stability-⊢∷ Γ≡Δ l₃)
       (maxᵘ-zeroˡ l) PE.refl →
         maxᵘ-zeroˡ (stability-⊢∷ Γ≡Δ l)
       (maxᵘ-zeroʳ l) PE.refl →

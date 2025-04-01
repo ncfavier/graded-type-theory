@@ -264,8 +264,6 @@ opaque
       fix (wfEqTerm-<ˢ t≡u)
     wfEqTerm-<ˢ (maxᵘ-cong t≡t' u≡u') =
       fix (wfEqTerm-<ˢ t≡t')
-    wfEqTerm-<ˢ (maxᵘ-assoc l₁ l₂ l₃) =
-      fix (wfTerm-<ˢ l₁)
     wfEqTerm-<ˢ (maxᵘ-zeroˡ l) =
       fix (wfTerm-<ˢ l)
     wfEqTerm-<ˢ (maxᵘ-zeroʳ l) =

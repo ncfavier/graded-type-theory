@@ -201,14 +201,12 @@ opaque mutual
     _ , sucᵘ-congᵛ (fundamental-⊩ᵛ≡∷ l₁≡l₂ .proj₂)
   fundamental-⊩ᵛ≡∷ (maxᵘ-cong l₁≡l₂ l₃≡l₄) =
     _ , maxᵘ-congᵛ (fundamental-⊩ᵛ≡∷ l₁≡l₂ .proj₂) (fundamental-⊩ᵛ≡∷ l₃≡l₄ .proj₂)
-  fundamental-⊩ᵛ≡∷ (maxᵘ-assoc ⊢l₁ ⊢l₂ ⊢l₃) =
-    _ , {!   !}
   fundamental-⊩ᵛ≡∷ (maxᵘ-zeroˡ ⊢l) =
-    _ , {!   !}
+    _ , maxᵘ-zeroˡᵛ (fundamental-⊩ᵛ∷ ⊢l .proj₂)
   fundamental-⊩ᵛ≡∷ (maxᵘ-zeroʳ ⊢l) =
-    _ , {!   !}
+    _ , maxᵘ-zeroʳᵛ (fundamental-⊩ᵛ∷ ⊢l .proj₂)
   fundamental-⊩ᵛ≡∷ (maxᵘ-sucᵘ ⊢l₁ ⊢l₂) =
-    _ , {!   !}
+    _ , maxᵘ-sucᵘᵛ (fundamental-⊩ᵛ∷ ⊢l₁ .proj₂) (fundamental-⊩ᵛ∷ ⊢l₂ .proj₂)
   fundamental-⊩ᵛ≡∷ (U-cong l₁≡l₂) =
     _ , ⊩ᵛU≡U∷U (fundamental-⊩ᵛ≡∷ l₁≡l₂ .proj₂)
   fundamental-⊩ᵛ≡∷ ΠΣ≡ΠΣ@(ΠΣ-cong ⊢l₁ ⊢l₂ A₁≡A₂ B₁≡B₂ ok) =

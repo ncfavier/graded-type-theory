@@ -102,7 +102,7 @@ opaque
            neₜ _ t⇒u
              (⊩neNf∷⇔⊩neNf≡∷ .proj₂ $
               PE.subst (flip (_⊩neNf_≡_∷_ _ _) _)
-                (whrDet*Term (t⇒v , ne v-ne) (t⇒u , ne u-ne)) u≡v))
+                (whrDet*Term (t⇒v , ne (ne v-ne)) (t⇒u , ne (ne u-ne))) u≡v))
 
 ------------------------------------------------------------------------
 -- U
@@ -196,7 +196,7 @@ opaque
     , (λ where
          (Emptyₜ₌ u v t⇒u t⇒v u≅v u-v-prop) →
            let u-ne , v-ne = esplit u-v-prop
-               v≡u         = whrDet*Term (t⇒v , ne v-ne) (t⇒u , ne u-ne)
+               v≡u         = whrDet*Term (t⇒v , ne (ne v-ne)) (t⇒u , ne (ne u-ne))
            in
            Emptyₜ _ t⇒u (PE.subst (flip (_⊢_≅_∷_ _ _) _) v≡u u≅v)
              (Empty-prop⇔[Empty]-prop .proj₂ $

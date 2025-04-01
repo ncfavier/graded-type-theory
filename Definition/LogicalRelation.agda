@@ -115,6 +115,18 @@ _⊩Level_≡_ : (Γ : Con Term ℓ) (A B : Term ℓ) → Set a
 Γ ⊩Level A ≡ B = Γ ⊢ B ⇒* Level
 
 mutual
+  -- Neutral level term equality
+  record _⊩neLvl_≡_∷Level (Γ : Con Term ℓ) (k m : Term ℓ) : Set a where
+    inductive
+    no-eta-equality
+    pattern
+    constructor neLvlₜ₌
+    field
+      -- neutrals-included : Neutrals-included
+      neK               : NeutralLevel k
+      neM               : NeutralLevel m
+      prop : [neLevel]-prop Γ k m
+
   -- Level term equality
   record _⊩Level_≡_∷Level (Γ : Con Term ℓ) (t u : Term ℓ) : Set a where
     inductive
@@ -123,14 +135,26 @@ mutual
       k k′ : Term ℓ
       d : Γ ⊢ t ⇒* k ∷ Level
       d′ : Γ ⊢ u ⇒* k′ ∷ Level
-      k≡k′ : Γ ⊢ k ≅ k′ ∷ Level
       prop : [Level]-prop Γ k k′
 
   -- WHNF property of level term equality
   data [Level]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
     zeroᵘᵣ : [Level]-prop Γ zeroᵘ zeroᵘ
     sucᵘᵣ  : ∀ {k k′} → Γ ⊩Level k ≡ k′ ∷Level → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
-    ne     : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [Level]-prop Γ k k′
+    ne     : ∀ {k k′} → Γ ⊩neLvl k ≡ k′ ∷Level → [Level]-prop Γ k k′
+
+  data [neLevel]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
+    maxᵘˡᵣ
+      : ∀ {k₁ k₂ k₁′ k₂′}
+      → Γ ⊩neLvl k₁ ≡ k₁′ ∷Level
+      → Γ ⊩Level k₂ ≡ k₂′ ∷Level
+      → [neLevel]-prop Γ (k₁ maxᵘ k₂) (k₁′ maxᵘ k₂′)
+    maxᵘʳᵣ
+      : ∀ {k₁ k₂ k₁′ k₂′}
+      → Γ ⊩Level k₁ ≡ k₁′ ∷Level
+      → Γ ⊩neLvl k₂ ≡ k₂′ ∷Level
+      → [neLevel]-prop Γ (sucᵘ k₁ maxᵘ k₂) (sucᵘ k₁′ maxᵘ k₂′)
+    ne : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [neLevel]-prop Γ k k′ -- TODO not maxᵘ
 
 -- Level term
 _⊩Level_∷Level : Con Term ℓ → Term ℓ → Set a
@@ -142,10 +166,18 @@ opaque mutual
   ↑ᵘ′_ : Γ ⊩Level t ≡ u ∷Level → Nat
   ↑ᵘ′ t≡u = ↑ᵘ′-prop (t≡u ._⊩Level_≡_∷Level.prop)
 
+  ↑ᵘ′-ne : Γ ⊩neLvl t ≡ u ∷Level → Nat
+  ↑ᵘ′-ne (neLvlₜ₌ neK neM prop) = ↑ᵘ′-neprop prop
+
   ↑ᵘ′-prop : [Level]-prop Γ t u → Nat
   ↑ᵘ′-prop zeroᵘᵣ    = 0
   ↑ᵘ′-prop (sucᵘᵣ x) = 1+ (↑ᵘ′ x)
-  ↑ᵘ′-prop (ne _)    = 0
+  ↑ᵘ′-prop (ne x)  = ↑ᵘ′-ne x
+
+  ↑ᵘ′-neprop : [neLevel]-prop Γ t u → Nat
+  ↑ᵘ′-neprop (maxᵘˡᵣ x y) = ↑ᵘ′-ne x ⊔ ↑ᵘ′ y
+  ↑ᵘ′-neprop (maxᵘʳᵣ x y) = 1+ (↑ᵘ′ x) ⊔ ↑ᵘ′-ne y
+  ↑ᵘ′-neprop (ne x) = 0
 
 ↑ᵘ_ : Γ ⊩Level t ≡ u ∷Level → Universe-level
 ↑ᵘ t≡u = 0ᵘ+ ↑ᵘ′ t≡u

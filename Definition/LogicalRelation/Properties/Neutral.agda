@@ -63,7 +63,7 @@ opaque
   neuEq {Γ} {A} {B} [A] neA neB A~B =
     case ne-view neA [A] of λ {
       (ne [A]′@(ne inc _ D neK K≡K)) →
-    let A≡K = whnfRed* D (ne neA) in
+    let A≡K = whnfRed* D (ne (ne neA)) in
     ne₌ inc _ (id (wf-⊢≡ (≅-eq A~B) .proj₂)) neB
       (PE.subst (λ x → _ ⊢ x ≅ _) A≡K A~B) }
 
@@ -86,10 +86,9 @@ opaque
     neuTerm′ (Levelᵣ D) =
       let A≡Level  = subset* D
           n~n′ = ~-conv ~n A≡Level
-          n≡n  = ~-to-≅ₜ n~n′
       in
-      Levelₜ₌ _ _ (id (conv ⊢n A≡Level)) (id (conv ⊢n A≡Level)) n≡n
-        (ne (neNfₜ₌ inc n-ne n-ne n~n′))
+      Levelₜ₌ _ _ (id (conv ⊢n A≡Level)) (id (conv ⊢n A≡Level))
+        (ne (neLvlₜ₌ (ne n-ne) (ne n-ne) (ne (neNfₜ₌ inc n-ne n-ne n~n′))))
     neuTerm′ (Uᵣ′ _ _ p A⇒*U) = {!  !}
     neuTerm′ (ℕᵣ D) =
       let A≡ℕ  = subset* D
@@ -110,7 +109,7 @@ opaque
           n~n′ = ~-conv ~n A≡Unit
       in
       ⊩Unit∷Unit⇔⊩Unit≡∷Unit .proj₁
-        (Unitₜ _ (id (conv ⊢n A≡Unit) , ne n-ne)
+        (Unitₜ _ (id (conv ⊢n A≡Unit) , ne (ne n-ne))
            (Unit-prop′→Unit-prop (ne (neNfₜ inc n-ne n~n′))))
     neuTerm′ (ne′ _ _ D neK K≡K) =
       let A≡K = subset* D in
@@ -187,10 +186,9 @@ opaque
     neuEqTerm′ (Levelᵣ D) =
       let A≡Level = subset* D
           n~n′₁ = ~-conv n~n′ A≡Level
-          n≡n′ = ~-to-≅ₜ n~n′₁
       in
       Levelₜ₌ _ _ (id (conv ⊢n A≡Level)) (id (conv ⊢n′ A≡Level))
-        n≡n′ (ne (neNfₜ₌ inc n-ne n′-ne n~n′₁))
+        (ne (neLvlₜ₌ (ne n-ne) (ne n′-ne) (ne (neNfₜ₌ inc n-ne n′-ne n~n′₁))))
     neuEqTerm′ (Uᵣ′ _ _ p A⇒*U) = {!  !}
     neuEqTerm′ (ℕᵣ D) =
       let A≡ℕ = subset* D
@@ -211,8 +209,8 @@ opaque
       let A≡Unit = subset* D
           n~n′₁ = ~-conv n~n′ A≡Unit
       in
-      Unitₜ₌ _ _ (id (conv ⊢n A≡Unit) , ne n-ne)
-        (id (conv ⊢n′ A≡Unit) , ne n′-ne)
+      Unitₜ₌ _ _ (id (conv ⊢n A≡Unit) , ne (ne n-ne))
+        (id (conv ⊢n′ A≡Unit) , ne (ne n′-ne))
         (case Unit-with-η? s of λ where
            (inj₁ η)                → Unitₜ₌ˢ η
            (inj₂ (PE.refl , no-η)) →

@@ -38,8 +38,6 @@ private variable
 
 data Neutral : Term n → Set a where
   var       : (x : Fin n) → Neutral (var x)
-  maxᵘˡₙ    : Neutral t   → Neutral (t maxᵘ u)
-  maxᵘʳₙ    : Neutral u   → Neutral (sucᵘ t maxᵘ u)
   ∘ₙ        : Neutral t   → Neutral (t ∘⟨ p ⟩ u)
   fstₙ      : Neutral t   → Neutral (fst p t)
   sndₙ      : Neutral t   → Neutral (snd p t)
@@ -57,8 +55,6 @@ data Neutral : Term n → Set a where
 noClosedNe : {t : Term 0} → Neutral t → ⊥
 noClosedNe (var ())
 noClosedNe (∘ₙ net) = noClosedNe net
-noClosedNe (maxᵘˡₙ net) = noClosedNe net
-noClosedNe (maxᵘʳₙ net) = noClosedNe net
 noClosedNe (fstₙ net) = noClosedNe net
 noClosedNe (sndₙ net) = noClosedNe net
 noClosedNe (natrecₙ net) = noClosedNe net
@@ -68,6 +64,11 @@ noClosedNe (unitrecₙ _ net) = noClosedNe net
 noClosedNe (Jₙ net) = noClosedNe net
 noClosedNe (Kₙ net) = noClosedNe net
 noClosedNe ([]-congₙ net) = noClosedNe net
+
+data NeutralLevel : Term n → Set a where
+  maxᵘˡₙ : NeutralLevel t → NeutralLevel (t maxᵘ u)
+  maxᵘʳₙ : NeutralLevel u → NeutralLevel (sucᵘ t maxᵘ u)
+  ne     : Neutral t → NeutralLevel t
 
 ------------------------------------------------------------------------
 -- Weak head normal forms (WHNFs)
@@ -96,7 +97,9 @@ data Whnf {n : Nat} : Term n → Set a where
   rflₙ  : Whnf rfl
 
   -- Neutrals are whnfs.
-  ne    : Neutral t → Whnf t
+  ne    : NeutralLevel t → Whnf t
+
+pattern ne! x = ne (ne x)
 
 ------------------------------------------------------------------------
 -- WHNF inequalities
@@ -269,7 +272,7 @@ Identity-rec (ne _) r n = n
 naturalWhnf : Natural t → Whnf t
 naturalWhnf sucₙ   = sucₙ
 naturalWhnf zeroₙ  = zeroₙ
-naturalWhnf (ne x) = ne x
+naturalWhnf (ne x) = ne (ne x)
 
 typeWhnf : Type A → Whnf A
 typeWhnf Levelₙ = Levelₙ
@@ -279,23 +282,23 @@ typeWhnf ℕₙ     = ℕₙ
 typeWhnf Emptyₙ = Emptyₙ
 typeWhnf Unitₙ  = Unitₙ
 typeWhnf Idₙ    = Idₙ
-typeWhnf (ne x) = ne x
+typeWhnf (ne x) = ne (ne x)
 
 functionWhnf : Function t → Whnf t
 functionWhnf lamₙ   = lamₙ
-functionWhnf (ne x) = ne x
+functionWhnf (ne x) = ne (ne x)
 
 productWhnf : Product t → Whnf t
 productWhnf prodₙ  = prodₙ
-productWhnf (ne x) = ne x
+productWhnf (ne x) = ne (ne x)
 
 starWhnf : Star t → Whnf t
 starWhnf starₙ  = starₙ
-starWhnf (ne n) = ne n
+starWhnf (ne n) = ne (ne n)
 
 identityWhnf : Identity t → Whnf t
 identityWhnf rflₙ   = rflₙ
-identityWhnf (ne n) = ne n
+identityWhnf (ne n) = ne (ne n)
 
 ⟦_⟧ₙ : (W : BindingType) → Whnf (⟦ W ⟧ F ▹ G)
 ⟦_⟧ₙ (BΠ p q) = ΠΣₙ
@@ -328,7 +331,7 @@ No-η-equality→Whnf = λ where
   ℕₙ         → ℕₙ
   (Unitʷₙ _) → Unitₙ
   Idₙ        → Idₙ
-  (neₙ n)    → ne n
+  (neₙ n)    → ne (ne n)
 
 ------------------------------------------------------------------------
 -- Weakening
@@ -337,8 +340,6 @@ No-η-equality→Whnf = λ where
 
 wkNeutral : ∀ ρ → Neutral t → Neutral {n = n} (wk ρ t)
 wkNeutral ρ (var n)             = var (wkVar ρ n)
-wkNeutral ρ (maxᵘˡₙ n)          = maxᵘˡₙ (wkNeutral ρ n)
-wkNeutral ρ (maxᵘʳₙ n)          = maxᵘʳₙ (wkNeutral ρ n)
 wkNeutral ρ (∘ₙ n)              = ∘ₙ (wkNeutral ρ n)
 wkNeutral ρ (fstₙ n)            = fstₙ (wkNeutral ρ n)
 wkNeutral ρ (sndₙ n)            = sndₙ (wkNeutral ρ n)
@@ -349,6 +350,11 @@ wkNeutral ρ (unitrecₙ not-ok n) = unitrecₙ not-ok (wkNeutral ρ n)
 wkNeutral ρ (Jₙ n)              = Jₙ (wkNeutral ρ n)
 wkNeutral ρ (Kₙ n)              = Kₙ (wkNeutral ρ n)
 wkNeutral ρ ([]-congₙ n)        = []-congₙ (wkNeutral ρ n)
+
+wkNeutralLevel : ∀ ρ → NeutralLevel t → NeutralLevel {n = n} (wk ρ t)
+wkNeutralLevel ρ (maxᵘˡₙ t) = maxᵘˡₙ (wkNeutralLevel ρ t)
+wkNeutralLevel ρ (maxᵘʳₙ t) = maxᵘʳₙ (wkNeutralLevel ρ t)
+wkNeutralLevel ρ (ne x) = ne (wkNeutral ρ x)
 
 -- Weakening can be applied to our whnf views.
 
@@ -395,18 +401,18 @@ wkWhnf ρ zeroₙ   = zeroₙ
 wkWhnf ρ sucₙ    = sucₙ
 wkWhnf ρ starₙ   = starₙ
 wkWhnf ρ rflₙ    = rflₙ
-wkWhnf ρ (ne x)  = ne (wkNeutral ρ x)
+wkWhnf ρ (ne x)  = ne (wkNeutralLevel ρ x)
 
 ------------------------------------------------------------------------
 -- Inversion lemmas for Neutral
 
-opaque
+-- opaque
 
-  -- An inversion lemma for _maxᵘ_.
+--   -- An inversion lemma for _maxᵘ_.
 
-  inv-ne-maxᵘ : Neutral (t maxᵘ u) → Neutral t ⊎ ∃ λ t′ → t PE.≡ sucᵘ t′ × Neutral u
-  inv-ne-maxᵘ (maxᵘˡₙ n) = inj₁ n
-  inv-ne-maxᵘ (maxᵘʳₙ n) = inj₂ (_ , PE.refl , n)
+--   inv-ne-maxᵘ : Neutral (t maxᵘ u) → Neutral t ⊎ ∃ λ t′ → t PE.≡ sucᵘ t′ × Neutral u
+--   inv-ne-maxᵘ (maxᵘˡₙ n) = inj₁ n
+--   inv-ne-maxᵘ (maxᵘʳₙ n) = inj₂ (_ , PE.refl , n)
 
 opaque
 
@@ -482,54 +488,56 @@ opaque
 ------------------------------------------------------------------------
 -- Inversion lemmas for Whnf
 
-opaque
+-- opaque
 
   -- An inversion lemma for _maxᵘ_.
 
-  inv-whnf-maxᵘ : Whnf (t maxᵘ u) → Neutral t ⊎ ∃ λ t′ → t PE.≡ sucᵘ t′ × Neutral u
-  inv-whnf-maxᵘ (ne n) = inv-ne-maxᵘ n
+  inv-whnf-maxᵘ : Whnf (t maxᵘ u) → NeutralLevel t ⊎ ∃ λ t′ → t PE.≡ sucᵘ t′ × NeutralLevel u
+  inv-whnf-maxᵘ (ne (maxᵘˡₙ n)) = inj₁ n
+  inv-whnf-maxᵘ (ne (maxᵘʳₙ n)) = inj₂ (_ , PE.refl , n)
+  inv-whnf-maxᵘ (ne (ne ()))
 
 opaque
 
   -- An inversion lemma for _∘⟨_⟩_.
 
   inv-whnf-∘ : Whnf (t ∘⟨ p ⟩ u) → Neutral t
-  inv-whnf-∘ (ne n) = inv-ne-∘ n
+  inv-whnf-∘ (ne (ne n)) = inv-ne-∘ n
 
 opaque
 
   -- An inversion lemma for fst.
 
   inv-whnf-fst : Whnf (fst p t) → Neutral t
-  inv-whnf-fst (ne n) = inv-ne-fst n
+  inv-whnf-fst (ne (ne n)) = inv-ne-fst n
 
 opaque
 
   -- An inversion lemma for snd.
 
   inv-whnf-snd : Whnf (snd p t) → Neutral t
-  inv-whnf-snd (ne n) = inv-ne-snd n
+  inv-whnf-snd (ne (ne n)) = inv-ne-snd n
 
 opaque
 
   -- An inversion lemma for natrec.
 
   inv-whnf-natrec : Whnf (natrec p q r A t u v) → Neutral v
-  inv-whnf-natrec (ne n) = inv-ne-natrec n
+  inv-whnf-natrec (ne (ne n)) = inv-ne-natrec n
 
 opaque
 
   -- An inversion lemma for prodrec.
 
   inv-whnf-prodrec : Whnf (prodrec r p q A t u) → Neutral t
-  inv-whnf-prodrec (ne n) = inv-ne-prodrec n
+  inv-whnf-prodrec (ne (ne n)) = inv-ne-prodrec n
 
 opaque
 
   -- An inversion lemma for emptyrec.
 
   inv-whnf-emptyrec : Whnf (emptyrec p A t) → Neutral t
-  inv-whnf-emptyrec (ne n) = inv-ne-emptyrec n
+  inv-whnf-emptyrec (ne (ne n)) = inv-ne-emptyrec n
 
 opaque
 
@@ -537,28 +545,28 @@ opaque
 
   inv-whnf-unitrec :
     Whnf (unitrec p q l A t u) → ¬ Unitʷ-η × Neutral t
-  inv-whnf-unitrec (ne n) = inv-ne-unitrec n
+  inv-whnf-unitrec (ne (ne n)) = inv-ne-unitrec n
 
 opaque
 
   -- An inversion lemma for J.
 
   inv-whnf-J : Whnf (J p q A t B u v w) → Neutral w
-  inv-whnf-J (ne n) = inv-ne-J n
+  inv-whnf-J (ne (ne n)) = inv-ne-J n
 
 opaque
 
   -- An inversion lemma for K.
 
   inv-whnf-K : Whnf (K p A t B u v) → Neutral v
-  inv-whnf-K (ne n) = inv-ne-K n
+  inv-whnf-K (ne (ne n)) = inv-ne-K n
 
 opaque
 
   -- An inversion lemma for []-cong.
 
   inv-whnf-[]-cong : Whnf ([]-cong s A t u v) → Neutral v
-  inv-whnf-[]-cong (ne n) = inv-ne-[]-cong n
+  inv-whnf-[]-cong (ne (ne n)) = inv-ne-[]-cong n
 
 ------------------------------------------------------------------------
 -- An alternate representation of neutral terms, tracking the variable
@@ -566,8 +574,6 @@ opaque
 
 data NeutralAt (x : Fin n) : Term n → Set a where
   var       : NeutralAt x (var x)
-  maxᵘˡₙ    : NeutralAt x t   → NeutralAt x (t maxᵘ u)
-  maxᵘʳₙ    : NeutralAt x u   → NeutralAt x (sucᵘ t maxᵘ u)
   ∘ₙ        : NeutralAt x t   → NeutralAt x (t ∘⟨ p ⟩ u)
   fstₙ      : NeutralAt x t   → NeutralAt x (fst p t)
   sndₙ      : NeutralAt x t   → NeutralAt x (snd p t)

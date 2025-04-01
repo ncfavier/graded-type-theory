@@ -223,10 +223,6 @@ mutual
                   → Γ ⊢ t ≡ t' ∷ Level
                   → Γ ⊢ u ≡ u' ∷ Level
                   → Γ ⊢ t maxᵘ u ≡ t' maxᵘ u' ∷ Level
-    maxᵘ-assoc    : Γ ⊢ l₁ ∷ Level
-                  → Γ ⊢ l₂ ∷ Level
-                  → Γ ⊢ l₃ ∷ Level
-                  → Γ ⊢ (l₁ maxᵘ l₂) maxᵘ l₃ ≡ l₁ maxᵘ (l₂ maxᵘ l₃) ∷ Level
     maxᵘ-zeroˡ    : Γ ⊢ l ∷ Level
                   → Γ ⊢ zeroᵘ maxᵘ l ≡ l ∷ Level
     maxᵘ-zeroʳ    : Γ ⊢ l ∷ Level

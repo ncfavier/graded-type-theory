@@ -16,8 +16,8 @@ module Definition.LogicalRelation.Substitution.Introductions.Level
 open EqRelSet eqrel
 open Type-restrictions R
 
-open import Definition.LogicalRelation R
-open import Definition.LogicalRelation.Hidden R
+open import Definition.LogicalRelation R {{eqrel}}
+open import Definition.LogicalRelation.Hidden R {{eqrel}}
 import Definition.LogicalRelation.Hidden.Restricted R as R
 open import Definition.LogicalRelation.Irrelevance R
 open import Definition.LogicalRelation.Properties R
@@ -116,7 +116,7 @@ opaque
 
   ⊩Levelzeroᵘ∷Level : ⊢ Γ → Γ ⊩Level zeroᵘ ∷Level
   ⊩Levelzeroᵘ∷Level ⊢Γ =
-    Levelₜ₌ _ _ (id (zeroᵘⱼ ⊢Γ)) (id (zeroᵘⱼ ⊢Γ)) (≅ₜ-zeroᵘrefl ⊢Γ) zeroᵘᵣ
+    Levelₜ₌ _ _ (id (zeroᵘⱼ ⊢Γ)) (id (zeroᵘⱼ ⊢Γ)) zeroᵘᵣ
 
   ⊩zeroᵘ∷Level⇔ : Γ ⊩⟨ l ⟩ zeroᵘ ∷ Level ⇔ ⊢ Γ
   ⊩zeroᵘ∷Level⇔ =
@@ -139,14 +139,11 @@ opaque
 
   ⊩Levelsucᵘ≡sucᵘ∷Level : Γ ⊩Level t ≡ u ∷Level → Γ ⊩Level sucᵘ t ≡ sucᵘ u ∷Level
   ⊩Levelsucᵘ≡sucᵘ∷Level
-    t≡u@(Levelₜ₌ _ _ t⇒*t′ u⇒*u′ t′≅u′ t′≡u′) =
+    t≡u@(Levelₜ₌ _ _ t⇒*t′ u⇒*u′ t′≡u′) =
     let t′-ok , u′-ok = lsplit t′≡u′ in
-    Levelₜ₌ _ _ (id (sucᵘⱼ (redFirst*Term t⇒*t′)))
+    Levelₜ₌ _ _
+      (id (sucᵘⱼ (redFirst*Term t⇒*t′)))
       (id (sucᵘⱼ (redFirst*Term u⇒*u′)))
-      (≅ₜ-sucᵘ-cong $
-        ≅ₜ-red (id (Levelⱼ (wfEqTerm (≅ₜ-eq t′≅u′))) , Levelₙ)
-          (t⇒*t′ , t′-ok) (u⇒*u′ , u′-ok)
-          t′≅u′)
       (sucᵘᵣ t≡u)
 
   ⊩Levelsucᵘ≡sucᵘ∷Level⇔ :
@@ -156,10 +153,10 @@ opaque
     where
     lemma₀ : [Level]-prop Γ (sucᵘ t) (sucᵘ u) → Γ ⊩Level t ≡ u ∷Level
     lemma₀ (sucᵘᵣ t≡u)             = t≡u
-    lemma₀ (ne (neNfₜ₌ _ () _ _))
+    lemma₀ (ne (neLvlₜ₌ (ne ()) _ _))
 
     lemma₁ : Γ ⊩Level sucᵘ t ≡ sucᵘ u ∷Level → Γ ⊩Level t ≡ u ∷Level
-    lemma₁ (Levelₜ₌ _ _ sucᵘ-t⇒*t′ sucᵘ-u⇒*u′ _ t′≡u′) =
+    lemma₁ (Levelₜ₌ _ _ sucᵘ-t⇒*t′ sucᵘ-u⇒*u′ t′≡u′) =
       case whnfRed*Term sucᵘ-t⇒*t′ sucᵘₙ of λ {
         PE.refl →
       case whnfRed*Term sucᵘ-u⇒*u′ sucᵘₙ of λ {
@@ -199,13 +196,13 @@ opaque
   ⊩zeroᵘ≡sucᵘ∷Level⇔ =
       (λ zeroᵘ≡sucᵘ →
          case ⊩≡∷Level⇔ .proj₁ zeroᵘ≡sucᵘ of λ {
-           (Levelₜ₌ _ _ zeroᵘ⇒* sucᵘ⇒* _ rest) →
+           (Levelₜ₌ _ _ zeroᵘ⇒* sucᵘ⇒* rest) →
          case whnfRed*Term zeroᵘ⇒* zeroᵘₙ of λ {
            PE.refl →
          case whnfRed*Term sucᵘ⇒* sucᵘₙ of λ {
            PE.refl →
          case rest of λ where
-           (ne (neNfₜ₌ _ () _ _)) }}})
+           (ne (neLvlₜ₌ (ne ()) _ _)) }}})
     , ⊥-elim
 
 opaque
@@ -217,99 +214,90 @@ opaque
     Γ ⊩Level u₁ ≡ u₂ ∷Level →
     Γ ⊩Level t₁ maxᵘ u₁ ≡ t₂ maxᵘ u₂ ∷Level
   ⊩Levelmaxᵘ≡maxᵘ∷Level {t₁} {t₂} {u₁} {u₂}
-    (Levelₜ₌ .zeroᵘ .zeroᵘ t₁⇒ t₂⇒ _ zeroᵘᵣ)
-    u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ u₁′≡u₂′ prop′) =
-    let ⊩u₁ , ⊩u₂ = wf-⊩Level u₁≡u₂
-        ⊢u₁       = escapeLevel ⊩u₁
-        ⊢u₂       = escapeLevel ⊩u₂
-    in Levelₜ₌ u₁′ u₂′
-      (t₁    maxᵘ u₁  ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
-       zeroᵘ maxᵘ u₁  ⇒⟨ maxᵘ-zeroˡ ⊢u₁ ⟩
-                  u₁  ⇒*⟨ u₁⇒ ⟩∎
-                  u₁′ ∎)
-      (t₂    maxᵘ u₂  ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
-       zeroᵘ maxᵘ u₂  ⇒⟨ maxᵘ-zeroˡ ⊢u₂ ⟩
-                  u₂  ⇒*⟨ u₂⇒ ⟩∎
-                  u₂′ ∎)
-      u₁′≡u₂′
-      prop′
-  ⊩Levelmaxᵘ≡maxᵘ∷Level {t₁} {t₂} {u₁} {u₂}
-    (Levelₜ₌ .(sucᵘ t₁′) .(sucᵘ t₂′) t₁⇒ t₂⇒ t₁′≡t₂′ (sucᵘᵣ {k = t₁′} {k′ = t₂′} ⊩t₁′≡t₂′))
-    u₁≡u₂@(Levelₜ₌ .zeroᵘ .zeroᵘ u₁⇒ u₂⇒ _ zeroᵘᵣ) =
-    let ⊩t₁′ , ⊩t₂′ = wf-⊩Level ⊩t₁′≡t₂′
+    t₁≡t₂@(Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ propt)
+    u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu)
+    =
+    let ⊩t₁ , ⊩t₂ = wf-⊩Level t₁≡t₂
         ⊩u₁ , ⊩u₂ = wf-⊩Level u₁≡u₂
-        ⊢t₁′ = escapeLevel ⊩t₁′
-        ⊢t₂′ = escapeLevel ⊩t₂′
-        ⊢u₁  = escapeLevel ⊩u₁
-        ⊢u₂  = escapeLevel ⊩u₂
-    in Levelₜ₌ (sucᵘ t₁′) (sucᵘ t₂′)
-      (t₁       maxᵘ u₁    ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
-       sucᵘ t₁′ maxᵘ u₁    ⇒*⟨ maxᵘ-substʳ* ⊢t₁′ u₁⇒ ⟩
-       sucᵘ t₁′ maxᵘ zeroᵘ ⇒⟨ maxᵘ-zeroʳ ⊢t₁′ ⟩∎
-       sucᵘ t₁′            ∎)
-      (t₂       maxᵘ u₂    ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
-       sucᵘ t₂′ maxᵘ u₂    ⇒*⟨ maxᵘ-substʳ* ⊢t₂′ u₂⇒ ⟩
-       sucᵘ t₂′ maxᵘ zeroᵘ ⇒⟨ maxᵘ-zeroʳ ⊢t₂′ ⟩∎
-       sucᵘ t₂′            ∎)
-      t₁′≡t₂′
-      (sucᵘᵣ ⊩t₁′≡t₂′)
-  ⊩Levelmaxᵘ≡maxᵘ∷Level {t₁} {t₂} {u₁} {u₂}
-    (Levelₜ₌ .(sucᵘ t₁′) .(sucᵘ t₂′) t₁⇒ t₂⇒ _ (sucᵘᵣ {k = t₁′} {k′ = t₂′} ⊩t₁′≡t₂′))
-    u₁≡u₂@(Levelₜ₌ .(sucᵘ u₁′) .(sucᵘ u₂′) u₁⇒ u₂⇒ _ (sucᵘᵣ {k = u₁′} {k′ = u₂′} ⊩u₁′≡u₂′)) =
-    let ⊩t₁′ , ⊩t₂′ = wf-⊩Level ⊩t₁′≡t₂′
-        ⊩u₁′ , ⊩u₂′ = wf-⊩Level ⊩u₁′≡u₂′
-        ⊩u₁ , ⊩u₂ = wf-⊩Level u₁≡u₂
-        ⊢t₁′ = escapeLevel ⊩t₁′
-        ⊢t₂′ = escapeLevel ⊩t₂′
-        ⊢u₁′ = escapeLevel ⊩u₁′
-        ⊢u₂′ = escapeLevel ⊩u₂′
-        ⊢u₁  = escapeLevel ⊩u₁
-        ⊢u₂  = escapeLevel ⊩u₂
-        x₁≡x₂ = ⊩Levelmaxᵘ≡maxᵘ∷Level ⊩t₁′≡t₂′ ⊩u₁′≡u₂′
-    in Levelₜ₌ (sucᵘ (t₁′ maxᵘ u₁′)) (sucᵘ (t₂′ maxᵘ u₂′))
-      (t₁       maxᵘ u₁       ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
-       sucᵘ t₁′ maxᵘ u₁       ⇒*⟨ maxᵘ-substʳ* ⊢t₁′ u₁⇒ ⟩
-       sucᵘ t₁′ maxᵘ sucᵘ u₁′ ⇒⟨ maxᵘ-sucᵘ ⊢t₁′ ⊢u₁′ ⟩∎
-       sucᵘ (t₁′ maxᵘ u₁′)    ∎)
-      (t₂       maxᵘ u₂       ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
-       sucᵘ t₂′ maxᵘ u₂       ⇒*⟨ maxᵘ-substʳ* ⊢t₂′ u₂⇒ ⟩
-       sucᵘ t₂′ maxᵘ sucᵘ u₂′ ⇒⟨ maxᵘ-sucᵘ ⊢t₂′ ⊢u₂′ ⟩∎
-       sucᵘ (t₂′ maxᵘ u₂′)    ∎)
-      (escapeLevelEq (⊩Levelsucᵘ≡sucᵘ∷Level⇔ .proj₂ x₁≡x₂))
-      (sucᵘᵣ x₁≡x₂)
-  ⊩Levelmaxᵘ≡maxᵘ∷Level {t₁} {t₂} {u₁} {u₂}
-    (Levelₜ₌ .(sucᵘ t₁′) .(sucᵘ t₂′) t₁⇒ t₂⇒ _ (sucᵘᵣ {k = t₁′} {k′ = t₂′} ⊩t₁′≡t₂′))
-    u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ u₁′≡u₂′ (ne (neNfₜ₌ inc n₁ n₂ u₁′~u₂′))) =
-    let ⊩t₁′ , ⊩t₂′ = wf-⊩Level ⊩t₁′≡t₂′
-        ⊩u₁ , ⊩u₂ = wf-⊩Level u₁≡u₂
-        ⊢t₁′ = escapeLevel ⊩t₁′
-        ⊢t₂′ = escapeLevel ⊩t₂′
-        ⊢u₁  = escapeLevel ⊩u₁
-        ⊢u₂  = escapeLevel ⊩u₂
-        x₁~x₂ = ≅ₜ-maxᵘ-congʳ (escapeLevelEq ⊩t₁′≡t₂′) u₁′~u₂′
-    in Levelₜ₌ (sucᵘ t₁′ maxᵘ u₁′) (sucᵘ t₂′ maxᵘ u₂′)
-      (t₁       maxᵘ u₁  ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
-       sucᵘ t₁′ maxᵘ u₁  ⇒*⟨ maxᵘ-substʳ* ⊢t₁′ u₁⇒ ⟩∎
-       sucᵘ t₁′ maxᵘ u₁′ ∎)
-      (t₂       maxᵘ u₂  ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
-       sucᵘ t₂′ maxᵘ u₂  ⇒*⟨ maxᵘ-substʳ* ⊢t₂′ u₂⇒ ⟩∎
-       sucᵘ t₂′ maxᵘ u₂′ ∎)
-      (~-to-≅ₜ x₁~x₂)
-      (ne (neNfₜ₌ inc (maxᵘʳₙ n₁) (maxᵘʳₙ n₂) x₁~x₂))
-  ⊩Levelmaxᵘ≡maxᵘ∷Level {t₁} {t₂} {u₁} {u₂}
-    t₁≡t₂@(Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ _ (ne (neNfₜ₌ inc n₁ n₂ t₁′~t₂′)))
-    u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ _ prop′) =
-    let ⊩u₁ , ⊩u₂ = wf-⊩Level u₁≡u₂
+        ⊢t₁ = escapeLevel ⊩t₁
+        ⊢t₂ = escapeLevel ⊩t₂
         ⊢u₁ = escapeLevel ⊩u₁
         ⊢u₂ = escapeLevel ⊩u₂
-        x₁~x₂ = ≅ₜ-maxᵘ-congˡ t₁′~t₂′ (escapeLevelEq u₁≡u₂)
-    in Levelₜ₌ (t₁′ maxᵘ u₁) (t₂′ maxᵘ u₂)
-      (t₁  maxᵘ u₁ ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩∎
-       t₁′ maxᵘ u₁ ∎)
-      (t₂  maxᵘ u₂ ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩∎
-       t₂′ maxᵘ u₂ ∎)
-      (~-to-≅ₜ x₁~x₂)
-      (ne (neNfₜ₌ inc (maxᵘˡₙ n₁) (maxᵘˡₙ n₂) x₁~x₂))
+    in case propt of λ where
+        zeroᵘᵣ → Levelₜ₌ u₁′ u₂′
+          (t₁    maxᵘ u₁  ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
+           zeroᵘ maxᵘ u₁  ⇒⟨ maxᵘ-zeroˡ ⊢u₁ ⟩
+                      u₁  ⇒*⟨ u₁⇒ ⟩∎
+                      u₁′ ∎)
+          (t₂    maxᵘ u₂  ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
+           zeroᵘ maxᵘ u₂  ⇒⟨ maxᵘ-zeroˡ ⊢u₂ ⟩
+                      u₂  ⇒*⟨ u₂⇒ ⟩∎
+                      u₂′ ∎)
+          propu
+        (sucᵘᵣ {k = t₁′} {k′ = t₂′} t₁′≡t₂′) →
+          let ⊩t₁′ , ⊩t₂′ = wf-⊩Level t₁′≡t₂′
+              ⊢t₁′ = escapeLevel ⊩t₁′
+              ⊢t₂′ = escapeLevel ⊩t₂′
+          in case propu of λ where
+            zeroᵘᵣ → Levelₜ₌ (sucᵘ t₁′) (sucᵘ t₂′)
+              (t₁       maxᵘ u₁    ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
+               sucᵘ t₁′ maxᵘ u₁    ⇒*⟨ maxᵘ-substʳ* ⊢t₁′ u₁⇒ ⟩
+               sucᵘ t₁′ maxᵘ zeroᵘ ⇒⟨ maxᵘ-zeroʳ ⊢t₁′ ⟩∎
+               sucᵘ t₁′            ∎)
+              (t₂       maxᵘ u₂    ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
+               sucᵘ t₂′ maxᵘ u₂    ⇒*⟨ maxᵘ-substʳ* ⊢t₂′ u₂⇒ ⟩
+               sucᵘ t₂′ maxᵘ zeroᵘ ⇒⟨ maxᵘ-zeroʳ ⊢t₂′ ⟩∎
+               sucᵘ t₂′            ∎)
+              (sucᵘᵣ t₁′≡t₂′)
+            (sucᵘᵣ {k = u₁′} {k′ = u₂′} u₁′≡u₂′) →
+              let ⊩u₁′ , ⊩u₂′ = wf-⊩Level u₁′≡u₂′
+                  ⊢u₁′ = escapeLevel ⊩u₁′
+                  ⊢u₂′ = escapeLevel ⊩u₂′
+              in Levelₜ₌ (sucᵘ (t₁′ maxᵘ u₁′)) (sucᵘ (t₂′ maxᵘ u₂′))
+                (t₁       maxᵘ u₁       ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
+                 sucᵘ t₁′ maxᵘ u₁       ⇒*⟨ maxᵘ-substʳ* ⊢t₁′ u₁⇒ ⟩
+                 sucᵘ t₁′ maxᵘ sucᵘ u₁′ ⇒⟨ maxᵘ-sucᵘ ⊢t₁′ ⊢u₁′ ⟩∎
+                 sucᵘ (t₁′ maxᵘ u₁′)    ∎)
+                (t₂       maxᵘ u₂       ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
+                 sucᵘ t₂′ maxᵘ u₂       ⇒*⟨ maxᵘ-substʳ* ⊢t₂′ u₂⇒ ⟩
+                 sucᵘ t₂′ maxᵘ sucᵘ u₂′ ⇒⟨ maxᵘ-sucᵘ ⊢t₂′ ⊢u₂′ ⟩∎
+                 sucᵘ (t₂′ maxᵘ u₂′)    ∎)
+                (sucᵘᵣ (⊩Levelmaxᵘ≡maxᵘ∷Level t₁′≡t₂′ u₁′≡u₂′))
+            (ne u₁′≡u₂′@(neLvlₜ₌ n₁ n₂ prop)) →
+              Levelₜ₌ (sucᵘ t₁′ maxᵘ u₁′) (sucᵘ t₂′ maxᵘ u₂′)
+                (t₁       maxᵘ u₁  ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩
+                 sucᵘ t₁′ maxᵘ u₁  ⇒*⟨ maxᵘ-substʳ* ⊢t₁′ u₁⇒ ⟩∎
+                 sucᵘ t₁′ maxᵘ u₁′ ∎)
+                (t₂       maxᵘ u₂  ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩
+                 sucᵘ t₂′ maxᵘ u₂  ⇒*⟨ maxᵘ-substʳ* ⊢t₂′ u₂⇒ ⟩∎
+                 sucᵘ t₂′ maxᵘ u₂′ ∎)
+                (ne (neLvlₜ₌ (maxᵘʳₙ n₁) (maxᵘʳₙ n₂) (maxᵘʳᵣ t₁′≡t₂′ u₁′≡u₂′)))
+        (ne t₁′≡t₂′@(neLvlₜ₌ n₁ n₂ prop)) →
+          Levelₜ₌ (t₁′ maxᵘ u₁) (t₂′ maxᵘ u₂)
+            (t₁  maxᵘ u₁ ⇒*⟨ maxᵘ-substˡ* t₁⇒ ⊢u₁ ⟩∎
+             t₁′ maxᵘ u₁ ∎)
+            (t₂  maxᵘ u₂ ⇒*⟨ maxᵘ-substˡ* t₂⇒ ⊢u₂ ⟩∎
+             t₂′ maxᵘ u₂ ∎)
+            (ne (neLvlₜ₌ (maxᵘˡₙ n₁) (maxᵘˡₙ n₂) (maxᵘˡᵣ t₁′≡t₂′ u₁≡u₂)))
+
+opaque
+  unfolding ⊩Levelmaxᵘ≡maxᵘ∷Level ↑ᵘ′_
+
+  ↑ᵘ′-maxᵘ≡maxᵘ :
+    (t₁≡t₂ : Γ ⊩Level t₁ ≡ t₂ ∷Level) →
+    (u₁≡u₂ : Γ ⊩Level u₁ ≡ u₂ ∷Level) →
+    ↑ᵘ′ (⊩Levelmaxᵘ≡maxᵘ∷Level t₁≡t₂ u₁≡u₂) PE.≡ ↑ᵘ′ t₁≡t₂ ⊔ ↑ᵘ′ u₁≡u₂
+  ↑ᵘ′-maxᵘ≡maxᵘ (Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ zeroᵘᵣ) (Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) = PE.refl
+  ↑ᵘ′-maxᵘ≡maxᵘ (Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ (sucᵘᵣ x)) (Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ zeroᵘᵣ) = PE.refl
+  ↑ᵘ′-maxᵘ≡maxᵘ (Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ (sucᵘᵣ t₁′≡t₂′)) (Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ (sucᵘᵣ u₁′≡u₂′)) = PE.cong 1+ (↑ᵘ′-maxᵘ≡maxᵘ t₁′≡t₂′ u₁′≡u₂′)
+  ↑ᵘ′-maxᵘ≡maxᵘ (Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ (sucᵘᵣ x)) (Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ (ne record{})) = PE.refl
+  ↑ᵘ′-maxᵘ≡maxᵘ (Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ (ne record{})) (Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) = PE.refl
+
+  ↑ᵘ-maxᵘ≡maxᵘ :
+    (t₁≡t₂ : Γ ⊩Level t₁ ≡ t₂ ∷Level) →
+    (u₁≡u₂ : Γ ⊩Level u₁ ≡ u₂ ∷Level) →
+    ↑ᵘ (⊩Levelmaxᵘ≡maxᵘ∷Level t₁≡t₂ u₁≡u₂) PE.≡ ↑ᵘ t₁≡t₂ ⊔ᵘ ↑ᵘ u₁≡u₂
+  ↑ᵘ-maxᵘ≡maxᵘ t₁≡t₂ u₁≡u₂ = PE.cong 0ᵘ+_ (↑ᵘ′-maxᵘ≡maxᵘ t₁≡t₂ u₁≡u₂)
 
 opaque
 
@@ -320,6 +308,12 @@ opaque
     Γ ⊩Level u ∷Level →
     Γ ⊩Level t maxᵘ u ∷Level
   ⊩Levelmaxᵘ∷Level ⊩t ⊩u = ⊩Levelmaxᵘ≡maxᵘ∷Level ⊩t ⊩u
+
+  ↑ᵘ-maxᵘ :
+    (⊩t : Γ ⊩Level t ∷Level) →
+    (⊩u : Γ ⊩Level u ∷Level) →
+    ↑ᵘ (⊩Levelmaxᵘ∷Level ⊩t ⊩u) PE.≡ ↑ᵘ ⊩t ⊔ᵘ ↑ᵘ ⊩u
+  ↑ᵘ-maxᵘ ⊩t ⊩u = ↑ᵘ-maxᵘ≡maxᵘ ⊩t ⊩u
 
 opaque
 
@@ -333,6 +327,20 @@ opaque
     ⊩≡∷Level⇔ .proj₂ $ ⊩Levelmaxᵘ≡maxᵘ∷Level
       (⊩≡∷Level⇔ .proj₁ t₁≡t₂)
       (⊩≡∷Level⇔ .proj₁ u₁≡u₂)
+
+opaque
+
+  ⊩maxᵘ-zeroˡ :
+    Γ ⊩⟨ l ⟩ t ∷ Level →
+    Γ ⊩⟨ l ⟩ zeroᵘ maxᵘ t ≡ t ∷ Level
+  ⊩maxᵘ-zeroˡ ⊩t = ⊩∷-⇐* (redMany (maxᵘ-zeroˡ (escape-⊩∷ ⊩t))) ⊩t
+
+opaque
+
+  ⊩maxᵘ-zeroʳ :
+    Γ ⊩⟨ l ⟩ t ∷ Level →
+    Γ ⊩⟨ l ⟩ t maxᵘ zeroᵘ ≡ t ∷ Level
+  ⊩maxᵘ-zeroʳ ⊩t = ⊩∷-⇐* {!   !} ⊩t
 
 ------------------------------------------------------------------------
 -- Level
@@ -447,14 +455,40 @@ opaque
   maxᵘᵛ ⊩t ⊩u = ⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₂ (maxᵘ-congᵛ (⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₁ ⊩t) (⊩ᵛ∷⇔⊩ᵛ≡∷ .proj₁ ⊩u))
 
 opaque
+
+  maxᵘ-zeroˡᵛ :
+    Γ ⊩ᵛ⟨ l ⟩ t ∷ Level →
+    Γ ⊩ᵛ⟨ l ⟩ zeroᵘ maxᵘ t ≡ t ∷ Level
+  maxᵘ-zeroˡᵛ ⊩t =
+    ⊩ᵛ≡∷⇔ʰ .proj₂
+      ( wf-⊩ᵛ∷ ⊩t
+      , λ σ₁≡σ₂ → {!   !}
+      )
+
+opaque
+
+  maxᵘ-zeroʳᵛ :
+    Γ ⊩ᵛ⟨ l ⟩ t ∷ Level →
+    Γ ⊩ᵛ⟨ l ⟩ t maxᵘ zeroᵘ ≡ t ∷ Level
+  maxᵘ-zeroʳᵛ ⊩t = {!   !}
+
+opaque
+
+  maxᵘ-sucᵘᵛ :
+    Γ ⊩ᵛ⟨ l ⟩ t ∷ Level →
+    Γ ⊩ᵛ⟨ l′ ⟩ u ∷ Level →
+    Γ ⊩ᵛ⟨ {!   !} ⟩ sucᵘ t maxᵘ sucᵘ u ≡ sucᵘ (t maxᵘ u) ∷ Level
+  maxᵘ-sucᵘᵛ ⊩t ⊩u = {!   !}
+
+opaque
   unfolding ↑ᵘ′_
 
   ↑ᵘ′-<-sucᵘ
     : ∀ {t u v} ([t] : Γ ⊩Level t ≡ u ∷Level) ([t+1] : Γ ⊩Level sucᵘ t ≡ v ∷Level)
     → ↑ᵘ′ [t] <′ ↑ᵘ′ [t+1]
-  ↑ᵘ′-<-sucᵘ [t] (Levelₜ₌ _ _ t+1⇒ _ _ prop′) with whnfRed*Term t+1⇒ sucᵘₙ
-  ↑ᵘ′-<-sucᵘ [t] (Levelₜ₌ _ _ t+1⇒ _ _ (ne (neNfₜ₌ _ () _ _))) | PE.refl
-  ↑ᵘ′-<-sucᵘ [t] [t+1]@(Levelₜ₌ _ _ t+1⇒ _ _ (sucᵘᵣ [t]′)) | PE.refl
+  ↑ᵘ′-<-sucᵘ [t] (Levelₜ₌ _ _ t+1⇒ _ prop′) with whnfRed*Term t+1⇒ sucᵘₙ
+  ↑ᵘ′-<-sucᵘ [t] (Levelₜ₌ _ _ t+1⇒ _ (ne (neLvlₜ₌ (ne ()) _ _))) | PE.refl
+  ↑ᵘ′-<-sucᵘ [t] [t+1]@(Levelₜ₌ _ _ t+1⇒ _ (sucᵘᵣ [t]′)) | PE.refl
     = PE.subst (↑ᵘ′ [t] <′_) (PE.cong 1+ (↑ᵘ′-irrelevance [t] [t]′)) ≤′-refl
 
   ↑ᵘ-<-sucᵘ

@@ -30,7 +30,7 @@ open import Definition.LogicalRelation.Properties.Whnf R {{eqrel}}
 open import Definition.LogicalRelation.ShapeView R {{eqrel}}
 
 open import Tools.Function
-open import Tools.Level
+open import Tools.Level hiding (_⊔_)
 open import Tools.Nat hiding (_<_)
 open import Tools.Product
 import Tools.PropositionalEquality as PE
@@ -48,30 +48,54 @@ opaque
   unfolding ↑ᵘ′_
 
   mutual
+    ↑ᵘ′-cong-ne
+      : ∀ {t t′ u u′} (t≡t′ : Γ ⊩neLvl t ≡ t′ ∷Level) (u≡u′ : Γ ⊩neLvl u ≡ u′ ∷Level)
+      → Γ ⊩neLvl t ≡ u ∷Level → ↑ᵘ′-ne t≡t′ PE.≡ ↑ᵘ′-ne u≡u′
+    ↑ᵘ′-cong-ne (neLvlₜ₌ a b p) (neLvlₜ₌ c d q) (neLvlₜ₌ e f r) = ↑ᵘ′-neprop-cong p q r
+
     ↑ᵘ′-cong
       : ∀ {t t′ u u′} (t≡t′ : Γ ⊩Level t ≡ t′ ∷Level) (u≡u′ : Γ ⊩Level u ≡ u′ ∷Level)
       → Γ ⊩Level t ≡ u ∷Level → ↑ᵘ′ t≡t′ PE.≡ ↑ᵘ′ u≡u′
-    ↑ᵘ′-cong (Levelₜ₌ _ _ t⇒ t′⇒ _ [t]) (Levelₜ₌ _ _ u⇒ u′⇒ _ [u]) (Levelₜ₌ _ _ t⇒′ u⇒′ _ t≡u) =
+    ↑ᵘ′-cong (Levelₜ₌ _ _ t⇒ t′⇒ [t]) (Levelₜ₌ _ _ u⇒ u′⇒ [u]) (Levelₜ₌ _ _ t⇒′ u⇒′ t≡u) =
       case whrDet*Term (t⇒ , lsplit [t] .proj₁) (t⇒′ , lsplit t≡u .proj₁) of λ {
         PE.refl →
       case whrDet*Term (u⇒ , lsplit [u] .proj₁) (u⇒′ , lsplit t≡u .proj₂) of λ {
         PE.refl →
       ↑ᵘ′-prop-cong [t] [u] t≡u }}
 
+    ↑ᵘ′-neprop-cong
+      : ∀ {t t′ u u′} (t≡t′ : [neLevel]-prop Γ t t′) (u≡u′ : [neLevel]-prop Γ u u′)
+      → [neLevel]-prop Γ t u → ↑ᵘ′-neprop t≡t′ PE.≡ ↑ᵘ′-neprop u≡u′
+    ↑ᵘ′-neprop-cong (maxᵘˡᵣ x₂ x₃) (maxᵘˡᵣ x₄ x₅) (maxᵘˡᵣ x x₁) = PE.cong₂ _⊔_ (↑ᵘ′-cong-ne x₂ x₄ x) (↑ᵘ′-cong x₃ x₅ x₁)
+    ↑ᵘ′-neprop-cong (maxᵘʳᵣ x₂ x₃) (maxᵘʳᵣ x₄ x₅) (maxᵘʳᵣ x x₁) = PE.cong₂ (λ x y → 1+ x ⊔ y) (↑ᵘ′-cong x₂ x₄ x) (↑ᵘ′-cong-ne x₃ x₅ x₁)
+    ↑ᵘ′-neprop-cong (ne x₁) (ne x₂) (ne x) = PE.refl
+    ↑ᵘ′-neprop-cong (maxᵘˡᵣ x₂ x₃) (maxᵘʳᵣ x₄ x₅) (maxᵘˡᵣ (neLvlₜ₌ _ (ne ()) _) x₁)
+    ↑ᵘ′-neprop-cong (maxᵘˡᵣ x₂ x₃) (ne (neNfₜ₌ _ () _ _)) (maxᵘˡᵣ x x₁)
+    ↑ᵘ′-neprop-cong (maxᵘʳᵣ x₂ x₃) _ (maxᵘˡᵣ (neLvlₜ₌ (ne ()) _ _) x₁)
+    ↑ᵘ′-neprop-cong (ne (neNfₜ₌ _ () _ _)) _ (maxᵘˡᵣ x x₁)
+    ↑ᵘ′-neprop-cong (maxᵘˡᵣ (neLvlₜ₌ (ne ()) _ _) x₃) _ (maxᵘʳᵣ x x₁)
+    ↑ᵘ′-neprop-cong (maxᵘʳᵣ x₂ x₃) (maxᵘˡᵣ (neLvlₜ₌ (ne ()) _ _) x₅) (maxᵘʳᵣ x x₁)
+    ↑ᵘ′-neprop-cong (maxᵘʳᵣ x₂ x₃) (ne (neNfₜ₌ _ () _ _)) (maxᵘʳᵣ x x₁)
+    ↑ᵘ′-neprop-cong (ne (neNfₜ₌ _ () _ _)) b (maxᵘʳᵣ x x₁)
+    ↑ᵘ′-neprop-cong (maxᵘˡᵣ x₁ x₂) b (ne (neNfₜ₌ _ () _ _))
+    ↑ᵘ′-neprop-cong (maxᵘʳᵣ x₁ x₂) b (ne (neNfₜ₌ _ () _ _))
+    ↑ᵘ′-neprop-cong (ne x₁) (maxᵘˡᵣ x₂ x₃) (ne (neNfₜ₌ _ _ () _))
+    ↑ᵘ′-neprop-cong (ne x₁) (maxᵘʳᵣ x₂ x₃) (ne (neNfₜ₌ _ _ () _))
+
     ↑ᵘ′-prop-cong
       : ∀ {t t′ u u′} (t≡t′ : [Level]-prop Γ t t′) (u≡u′ : [Level]-prop Γ u u′)
       → [Level]-prop Γ t u → ↑ᵘ′-prop t≡t′ PE.≡ ↑ᵘ′-prop u≡u′
     ↑ᵘ′-prop-cong zeroᵘᵣ zeroᵘᵣ zeroᵘᵣ = PE.refl
     ↑ᵘ′-prop-cong (sucᵘᵣ a) (sucᵘᵣ b) (sucᵘᵣ x) = PE.cong 1+ (↑ᵘ′-cong a b x)
-    ↑ᵘ′-prop-cong (ne a) (ne b) (ne x) = PE.refl
-    ↑ᵘ′-prop-cong zeroᵘᵣ (ne (neNfₜ₌ _ () _ _)) zeroᵘᵣ
-    ↑ᵘ′-prop-cong (ne (neNfₜ₌ _ () _ _)) _ zeroᵘᵣ
-    ↑ᵘ′-prop-cong (sucᵘᵣ _) (ne (neNfₜ₌ _ () _ _)) (sucᵘᵣ _)
-    ↑ᵘ′-prop-cong (ne (neNfₜ₌ _ () _ _)) _ (sucᵘᵣ _)
-    ↑ᵘ′-prop-cong zeroᵘᵣ _ (ne (neNfₜ₌ _ () _ _))
-    ↑ᵘ′-prop-cong (sucᵘᵣ _) _ (ne (neNfₜ₌ _ () _ _))
-    ↑ᵘ′-prop-cong (ne _) zeroᵘᵣ (ne (neNfₜ₌ _ _ () _))
-    ↑ᵘ′-prop-cong (ne _) (sucᵘᵣ _) (ne (neNfₜ₌ _ _ () _))
+    ↑ᵘ′-prop-cong (ne a) (ne b) (ne x) = ↑ᵘ′-cong-ne a b x
+    ↑ᵘ′-prop-cong zeroᵘᵣ (ne (neLvlₜ₌ (ne ()) _ _)) zeroᵘᵣ
+    ↑ᵘ′-prop-cong (ne (neLvlₜ₌ (ne ()) _ _)) _ zeroᵘᵣ
+    ↑ᵘ′-prop-cong (sucᵘᵣ _) (ne (neLvlₜ₌ (ne ()) _ _)) (sucᵘᵣ _)
+    ↑ᵘ′-prop-cong (ne (neLvlₜ₌ (ne ()) _ _)) _ (sucᵘᵣ _)
+    ↑ᵘ′-prop-cong zeroᵘᵣ _ (ne (neLvlₜ₌ (ne ()) _ _))
+    ↑ᵘ′-prop-cong (sucᵘᵣ _) _ (ne (neLvlₜ₌ (ne ()) _ _))
+    ↑ᵘ′-prop-cong (ne _) zeroᵘᵣ (ne (neLvlₜ₌ _ (ne ()) _))
+    ↑ᵘ′-prop-cong (ne _) (sucᵘᵣ _) (ne (neLvlₜ₌ _ (ne ()) _))
 
   ↑ᵘ-cong
     : ∀ {t t′ u u′} (t≡t′ : Γ ⊩Level t ≡ t′ ∷Level) (u≡u′ : Γ ⊩Level u ≡ u′ ∷Level)
@@ -153,7 +177,7 @@ mutual
     Unit₌ k′ D k≡k′ }
   irrelevanceEqT
     (ne (ne _ _ D neK _) (ne _ K₁ D₁ neK₁ K≡K₁)) (ne₌ inc M D′ neM K≡M)
-    rewrite whrDet* (D , ne neK) (D₁ , ne neK₁) =
+    rewrite whrDet* (D , ne (ne neK)) (D₁ , ne (ne neK₁)) =
     ne₌ inc M D′ neM K≡M
   irrelevanceEqT
     {Γ = Γ}
@@ -263,7 +287,7 @@ mutual
     t≡u }
   irrelevanceEqTermT
     (ne (ne _ _ D neK K≡K) (ne _ K₁ D₁ neK₁ K≡K₁)) (neₜ₌ k m d d′ nf)
-    with whrDet* (D₁ , ne neK₁) (D , ne neK)
+    with whrDet* (D₁ , ne (ne neK₁)) (D , ne (ne neK))
   … | PE.refl = neₜ₌ k m d d′ nf
   irrelevanceEqTermT
     {Γ = Γ} {t = t} {u = u}
