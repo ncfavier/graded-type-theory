@@ -40,16 +40,6 @@ opaque
     Δ ⊢ t [ σ ] ⇒ u [ σ ] ∷ A [ σ ]
   subst-⊢⇒∷ (conv t⇒u B≡A) ⊢σ =
     conv (subst-⊢⇒∷ t⇒u ⊢σ) (subst-⊢≡ B≡A (refl-⊢ˢʷ≡∷ ⊢σ))
-  subst-⊢⇒∷ (maxᵘ-zeroˡ ⊢l) ⊢σ =
-    maxᵘ-zeroˡ (subst-⊢∷ ⊢l ⊢σ)
-  subst-⊢⇒∷ (maxᵘ-zeroʳ ⊢l) ⊢σ =
-    maxᵘ-zeroʳ (subst-⊢∷ ⊢l ⊢σ)
-  subst-⊢⇒∷ (maxᵘ-sucᵘ ⊢l ⊢u) ⊢σ =
-    maxᵘ-sucᵘ (subst-⊢∷ ⊢l ⊢σ) (subst-⊢∷ ⊢u ⊢σ)
-  subst-⊢⇒∷ (maxᵘ-substˡ l⇒l′ ⊢u) ⊢σ =
-    maxᵘ-substˡ (subst-⊢⇒∷ l⇒l′ ⊢σ) (subst-⊢∷ ⊢u ⊢σ)
-  subst-⊢⇒∷ (maxᵘ-substʳ ⊢l u⇒u′) ⊢σ =
-    maxᵘ-substʳ (subst-⊢∷ ⊢l ⊢σ) (subst-⊢⇒∷ u⇒u′ ⊢σ)
   subst-⊢⇒∷ (app-subst {G = B} t⇒u ⊢v) ⊢σ =
     PE.subst (_⊢_⇒_∷_ _ _ _) (PE.sym (singleSubstLift B _))
       (app-subst (subst-⊢⇒∷ t⇒u ⊢σ) (subst-⊢∷ ⊢v ⊢σ))

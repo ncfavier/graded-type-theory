@@ -429,20 +429,6 @@ data _⊢_⇒_∷_ (Γ : Con Term n) : Term n → Term n → Term n → Set ℓ 
                  → Γ ⊢ A ≡ B
                  → Γ ⊢ t ⇒ u ∷ B
 
-  maxᵘ-zeroˡ     : Γ ⊢ l ∷ Level
-                 → Γ ⊢ zeroᵘ maxᵘ l ⇒ l ∷ Level
-  maxᵘ-zeroʳ     : Γ ⊢ l ∷ Level
-                 → Γ ⊢ sucᵘ l maxᵘ zeroᵘ ⇒ sucᵘ l ∷ Level
-  maxᵘ-sucᵘ      : Γ ⊢ l₁ ∷ Level
-                 → Γ ⊢ l₂ ∷ Level
-                 → Γ ⊢ sucᵘ l₁ maxᵘ sucᵘ l₂ ⇒ sucᵘ (l₁ maxᵘ l₂) ∷ Level
-  maxᵘ-substˡ    : Γ ⊢ t ⇒ t′ ∷ Level
-                 → Γ ⊢ u ∷ Level
-                 → Γ ⊢ t maxᵘ u ⇒ t′ maxᵘ u ∷ Level
-  maxᵘ-substʳ    : Γ ⊢ t ∷ Level
-                 → Γ ⊢ u ⇒ u′ ∷ Level
-                 → Γ ⊢ sucᵘ t maxᵘ u ⇒ sucᵘ t maxᵘ u′ ∷ Level
-
   emptyrec-subst : ∀ {n}
                  → Γ ⊢ A
                  → Γ     ⊢ n ⇒ n′ ∷ Empty
