@@ -114,19 +114,10 @@ _⊩Level_ : (Γ : Con Term ℓ) (A : Term ℓ) → Set a
 _⊩Level_≡_ : (Γ : Con Term ℓ) (A B : Term ℓ) → Set a
 Γ ⊩Level A ≡ B = Γ ⊢ B ⇒* Level
 
-mutual
-  -- Neutral level term equality
-  record _⊩neLvl_≡_∷Level (Γ : Con Term ℓ) (k m : Term ℓ) : Set a where
-    inductive
-    no-eta-equality
-    pattern
-    constructor neLvlₜ₌
-    field
-      -- neutrals-included : Neutrals-included
-      neK               : NeutralLevel k
-      neM               : NeutralLevel m
-      prop : [neLevel]-prop Γ k m
+data _⇒0_ : Term ℓ → Term ℓ → Set a where
+  id : t ⇒0 t
 
+mutual
   -- Level term equality
   record _⊩Level_≡_∷Level (Γ : Con Term ℓ) (t u : Term ℓ) : Set a where
     inductive
@@ -143,6 +134,21 @@ mutual
     sucᵘᵣ  : ∀ {k k′} → Γ ⊩Level k ≡ k′ ∷Level → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
     ne     : ∀ {k k′} → Γ ⊩neLvl k ≡ k′ ∷Level → [Level]-prop Γ k k′
 
+  -- Neutral level term equality
+  record _⊩neLvl_≡_∷Level (Γ : Con Term ℓ) (k m : Term ℓ) : Set a where
+    inductive
+    no-eta-equality
+    pattern
+    constructor neLvlₜ₌
+    field
+      neK               : NeutralLevel k
+      neM               : NeutralLevel m
+      k′ : Term ℓ
+      m′ : Term ℓ
+      k⇒0 : k ⇒0 k′
+      m⇒0 : m ⇒0 m′
+      prop : [neLevel]-prop Γ k′ m′
+
   data [neLevel]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
     maxᵘˡᵣ
       : ∀ {k₁ k₂ k₁′ k₂′}
@@ -154,7 +160,7 @@ mutual
       → Γ ⊩Level k₁ ≡ k₁′ ∷Level
       → Γ ⊩neLvl k₂ ≡ k₂′ ∷Level
       → [neLevel]-prop Γ (sucᵘ k₁ maxᵘ k₂) (sucᵘ k₁′ maxᵘ k₂′)
-    ne : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [neLevel]-prop Γ k k′ -- TODO not maxᵘ
+    ne : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [neLevel]-prop Γ k k′
 
 -- Level term
 _⊩Level_∷Level : Con Term ℓ → Term ℓ → Set a
@@ -167,7 +173,7 @@ opaque mutual
   ↑ᵘ′ t≡u = ↑ᵘ′-prop (t≡u ._⊩Level_≡_∷Level.prop)
 
   ↑ᵘ′-ne : Γ ⊩neLvl t ≡ u ∷Level → Nat
-  ↑ᵘ′-ne (neLvlₜ₌ neK neM prop) = ↑ᵘ′-neprop prop
+  ↑ᵘ′-ne (neLvlₜ₌ neK neM _ _ _ _ prop) = ↑ᵘ′-neprop prop
 
   ↑ᵘ′-prop : [Level]-prop Γ t u → Nat
   ↑ᵘ′-prop zeroᵘᵣ    = 0

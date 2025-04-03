@@ -34,7 +34,7 @@ opaque
   lsplit : [Level]-prop Γ t u → Whnf t × Whnf u
   lsplit zeroᵘᵣ = zeroᵘₙ , zeroᵘₙ
   lsplit (sucᵘᵣ x) = sucᵘₙ , sucᵘₙ
-  lsplit (ne (neLvlₜ₌ t-ne u-ne _)) = ne t-ne , ne u-ne
+  lsplit (ne (neLvlₜ₌ t-ne u-ne _ _ _ _ _)) = ne t-ne , ne u-ne
 
 opaque
 

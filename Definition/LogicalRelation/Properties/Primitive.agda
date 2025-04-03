@@ -46,7 +46,7 @@ mutual
                    → Γ ⊩neLvl n  ≡ n′ ∷Level
                    → Γ ⊩neLvl n′ ≡ n″ ∷Level
                    → Γ ⊩neLvl n  ≡ n″ ∷Level
-  transEqTermNeLevel (neLvlₜ₌ ne-n _ prop) (neLvlₜ₌ _ ne-n″ prop′) = neLvlₜ₌ ne-n ne-n″ (transneLevel-prop prop prop′)
+  transEqTermNeLevel (neLvlₜ₌ ne-n _ _ _ n⇒0 n′⇒0 prop) (neLvlₜ₌ _ ne-n″ _ _ n′⇒0′ n″⇒0 prop′) = neLvlₜ₌ ne-n ne-n″ _ _ n⇒0 n″⇒0 {!   !}
 
   transEqTermLevel : ∀ {n n′ n″}
                    → Γ ⊩Level n  ≡ n′ ∷Level
@@ -63,9 +63,9 @@ mutual
   transneLevel-prop (maxᵘˡᵣ x y) (maxᵘˡᵣ z w) = maxᵘˡᵣ (transEqTermNeLevel x z) (transEqTermLevel y w)
   transneLevel-prop (maxᵘʳᵣ x y) (maxᵘʳᵣ z w) = maxᵘʳᵣ (transEqTermLevel x z) (transEqTermNeLevel y w)
   transneLevel-prop (ne x) (ne y) = ne (transEqTermNe x y)
-  transneLevel-prop (maxᵘˡᵣ (neLvlₜ₌ _ (ne ()) _) y) (maxᵘʳᵣ z w)
+  transneLevel-prop (maxᵘˡᵣ (neLvlₜ₌ _ (ne ()) _ _ _ _ _) y) (maxᵘʳᵣ z w)
   transneLevel-prop (maxᵘˡᵣ x y) (ne (neNfₜ₌ _ () _ _))
-  transneLevel-prop (maxᵘʳᵣ x y) (maxᵘˡᵣ (neLvlₜ₌ (ne ()) _ _) w)
+  transneLevel-prop (maxᵘʳᵣ x y) (maxᵘˡᵣ (neLvlₜ₌ (ne ()) _ _ _ _ _ _) w)
   transneLevel-prop (maxᵘʳᵣ x y) (ne (neNfₜ₌ _ () _ _))
   transneLevel-prop (ne (neNfₜ₌ _ _ () _)) (maxᵘˡᵣ y z)
   transneLevel-prop (ne (neNfₜ₌ _ _ () _)) (maxᵘʳᵣ y z)
@@ -77,9 +77,9 @@ mutual
   transLevel-prop zeroᵘᵣ y = y
   transLevel-prop (sucᵘᵣ x) (sucᵘᵣ y) = sucᵘᵣ (transEqTermLevel x y)
   transLevel-prop (ne x) (ne y) = ne (transEqTermNeLevel x y)
-  transLevel-prop (sucᵘᵣ x) (ne (neLvlₜ₌ (ne ()) _ _))
-  transLevel-prop (ne (neLvlₜ₌ _ (ne ()) _)) zeroᵘᵣ
-  transLevel-prop (ne (neLvlₜ₌ _ (ne ()) _)) (sucᵘᵣ y)
+  transLevel-prop (sucᵘᵣ x) (ne (neLvlₜ₌ (ne ()) _ _ _ _ _ _))
+  transLevel-prop (ne (neLvlₜ₌ _ (ne ()) _ _ _ _ _)) zeroᵘᵣ
+  transLevel-prop (ne (neLvlₜ₌ _ (ne ()) _ _ _ _ _)) (sucᵘᵣ y)
 
 -- Symmetry for neutrals in WHNF and levels
 
@@ -106,7 +106,7 @@ mutual
   symNeLevel : ∀ {k k′}
           → Γ ⊩neLvl k ≡ k′ ∷Level
           → Γ ⊩neLvl k′ ≡ k ∷Level
-  symNeLevel (neLvlₜ₌ a b prop) = neLvlₜ₌ b a (symneLevel-prop prop)
+  symNeLevel (neLvlₜ₌ a b _ _ k⇒0 m⇒0 prop) = neLvlₜ₌ b a _ _ m⇒0 k⇒0 (symneLevel-prop prop)
 
   symLevel : ∀ {k k′}
           → Γ ⊩Level k ≡ k′ ∷Level
