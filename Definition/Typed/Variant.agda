@@ -15,6 +15,15 @@ open import Tools.Relation
 record Type-variant : Set where
   no-eta-equality
   field
+    Level-is-ℕ′ : Bool
+
+  Level-is-ℕ : Set
+  Level-is-ℕ = T Level-is-ℕ′
+
+  Level-is-ℕ? : Dec Level-is-ℕ
+  Level-is-ℕ? = T? _
+
+  field
     -- Should η-equality be enabled for weak unit types?
     --
     -- This variant of the type system is used to state some soundness

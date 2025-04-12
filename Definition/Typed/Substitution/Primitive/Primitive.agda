@@ -1194,6 +1194,12 @@ private module Inhabited where
         conv (subst-⊢≡∷ t₁≡t₂ σ₁≡σ₂)
           (subst-⊢≡ B≡A $
            refl-⊢ˢʷ≡∷ (wf-⊢ˢʷ≡∷ σ₁≡σ₂ .proj₂ .proj₁))
+      (Level≡ ok ⊢Γ) PE.refl →
+        Level≡ ok (wf-⊢ˢʷ≡∷ σ₁≡σ₂ .proj₁)
+      (zeroᵘ≡ ok ⊢Γ) PE.refl →
+        zeroᵘ≡ ok (wf-⊢ˢʷ≡∷ σ₁≡σ₂ .proj₁)
+      (sucᵘ≡ ok ⊢l) PE.refl →
+        trans (sucᵘ≡ ok (subst-⊢∷ ⊢l (wf-⊢ˢʷ≡∷ σ₁≡σ₂ .proj₂ .proj₁))) (suc-cong (subst-⊢∷→⊢≡∷ ⊢l σ₁≡σ₂))
       (sucᵘ-cong t₁≡t₂) PE.refl →
         sucᵘ-cong (subst-⊢≡∷ t₁≡t₂ σ₁≡σ₂)
       (maxᵘ-cong t₁≡t₂ u₁≡u₂) PE.refl →

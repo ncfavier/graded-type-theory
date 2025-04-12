@@ -132,6 +132,12 @@ opaque mutual
     size-⊢≡∷ t≡u ⊕ size-⊢≡∷ u≡v
   size-⊢≡∷ (conv t≡u B≡A) =
     size-⊢≡∷ t≡u ⊕ size-⊢≡ B≡A
+  size-⊢≡∷ (Level≡ _ ⊢Γ) =
+    node (size-⊢′ ⊢Γ)
+  size-⊢≡∷ (zeroᵘ≡ _ ⊢Γ) =
+    node (size-⊢′ ⊢Γ)
+  size-⊢≡∷ (sucᵘ≡ _ ⊢l) =
+    node (size-⊢∷ ⊢l)
   size-⊢≡∷ (sucᵘ-cong t≡u) =
     node (size-⊢≡∷ t≡u)
   size-⊢≡∷ (maxᵘ-cong t≡t' u≡u') =

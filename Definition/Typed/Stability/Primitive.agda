@@ -374,6 +374,12 @@ private module Inhabited where
         trans (stability-⊢≡∷ Γ≡Δ t₁≡t₂) (stability-⊢≡∷ Γ≡Δ t₂≡t₃)
       (conv t₁≡t₂ B≡A) PE.refl →
         conv (stability-⊢≡∷ Γ≡Δ t₁≡t₂) (stability-⊢≡ Γ≡Δ B≡A)
+      (Level≡ ok ⊢Γ) PE.refl →
+        Level≡ ok (wf-⊢≡ʳ Γ≡Δ)
+      (zeroᵘ≡ ok ⊢Γ) PE.refl →
+        zeroᵘ≡ ok (wf-⊢≡ʳ Γ≡Δ)
+      (sucᵘ≡ ok ⊢l) PE.refl →
+        sucᵘ≡ ok (stability-⊢∷ Γ≡Δ ⊢l)
       (sucᵘ-cong t₁≡t₂) PE.refl →
         sucᵘ-cong (stability-⊢≡∷ Γ≡Δ t₁≡t₂)
       (maxᵘ-cong t₁≡t₂ u₁≡u₂) PE.refl →

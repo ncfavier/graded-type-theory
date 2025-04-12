@@ -261,6 +261,12 @@ opaque
       fix (wfEqTerm-<ˢ t≡u)
     wfEqTerm-<ˢ (conv t≡u _) =
       fix (wfEqTerm-<ˢ t≡u)
+    wfEqTerm-<ˢ (Level≡ _ ⊢Γ) =
+      ⊢Γ , ↙ ◻
+    wfEqTerm-<ˢ (zeroᵘ≡ _ ⊢Γ) =
+      ⊢Γ , ↙ ◻
+    wfEqTerm-<ˢ (sucᵘ≡ _ ⊢l) =
+      fix (wfTerm-<ˢ ⊢l)
     wfEqTerm-<ˢ (sucᵘ-cong t≡u) =
       fix (wfEqTerm-<ˢ t≡u)
     wfEqTerm-<ˢ (maxᵘ-cong t≡t' u≡u') =

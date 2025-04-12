@@ -517,6 +517,12 @@ private module Inhabited where
           trans (wkEqTerm ρ⊇ ⊢Δ t₁≡t₂) (wkEqTerm ρ⊇ ⊢Δ t₂≡t₃)
         (conv t₁≡t₂ B≡A) PE.refl →
           conv (wkEqTerm ρ⊇ ⊢Δ t₁≡t₂) (wkEq ρ⊇ ⊢Δ B≡A)
+        (Level≡ ok ⊢Γ) PE.refl →
+          Level≡ ok ⊢Δ
+        (zeroᵘ≡ ok ⊢Γ) PE.refl →
+          zeroᵘ≡ ok ⊢Δ
+        (sucᵘ≡ ok ⊢l) PE.refl →
+          sucᵘ≡ ok (wkTerm ρ⊇ ⊢Δ ⊢l)
         (sucᵘ-cong t₁≡t₂) PE.refl →
           sucᵘ-cong (wkEqTerm ρ⊇ ⊢Δ t₁≡t₂)
         (maxᵘ-cong t₁≡t₂ u₁≡u₂) PE.refl →
@@ -881,6 +887,9 @@ mutual
   wkRedTerm :
     ρ ∷ʷ Δ ⊇ Γ → Γ ⊢ t ⇒ u ∷ A → Δ ⊢ U.wk ρ t ⇒ U.wk ρ u ∷ U.wk ρ A
   wkRedTerm ρ (conv t⇒u A≡B) = conv (wkRedTerm ρ t⇒u) (wkEq ρ A≡B)
+  wkRedTerm ρ (Level⇒ℕ ok ⊢Γ) = Level⇒ℕ ok (wf-∷ʷ⊇ ρ)
+  wkRedTerm ρ (zeroᵘ⇒ ok ⊢Γ) = zeroᵘ⇒ ok (wf-∷ʷ⊇ ρ)
+  wkRedTerm ρ (sucᵘ⇒ ok ⊢l) = sucᵘ⇒ ok (wkTerm ρ ⊢l)
   wkRedTerm ρ (maxᵘ-zeroˡ ⊢l) = maxᵘ-zeroˡ (wkTerm ρ ⊢l)
   wkRedTerm {ρ} [ρ] (maxᵘ-zeroʳ ⊢l w l≢0) = maxᵘ-zeroʳ (wkTerm [ρ] ⊢l) (wkWhnf ρ w) (l≢0 ∘→ wk-zeroᵘ)
   wkRedTerm ρ (maxᵘ-sucᵘ ⊢l₁ ⊢l₂) = maxᵘ-sucᵘ (wkTerm ρ ⊢l₁) (wkTerm ρ ⊢l₂)

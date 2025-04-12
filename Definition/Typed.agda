@@ -217,6 +217,9 @@ mutual
                   → Γ ⊢ u ≡ v ∷ A
                   → Γ ⊢ t ≡ v ∷ A
 
+    Level≡        : Level-is-ℕ → ⊢ Γ → Γ ⊢ Level ≡ ℕ ∷ U zeroᵘ
+    zeroᵘ≡        : Level-is-ℕ → ⊢ Γ → Γ ⊢ zeroᵘ ≡ zero ∷ ℕ
+    sucᵘ≡         : Level-is-ℕ → Γ ⊢ l ∷ ℕ → Γ ⊢ sucᵘ l ≡ suc l ∷ ℕ
     sucᵘ-cong     : ∀ {t t'}
                   → Γ ⊢ t ≡ t' ∷ Level
                   → Γ ⊢ sucᵘ t ≡ sucᵘ t' ∷ Level
@@ -429,6 +432,16 @@ data _⊢_⇒_∷_ (Γ : Con Term n) : Term n → Term n → Term n → Set ℓ 
   conv           : Γ ⊢ t ⇒ u ∷ A
                  → Γ ⊢ A ≡ B
                  → Γ ⊢ t ⇒ u ∷ B
+
+  Level⇒ℕ        : Level-is-ℕ
+                 → ⊢ Γ
+                 → Γ ⊢ Level ⇒ ℕ ∷ U zeroᵘ
+  zeroᵘ⇒         : Level-is-ℕ
+                 → ⊢ Γ
+                 → Γ ⊢ zeroᵘ ⇒ zero ∷ ℕ
+  sucᵘ⇒          : Level-is-ℕ
+                 → Γ ⊢ l ∷ ℕ
+                 → Γ ⊢ sucᵘ l ⇒ suc l ∷ ℕ
 
   maxᵘ-substˡ    : Γ ⊢ t ⇒ t′ ∷ Level
                  → Γ ⊢ u ∷ Level

@@ -182,6 +182,9 @@ opaque
   -- relation _⊢_≡_∷_.
 
   subsetTerm : Γ ⊢ t ⇒ u ∷ A → Γ ⊢ t ≡ u ∷ A
+  subsetTerm (Level⇒ℕ ok ⊢Γ) = Level≡ ok ⊢Γ
+  subsetTerm (zeroᵘ⇒ ok ⊢Γ) = zeroᵘ≡ ok ⊢Γ
+  subsetTerm (sucᵘ⇒ ok ⊢l) = sucᵘ≡ ok ⊢l
   subsetTerm (maxᵘ-zeroˡ ⊢l) = maxᵘ-zeroˡ ⊢l
   subsetTerm (maxᵘ-zeroʳ ⊢l _ _) = maxᵘ-zeroʳ ⊢l
   subsetTerm (maxᵘ-sucᵘ ⊢l₁ ⊢l₂) = maxᵘ-sucᵘ ⊢l₁ ⊢l₂

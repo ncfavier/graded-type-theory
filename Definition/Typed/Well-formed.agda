@@ -175,6 +175,13 @@ opaque mutual
           _ , ⊢A        = wf-⊢≡ B≡A
       in
       ⊢A , conv ⊢t₁ B≡A , conv ⊢t₂ B≡A
+    (Level≡ ok ⊢Γ) →
+      Uⱼ (zeroᵘⱼ ⊢Γ) , Levelⱼ ⊢Γ , ℕⱼ ⊢Γ
+    (zeroᵘ≡ ok ⊢Γ) →
+      ℕⱼ ⊢Γ , conv (zeroᵘⱼ ⊢Γ) (univ (Level≡ ok ⊢Γ)) , zeroⱼ ⊢Γ
+    (sucᵘ≡ ok ⊢l) →
+      let Level≡ℕ = univ (Level≡ ok (wfTerm ⊢l))
+      in wf-⊢∷ ⊢l , conv (sucᵘⱼ (conv ⊢l (sym Level≡ℕ))) Level≡ℕ , sucⱼ ⊢l
     (sucᵘ-cong l₁≡l₂) →
       let ⊢Level , ⊢l₁ , ⊢l₂ = wf-⊢≡∷ l₁≡l₂ in
       ⊢Level , sucᵘⱼ ⊢l₁ , sucᵘⱼ ⊢l₂
