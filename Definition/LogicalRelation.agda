@@ -161,9 +161,29 @@ mutual
 
   -- WHNF property of level term equality
   data [Level]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
-    zeroᵘᵣ : [Level]-prop Γ zeroᵘ zeroᵘ
-    sucᵘᵣ  : ∀ {k k′} → Γ ⊩Level k ≡ k′ ∷Level → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
-    neLvl : ∀ {k k′} → [neLevel]-prop Γ k k′ → [Level]-prop Γ k k′
+    zeroᵘᵣ
+      : [Level]-prop Γ zeroᵘ zeroᵘ
+    sucᵘᵣ
+      : ∀ {k k′}
+      → Γ ⊩Level k ≡ k′ ∷Level
+      → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
+    -- sub
+    --   : ∀ {k k′ k″}
+    --   → Γ ⊩Level k ≡ k′ ∷Level
+    --   → Γ ⊩Level k′ ≡ k″ ∷Level
+    --   → neLevel-prop Γ k
+    --   → [Level]-prop Γ (k maxᵘ sucᵘ k′) (sucᵘ k″)
+    sub
+      : ∀ {k k′}
+      → [neLevel]-prop Γ k′ k′
+      → [neLevel]-prop Γ k (k′ maxᵘ sucᵘ k′)
+      → [Level]-prop Γ k (sucᵘ k′)
+    neLvl
+      : ∀ {k k′}
+      → [neLevel]-prop Γ k k′
+      → [Level]-prop Γ k k′
+    sym : ∀ {k k′} → [Level]-prop Γ k k′ → [Level]-prop Γ k′ k
+    trans : ∀ {k k′ k″} → [Level]-prop Γ k k′ → [Level]-prop Γ k′ k″ → [Level]-prop Γ k k″
 
   data [neLevel]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
     maxᵘˡᵣ
@@ -217,8 +237,6 @@ mutual
       → Γ ⊩Level t₁ ≡ t₂ ∷Level
       → [neLevel]-prop Γ (t₁ maxᵘ t₂) t₁
     ne : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [neLevel]-prop Γ k k′
-    sym : ∀ {k k′} → [neLevel]-prop Γ k k′ → [neLevel]-prop Γ k′ k
-    trans : ∀ {k k′ k″} → [neLevel]-prop Γ k k′ → [neLevel]-prop Γ k′ k″ → [neLevel]-prop Γ k k″
 
 -- Level reflection
 

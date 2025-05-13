@@ -181,6 +181,10 @@ record Equality-relations
       : Γ ⊢ t ∷ Level
       → Γ ⊢ t maxᵘ t ≅ t ∷ Level
 
+    ≅ₜ-maxᵘ-sub
+      : Γ ⊢ t ∷ Level
+      → Γ ⊢ t maxᵘ sucᵘ t ≅ sucᵘ t ∷ Level
+
     -- Universe type reflexivity
     ≅-Urefl   : Γ ⊢ l ∷ Level → Γ ⊢≅ U l ∷ U (sucᵘ l)
 
