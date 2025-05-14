@@ -62,13 +62,13 @@ opaque
   nelsplit (maxᵘ-idem x y) = let n , _ = nelsplit x in maxᵘˡₙ n , n
   nelsplit (ne (neNfₜ₌ _ neK neM _)) = ne neK , ne neM
 
-  lsplit : [Level]-prop Γ t u → Whnf t × Whnf u
-  lsplit zeroᵘᵣ = zeroᵘₙ , zeroᵘₙ
-  lsplit (sucᵘᵣ x) = sucᵘₙ , sucᵘₙ
-  lsplit (sub _ x) = let a , b = nelsplit x in ne a , sucᵘₙ
-  lsplit (neLvl x) = let a , b = nelsplit x in ne a , ne b
-  lsplit (sym u≡t) = let a , b = lsplit u≡t in b , a
-  lsplit (trans t≡u u≡v) = let a , _ = lsplit t≡u; _ , b = lsplit u≡v in a , b
+  -- lsplit : [Level]-prop Γ t u → Whnf t × Whnf u
+  -- lsplit zeroᵘᵣ = zeroᵘₙ , zeroᵘₙ
+  -- lsplit (sucᵘᵣ x) = sucᵘₙ , sucᵘₙ
+  -- lsplit (sub _ x) = let a , b = nelsplit x in ne a , sucᵘₙ
+  -- lsplit (neLvl x) = let a , b = nelsplit x in ne a , ne b
+  -- lsplit (sym u≡t) = let a , b = lsplit u≡t in b , a
+  -- lsplit (trans t≡u u≡v) = let a , _ = lsplit t≡u; _ , b = lsplit u≡v in a , b
 
 opaque
 

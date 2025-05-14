@@ -105,10 +105,7 @@ escapeEq (Bᵣ′ W _ _ D _ _ _ _ _) (B₌ _ _ D′ A≡B _ _) =
 escapeEq (Idᵣ ⊩A) A≡B =
   ≅-red (_⊩ₗId_.⇒*Id ⊩A , Idₙ) (_⊩ₗId_≡_/_.⇒*Id′ A≡B , Idₙ) (Id≅Id A≡B)
 
-escapeTermEq (Levelᵣ D) (Levelₜ₌ k k′ d d′ prop) =
-  let lk , lk′ = lsplit prop
-  in ≅ₜ-red (D , Levelₙ) (d , lk) (d′ , lk′)
-      (escape-[Level]-prop (wf (redFirst* D)) prop)
+escapeTermEq (Levelᵣ D) [t] = ≅-conv (escapeLevelEq [t]) (sym (subset* D))
 escapeTermEq (Uᵣ′ _ _ _ D) (Uₜ₌ A B d d′ typeA typeB A≡B [A] [B] [A≡B]) =
   ≅ₜ-red (D , Uₙ) (d , typeWhnf typeA) (d′ , typeWhnf typeB)  A≡B
 escapeTermEq (ℕᵣ D) (ℕₜ₌ _ _ d d′ k≡k′ prop) =

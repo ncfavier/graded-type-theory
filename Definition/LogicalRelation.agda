@@ -154,10 +154,9 @@ mutual
     pattern
     constructor Levelₜ₌
     field
-      k k′ : Term ℓ
-      d : Γ ⊢ t ⇒* k ∷ Level
-      d′ : Γ ⊢ u ⇒* k′ ∷ Level
-      prop : [Level]-prop Γ k k′
+      [t] : Γ ⊩Level t ∷Level
+      [u] : Γ ⊩Level u ∷Level
+      t≡u : [Level]-prop Γ t u
 
   -- WHNF property of level term equality
   data [Level]-prop (Γ : Con Term ℓ) : (k k′ : Term ℓ) → Set a where
@@ -167,21 +166,13 @@ mutual
       : ∀ {k k′}
       → Γ ⊩Level k ≡ k′ ∷Level
       → [Level]-prop Γ (sucᵘ k) (sucᵘ k′)
-    -- sub
-    --   : ∀ {k k′ k″}
-    --   → Γ ⊩Level k ≡ k′ ∷Level
-    --   → Γ ⊩Level k′ ≡ k″ ∷Level
-    --   → neLevel-prop Γ k
-    --   → [Level]-prop Γ (k maxᵘ sucᵘ k′) (sucᵘ k″)
-    sub
-      : ∀ {k k′}
-      → [neLevel]-prop Γ k′ k′
-      → [neLevel]-prop Γ k (k′ maxᵘ sucᵘ k′)
-      → [Level]-prop Γ k (sucᵘ k′)
-    neLvl
-      : ∀ {k k′}
-      → [neLevel]-prop Γ k k′
-      → [Level]-prop Γ k k′
+    maxᵘᵣ
+      : ∀ {k₁ k₂ k₁′ k₂′}
+      → Γ ⊩Level k₁ ≡ k₁′ ∷Level
+      → Γ ⊩Level k₂ ≡ k₂′ ∷Level
+      → [Level]-prop Γ (k₁ maxᵘ k₂) (k₁′ maxᵘ k₂′)
+    ne : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [Level]-prop Γ k k′
+    refl : ∀ {k} → [Level]-prop Γ k k
     sym : ∀ {k k′} → [Level]-prop Γ k k′ → [Level]-prop Γ k′ k
     trans : ∀ {k k′ k″} → [Level]-prop Γ k k′ → [Level]-prop Γ k′ k″ → [Level]-prop Γ k k″
 

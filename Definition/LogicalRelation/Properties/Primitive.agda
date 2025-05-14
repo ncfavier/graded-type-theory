@@ -37,22 +37,11 @@ private
     A B t t₁ t₂ t₁′ t₂′ u u₁ u₂ v : Term _
     Γ : Con Term n
 
-mutual
+wf-Level-eq : Γ ⊩Level t ≡ u ∷Level → Γ ⊩Level t ∷Level × Γ ⊩Level u ∷Level
+wf-Level-eq (Levelₜ₌ [t] [u] _) = [t] , [u]
 
-  -- Reflexivity of level terms.
-
-  reflLevel : Γ ⊩Level t ∷Level → Γ ⊩Level t ≡ t ∷Level
-  reflLevel (Levelₜ k d prop) = Levelₜ₌ k k d d (reflLevel-prop prop)
-
-  reflLevel-prop : Level-prop Γ t → [Level]-prop Γ t t
-  reflLevel-prop zeroᵘᵣ = zeroᵘᵣ
-  reflLevel-prop (sucᵘᵣ x) = sucᵘᵣ (reflLevel x)
-  reflLevel-prop (neLvl x₁) = neLvl (reflneLevel-prop x₁)
-
-  reflneLevel-prop : neLevel-prop Γ t → [neLevel]-prop Γ t t
-  reflneLevel-prop (maxᵘˡᵣ x₁ x₂) = maxᵘˡᵣ (reflneLevel-prop x₁) (reflLevel x₂)
-  reflneLevel-prop (maxᵘʳᵣ x₁ x₂) = maxᵘʳᵣ (reflLevel x₁) (reflneLevel-prop x₂)
-  reflneLevel-prop (ne x) = ne x
+combineLevel : ([t] : Γ ⊩Level t ∷Level) → ([u] : Γ ⊩Level u ∷Level) → [Level]-prop Γ t u → Γ ⊩Level t ≡ u ∷Level
+combineLevel [t] [u] t≅u = Levelₜ₌ [t] [u] t≅u
 
 -- Transitivity for neutrals in WHNF and levels
 
@@ -67,9 +56,8 @@ transEqTermLevel : ∀ {n n′ n″}
                   → Γ ⊩Level n  ≡ n′ ∷Level
                   → Γ ⊩Level n′ ≡ n″ ∷Level
                   → Γ ⊩Level n  ≡ n″ ∷Level
-transEqTermLevel (Levelₜ₌ k _ d d′ prop) (Levelₜ₌ _ k″ d₁ d″ prop₁)
-  with whrDet*Term (d₁ , proj₁ (lsplit prop₁)) (d′ , proj₂ (lsplit prop))
-... | PE.refl = Levelₜ₌ k k″ d d″ (trans prop prop₁)
+transEqTermLevel (Levelₜ₌ [t] [u] t≡u) (Levelₜ₌ [u]′ [v] u≡v) =
+  Levelₜ₌ [t] [v] (trans t≡u u≡v)
 
 -- Symmetry for neutrals in WHNF and levels
 
@@ -81,18 +69,20 @@ symNeutralTerm (neNfₜ₌ inc neK neM k≡m) = neNfₜ₌ inc neM neK (~-sym k�
 symLevel : ∀ {k k′}
           → Γ ⊩Level k ≡ k′ ∷Level
           → Γ ⊩Level k′ ≡ k ∷Level
-symLevel (Levelₜ₌ k k′ d d′ prop) = Levelₜ₌ k′ k d′ d (sym prop)
+symLevel (Levelₜ₌ [t] [u] t≡u) = Levelₜ₌ [u] [t] (sym t≡u)
 
 -- Some reduction and expansion lemmas
 
-redLevel
-  : ∀ {t t′}
-  → Γ ⊢ t ⇒* t′ ∷ Level
-  → Γ ⊩Level t ∷Level
-  → Γ ⊩Level t ≡ t′ ∷Level
-redLevel t⇒ (Levelₜ k d prop) =
-  Levelₜ₌ _ _ d (whrDet↘Term (d , level prop) t⇒)
-    (reflLevel-prop prop)
+-- redLevel
+--   : ∀ {t t′}
+--   → Γ ⊢ t ⇒* t′ ∷ Level
+--   → Γ ⊩Level t ∷Level
+--   → Γ ⊩Level t ≡ t′ ∷Level
+-- redLevel t⇒ (Levelₜ k d prop) =
+--   Levelₜ₌ _ _ d (whrDet↘Term (d , level prop) t⇒)
+--     prop prop
+--     -- (reflLevel-prop (wfTerm (redFirst*Term d)) prop)
+--     {!   !}
 
 ⊩Level-⇒*
   : ∀ {t t′}
@@ -102,90 +92,47 @@ redLevel t⇒ (Levelₜ k d prop) =
 ⊩Level-⇒* t′⇒t (Levelₜ k d prop) =
   Levelₜ _ (t′⇒t ⇨∷* d) prop
 
-⊩Level≡-⇒*
-  : ∀ {t t′ u u′}
-  → Γ ⊢ t′ ⇒* t ∷ Level
-  → Γ ⊢ u′ ⇒* u ∷ Level
-  → Γ ⊩Level t ≡ u ∷Level
-  → Γ ⊩Level t′ ≡ u′ ∷Level
-⊩Level≡-⇒* t′⇒t u′⇒u (Levelₜ₌ k k′ d d′ prop) =
-  Levelₜ₌ _ _ (t′⇒t ⇨∷* d) (u′⇒u ⇨∷* d′) prop
+-- ⊩Level≡-⇒*
+--   : ∀ {t t′ u u′}
+--   → Γ ⊢ t′ ⇒* t ∷ Level
+--   → Γ ⊢ u′ ⇒* u ∷ Level
+--   → Γ ⊩Level t ≡ u ∷Level
+--   → Γ ⊩Level t′ ≡ u′ ∷Level
+-- ⊩Level≡-⇒* t′⇒t u′⇒u (Levelₜ₌ k k′ d d′ prop prop′ k≡k′) =
+--   Levelₜ₌ _ _ (t′⇒t ⇨∷* d) (u′⇒u ⇨∷* d′) prop prop′ {!k≡k′!}
 
 -- Escape lemmas for levels
+
+-- lem : ∀ {t t′ u u′} → Γ ⊢ t ⇒* t′ ∷ Level → Γ ⊢ u ⇒* u′ ∷ Level → Γ ⊢ t ≅ u ∷ Level → Γ ⊢ t′ ≅ u′ ∷ Level
+-- lem (id x) (id x₁) t≡u = t≡u
+-- lem (id x) (x₁ ⇨ d′) t≡u = {! x₁  !}
+-- lem (x ⇨ d) d′ t≡u = {!   !}
 
 mutual
   -- Reducible level equalities are well-formed.
   escapeLevelEq
     : Γ ⊩Level t ≡ u ∷Level
     → Γ ⊢ t ≅ u ∷ Level
-  escapeLevelEq (Levelₜ₌ k k′ D D′ prop) =
-    let lk , lk′ = lsplit prop in
-    ≅ₜ-red (id (Levelⱼ (wfTerm (redFirst*Term D))) , Levelₙ) (D , lk) (D′ , lk′)
-      (escape-[Level]-prop (wfTerm (redFirst*Term D)) prop)
+  escapeLevelEq (Levelₜ₌ [t] [u] t≡u) =
+    -- let lk = level prop
+    --     lk′ = level prop′
+    -- in ≅ₜ-red (id (Levelⱼ (wfTerm (redFirst*Term D))) , Levelₙ) (D , lk) (D′ , lk′)
+      -- (escape-[Level]-prop (wfTerm (redFirst*Term D)) k≡k′)
+      -- escape-[Level]-prop [t] [u] t≡u
+      ?
 
-  escape-[Level]-prop
-    : ⊢ Γ
-    → [Level]-prop Γ t u
-    → Γ ⊢ t ≅ u ∷ Level
-  escape-[Level]-prop ⊢Γ zeroᵘᵣ = ≅ₜ-zeroᵘrefl ⊢Γ
-  escape-[Level]-prop ⊢Γ (sucᵘᵣ x) = ≅ₜ-sucᵘ-cong (escapeLevelEq x)
-  escape-[Level]-prop ⊢Γ (sub k≡k x) =
-    let t≡max = escape-[neLevel]-prop x
-        _ , ⊢t , ⊢max = wf-⊢≡∷ (≅ₜ-eq t≡max)
-        _ , ⊢k , _ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop k≡k))
-    in ≅ₜ-trans t≡max (≅ₜ-maxᵘ-sub ⊢k)
-  escape-[Level]-prop ⊢Γ (neLvl n) = escape-[neLevel]-prop n
-  escape-[Level]-prop ⊢Γ (sym x) = ≅ₜ-sym (escape-[Level]-prop ⊢Γ x)
-  escape-[Level]-prop ⊢Γ (trans x y) = ≅ₜ-trans (escape-[Level]-prop ⊢Γ x) (escape-[Level]-prop ⊢Γ y)
-
-  escape-[neLevel]-prop
-    : [neLevel]-prop Γ t u
-    → Γ ⊢ t ≅ u ∷ Level
-  escape-[neLevel]-prop (maxᵘˡᵣ x y) =
-    ≅ₜ-maxᵘ-cong (escape-[neLevel]-prop x) (escapeLevelEq y)
-  escape-[neLevel]-prop (maxᵘʳᵣ x y) =
-    ≅ₜ-maxᵘ-cong (≅ₜ-sucᵘ-cong (escapeLevelEq x)) (escape-[neLevel]-prop y)
-  escape-[neLevel]-prop (maxᵘ-zeroʳˡᵣ x) =
-    let _ , ⊢t , _ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop x))
-    in ≅ₜ-maxᵘ-zeroʳ ⊢t
-  escape-[neLevel]-prop (maxᵘ-assoc¹ᵣ x y z) =
-    let _ , ⊢t , _ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop x))
-        _ , ⊢u , _ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq y))
-        _ , ⊢v , _ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq z))
-    in ≅ₜ-maxᵘ-assoc ⊢t ⊢u ⊢v
-  escape-[neLevel]-prop (maxᵘ-assoc²ᵣ x y z) =
-    let _ , ⊢t , _ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq x))
-        _ , ⊢u , _ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop y))
-        _ , ⊢v , _ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq z))
-    in ≅ₜ-maxᵘ-assoc (sucᵘⱼ ⊢t) ⊢u ⊢v
-  escape-[neLevel]-prop (maxᵘ-assoc³ᵣ x y z) =
-    let _ , ⊢t , _ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq x))
-        _ , ⊢u , _ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq y))
-        _ , ⊢v , _ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop z))
-    in ≅ₜ-trans
-      (≅ₜ-maxᵘ-cong (≅ₜ-sym (≅ₜ-maxᵘ-sucᵘ ⊢t ⊢u)) (escape-[neLevel]-prop z))
-      (≅ₜ-maxᵘ-assoc (sucᵘⱼ ⊢t) (sucᵘⱼ ⊢u) ⊢v)
-  escape-[neLevel]-prop (maxᵘ-comm¹ᵣ x d y d′) =
-    let t₁≡t₂ = escapeLevelEq d
-        u₁≡u₂ = escapeLevelEq d′
-        _ , ⊢t₁ , ⊢t₂ = wf-⊢≡∷ (≅ₜ-eq t₁≡t₂)
-        _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq u₁≡u₂)
-    in ≅ₜ-trans (≅ₜ-maxᵘ-comm ⊢t₁ ⊢u₁) (≅ₜ-maxᵘ-cong u₁≡u₂ t₁≡t₂)
-  escape-[neLevel]-prop (maxᵘ-comm²ᵣ x d y) =
-    let t₁≡t₁ = escapeLevelEq x
-        t₁+1≡t₂ = escapeLevelEq d
-        u≡u = escape-[neLevel]-prop y
-        ⊢Level , ⊢t₁ , _ = wf-⊢≡∷ (≅ₜ-eq t₁≡t₁)
-        _ , _ , ⊢t₂ = wf-⊢≡∷ (≅ₜ-eq t₁+1≡t₂)
-        _ , ⊢u , _ = wf-⊢≡∷ (≅ₜ-eq u≡u)
-    in ≅ₜ-trans (≅ₜ-maxᵘ-cong t₁+1≡t₂ u≡u) (≅ₜ-maxᵘ-comm ⊢t₂ ⊢u)
-  escape-[neLevel]-prop (maxᵘ-idem x y) =
-    let t₁≡t₁ = escape-[neLevel]-prop x
-        t₁≡t₂ = escapeLevelEq y
-        _ , ⊢u , _ = wf-⊢≡∷ (≅ₜ-eq t₁≡t₂)
-    in ≅ₜ-trans (≅ₜ-maxᵘ-cong t₁≡t₁ (≅ₜ-sym t₁≡t₂)) (≅ₜ-maxᵘ-idem ⊢u)
-  escape-[neLevel]-prop (ne (neNfₜ₌ _ _ _ k≡m)) =
-    ~-to-≅ₜ k≡m
+  -- escape-[Level]-prop
+  --   : Γ ⊩Level t ∷Level
+  --   → Γ ⊩Level u ∷Level
+  --   → [Level]-prop Γ t u
+  --   → Γ ⊢ t ≅ u ∷ Level
+  -- escape-[Level]-prop [t] [u] zeroᵘᵣ = ≅ₜ-zeroᵘrefl {!   !}
+  -- escape-[Level]-prop [t] [u] (sucᵘᵣ x) = ≅ₜ-sucᵘ-cong (escapeLevelEq x)
+  -- escape-[Level]-prop [t] [u] (maxᵘᵣ x x₁) = ≅ₜ-maxᵘ-cong (escapeLevelEq x) (escapeLevelEq x₁)
+  -- escape-[Level]-prop [t] [u] (ne (neNfₜ₌ neutrals-included neK neM k≡m)) = ~-to-≅ₜ k≡m
+  -- escape-[Level]-prop [t] [u] refl = {!   !}
+  -- escape-[Level]-prop [t] [u] (sym x) = ≅ₜ-sym (escape-[Level]-prop [u] [t] x)
+  -- escape-[Level]-prop [t] [u] (trans x x₁) = ≅ₜ-trans (escape-[Level]-prop [t] {!   !} x) (escape-[Level]-prop {!   !} [u] x₁)
 
   -- Reducible levels are well-formed.
   escapeLevel
@@ -210,6 +157,8 @@ mutual
 
 ⊩neLvl : neLevel-prop Γ t → Γ ⊩Level t ∷Level
 ⊩neLvl x = Levelₜ _ (id (escape-neLevel-prop x)) (neLvl x)
+-- ⊩[neLvl] : [Level]-prop Γ t u → Γ ⊩Level t ≡ u ∷Level
+-- ⊩[neLvl] t≡u = Levelₜ₌ _ _ (id {!   !}) (id {!   !}) {! wf-Level-eq   !} {!   !} t≡u
 
 opaque
 
@@ -226,12 +175,37 @@ opaque
       (sucᵘᵣ [t])
 
   ⊩sucᵘ≡sucᵘ : Γ ⊩Level t ≡ u ∷Level → Γ ⊩Level sucᵘ t ≡ sucᵘ u ∷Level
-  ⊩sucᵘ≡sucᵘ t≡u@(Levelₜ₌ _ _ t⇒*t′ u⇒*u′ t′≡u′) =
-    let t′-ok , u′-ok = lsplit t′≡u′ in
-    Levelₜ₌ _ _
-      (id (sucᵘⱼ (redFirst*Term t⇒*t′)))
-      (id (sucᵘⱼ (redFirst*Term u⇒*u′)))
+  ⊩sucᵘ≡sucᵘ t≡u@(Levelₜ₌ [t] [u] t′≡u′) =
+    -- let t′-ok = level propt
+    --     u′-ok = level propu
+    --     [t] , [u] = wf-Level-eq t≡u
+    --     t≅u = escapeLevelEq t≡u
+    Levelₜ₌
+      -- (id (sucᵘⱼ (redFirst*Term t⇒*t′)))
+      -- (id (sucᵘⱼ (redFirst*Term u⇒*u′)))
+      (⊩sucᵘ [t])
+      (⊩sucᵘ [u])
+      -- (≅ₜ-sucᵘ-cong t≅u)
       (sucᵘᵣ t≡u)
+
+mutual
+
+  -- Reflexivity of level terms.
+
+  reflLevel : Γ ⊩Level t ∷Level → Γ ⊩Level t ≡ t ∷Level
+  reflLevel [t] = Levelₜ₌ [t] [t]
+    -- (reflLevel-prop prop)
+    refl
+
+  reflneLevel-prop : neLevel-prop Γ t → [Level]-prop Γ t t
+  reflneLevel-prop (maxᵘˡᵣ x x₁) = maxᵘᵣ (reflLevel (⊩neLvl x)) (reflLevel x₁)
+  reflneLevel-prop (maxᵘʳᵣ x x₁) = maxᵘᵣ (reflLevel (⊩sucᵘ x)) (reflLevel (⊩neLvl x₁))
+  reflneLevel-prop (ne x) = ne x
+
+  reflLevel-prop : Level-prop Γ t → [Level]-prop Γ t t
+  reflLevel-prop zeroᵘᵣ = zeroᵘᵣ
+  reflLevel-prop (sucᵘᵣ x) = sucᵘᵣ (reflLevel x)
+  reflLevel-prop (neLvl x₁) = reflneLevel-prop x₁
 
 opaque
 
@@ -297,6 +271,7 @@ wf-neLevel-prop (maxᵘˡᵣ x₁ x₂) = wf-neLevel-prop x₁
 wf-neLevel-prop (maxᵘʳᵣ x₁ x₂) = wf-neLevel-prop x₂
 wf-neLevel-prop (ne (neNfₜ₌ _ neK neM k≡m)) = wfEqTerm (≅ₜ-eq (~-to-≅ₜ k≡m))
 
+{-
 mutual
   wf-Level-eq : Γ ⊩Level t ≡ u ∷Level → Γ ⊩Level t ∷Level × Γ ⊩Level u ∷Level
   wf-Level-eq (Levelₜ₌ k k′ d d′ prop) =
@@ -364,42 +339,49 @@ mutual
   wf-[neLevel]-prop (ne x) =
     let a , b = wf-neNf x
     in ne a , ne b
+-}
 
 opaque mutual
 
   -- An introduction lemma for _⊩Level _ maxᵘ _ ≡ _ maxᵘ _ ∷Level
 
-  ⊩maxᵘ≡maxᵘ-prop :
-    [Level]-prop Γ t₁′ t₂′ →
-    Γ ⊩Level u₁ ≡ u₂ ∷Level →
-    Γ ⊩Level t₁′ maxᵘ u₁ ≡ t₂′ maxᵘ u₂ ∷Level
-  ⊩maxᵘ≡maxᵘ-prop zeroᵘᵣ u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    let _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq u₁≡u₂))
-    in Levelₜ₌ _ _ (maxᵘ-zeroˡ ⊢u₁ ⇨ u₁⇒) (maxᵘ-zeroˡ ⊢u₂ ⇨ u₂⇒) propu
-  ⊩maxᵘ≡maxᵘ-prop (sucᵘᵣ x) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    {!   !}
-  ⊩maxᵘ≡maxᵘ-prop (sub k≡k x) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    {!   !}
-  ⊩maxᵘ≡maxᵘ-prop (neLvl t₁′≡t₂′) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    let _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq u₁≡u₂))
-        _ , ⊢t₁′ , ⊢t₂′ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop t₁′≡t₂′))
-    in Levelₜ₌ _ _ (id (maxᵘⱼ ⊢t₁′ ⊢u₁)) (id (maxᵘⱼ ⊢t₂′ ⊢u₂)) (neLvl (maxᵘˡᵣ t₁′≡t₂′ u₁≡u₂))
-  ⊩maxᵘ≡maxᵘ-prop (sym x) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    symLevel (⊩maxᵘ≡maxᵘ-prop x (symLevel u₁≡u₂))
-  ⊩maxᵘ≡maxᵘ-prop (trans x y) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    transEqTermLevel (⊩maxᵘ≡maxᵘ-prop x u₁≡u₂) (⊩maxᵘ≡maxᵘ-prop y (reflLevel (wf-Level-eq u₁≡u₂ .proj₂)))
+  -- ⊩maxᵘ≡maxᵘ-prop :
+  --   [Level]-prop Γ t₁′ t₂′ →
+  --   Γ ⊩Level u₁ ≡ u₂ ∷Level →
+  --   Γ ⊩Level t₁′ maxᵘ u₁ ≡ t₂′ maxᵘ u₂ ∷Level
+  -- ⊩maxᵘ≡maxᵘ-prop zeroᵘᵣ u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
+  --   let _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq u₁≡u₂))
+  --   in Levelₜ₌ _ _ (maxᵘ-zeroˡ ⊢u₁ ⇨ u₁⇒) (maxᵘ-zeroˡ ⊢u₂ ⇨ u₂⇒) propu
+  -- ⊩maxᵘ≡maxᵘ-prop (sucᵘᵣ x) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
+  --   {!   !}
+  -- ⊩maxᵘ≡maxᵘ-prop (sub k≡k x) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
+  --   {!   !}
+  -- ⊩maxᵘ≡maxᵘ-prop (neLvl t₁′≡t₂′) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
+  --   let _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq u₁≡u₂))
+  --       _ , ⊢t₁′ , ⊢t₂′ = wf-⊢≡∷ (≅ₜ-eq (escape-[neLevel]-prop t₁′≡t₂′))
+  --   in Levelₜ₌ _ _ (id (maxᵘⱼ ⊢t₁′ ⊢u₁)) (id (maxᵘⱼ ⊢t₂′ ⊢u₂)) (neLvl (maxᵘˡᵣ t₁′≡t₂′ u₁≡u₂))
+  -- ⊩maxᵘ≡maxᵘ-prop (sym x) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
+  --   symLevel (⊩maxᵘ≡maxᵘ-prop x (symLevel u₁≡u₂))
+  -- ⊩maxᵘ≡maxᵘ-prop (trans x y) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
+  --   transEqTermLevel (⊩maxᵘ≡maxᵘ-prop x u₁≡u₂) (⊩maxᵘ≡maxᵘ-prop y (reflLevel (wf-Level-eq u₁≡u₂ .proj₂)))
 
   ⊩maxᵘ≡maxᵘ :
     Γ ⊩Level t₁ ≡ t₂ ∷Level →
     Γ ⊩Level u₁ ≡ u₂ ∷Level →
     Γ ⊩Level t₁ maxᵘ u₁ ≡ t₂ maxᵘ u₂ ∷Level
-  ⊩maxᵘ≡maxᵘ {t₁} {t₂} {u₁} {u₂} t₁≡t₂@(Levelₜ₌ t₁′ t₂′ t₁⇒ t₂⇒ propt) u₁≡u₂@(Levelₜ₌ u₁′ u₂′ u₁⇒ u₂⇒ propu) =
-    let _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq u₁≡u₂))
-        ⊢Γ = wfTerm ⊢u₁
-        _ , ⊢t₁′ , ⊢t₂′ = wf-⊢≡∷ (≅ₜ-eq (escape-[Level]-prop ⊢Γ propt))
-        _ , ⊢u₁′ , ⊢u₂′ = wf-⊢≡∷ (≅ₜ-eq (escape-[Level]-prop ⊢Γ propu))
-    in ⊩Level≡-⇒* (maxᵘ-substˡ* t₁⇒ ⊢u₁) (maxᵘ-substˡ* t₂⇒ ⊢u₂) $
-      ⊩maxᵘ≡maxᵘ-prop propt u₁≡u₂
+  ⊩maxᵘ≡maxᵘ {t₁} {t₂} {u₁} {u₂} t₁≡t₂@(Levelₜ₌ [t₁] [t₂] t₁′≡t₂′) u₁≡u₂@(Levelₜ₌ [u₁] [u₂] u₁′≡u₂′) =
+    -- let _ , ⊢u₁ , ⊢u₂ = wf-⊢≡∷ (≅ₜ-eq (escapeLevelEq u₁≡u₂))
+    --     ⊢Γ = wfTerm ⊢u₁
+    --     [t₁] , [t₂] = wf-Level-eq t₁≡t₂
+    --     [u₁] , [u₂] = wf-Level-eq u₁≡u₂
+    --     -- _ , ⊢t₁′ , ⊢t₂′ = wf-⊢≡∷ (≅ₜ-eq (escape-[Level]-prop ⊢Γ propt))
+    --     -- _ , ⊢u₁′ , ⊢u₂′ = wf-⊢≡∷ (≅ₜ-eq (escape-[Level]-prop ⊢Γ propu))
+    -- in -- ⊩Level≡-⇒* (maxᵘ-substˡ* t₁⇒ {!   !}) (maxᵘ-substˡ* t₂⇒ {!   !}) $
+      -- ⊩maxᵘ≡maxᵘ-prop propt u₁≡u₂
+      -- Levelₜ₌ _ _ {!   !} {!   !} {!   !} {!   !} {!   !}
+      combineLevel (⊩maxᵘ [t₁] [u₁]) (⊩maxᵘ [t₂] [u₂])
+        -- (≅ₜ-maxᵘ-cong t₁′≡t₂′ u₁′≡u₂′)
+        (maxᵘᵣ t₁≡t₂ u₁≡u₂)
         -- case propt of λ where
         --   zeroᵘᵣ →
         --     Levelₜ₌ u₁′ u₂′
@@ -453,87 +435,93 @@ opaque
     Γ ⊩Level v ∷Level →
     Γ ⊩Level (t maxᵘ u) maxᵘ v ≡ t maxᵘ (u maxᵘ v) ∷Level
   ⊩maxᵘ-assoc {t} {u} {v} [t]@(Levelₜ t′ t⇒ propt) [u]@(Levelₜ u′ u⇒ propu) [v]@(Levelₜ v′ v⇒ propv) =
-    let
-      ⊢u = escapeLevel [u]
-      ⊢v = escapeLevel [v]
-      ⊢Γ = wfTerm ⊢u
-      ⊢t′ = escape-Level-prop ⊢Γ propt
-      ⊢u′ = escape-Level-prop ⊢Γ propu
-      ⊢v′ = escape-Level-prop ⊢Γ propv
-    in ⊩Level≡-⇒*
-      (maxᵘ-substˡ* (maxᵘ-substˡ* t⇒ ⊢u) ⊢v)
-      (maxᵘ-substˡ* t⇒ (maxᵘⱼ ⊢u ⊢v)) $
-      case propt of λ where
-        zeroᵘᵣ → ⊩Level≡-⇒*
-          (redMany (maxᵘ-substˡ (maxᵘ-zeroˡ ⊢u) ⊢v))
-          (redMany (maxᵘ-zeroˡ (maxᵘⱼ ⊢u ⊢v)))
-          (reflLevel (⊩maxᵘ [u] [v]))
-        (sucᵘᵣ {k = t″} [t″]) →
-          let ⊢t″ = escapeLevel [t″]
-          in ⊩Level≡-⇒*
-            (maxᵘ-substˡ* (maxᵘ-substʳ* ⊢t″ u⇒) ⊢v)
-            (maxᵘ-substʳ* ⊢t″ (maxᵘ-substˡ* u⇒ ⊢v)) $
-            case propu of λ where
-              zeroᵘᵣ → ⊩Level≡-⇒*
-                (redMany (maxᵘ-substˡ (maxᵘ-zeroʳ ⊢t″) ⊢v))
-                (redMany (maxᵘ-substʳ ⊢t″ (maxᵘ-zeroˡ ⊢v)))
-                (reflLevel (⊩maxᵘ (⊩sucᵘ [t″]) [v]))
-              (sucᵘᵣ {k = u″} [u″]) →
-                let ⊢u″ = escapeLevel [u″]
-                in ⊩Level≡-⇒*
-                  (maxᵘ-substˡ (maxᵘ-sucᵘ ⊢t″ ⊢u″) ⊢v ⇨ maxᵘ-substʳ* (maxᵘⱼ ⊢t″ ⊢u″) v⇒)
-                  (maxᵘ-substʳ* ⊢t″ (maxᵘ-substʳ* ⊢u″ v⇒)) $
-                  case propv of λ where
-                    zeroᵘᵣ → ⊩Level≡-⇒*
-                      (redMany (maxᵘ-zeroʳ (maxᵘⱼ ⊢t″ ⊢u″)))
-                      (maxᵘ-substʳ ⊢t″ (maxᵘ-zeroʳ ⊢u″) ⇨ redMany (maxᵘ-sucᵘ ⊢t″ ⊢u″))
-                      (reflLevel (⊩sucᵘ (⊩maxᵘ [t″] [u″])))
-                    (sucᵘᵣ {k = v″} [v″]) →
-                      let ⊢v″ = escapeLevel [v″]
-                      in ⊩Level≡-⇒*
-                        (redMany (maxᵘ-sucᵘ (maxᵘⱼ ⊢t″ ⊢u″) ⊢v″))
-                        (maxᵘ-substʳ ⊢t″ (maxᵘ-sucᵘ ⊢u″ ⊢v″) ⇨ redMany (maxᵘ-sucᵘ ⊢t″ (maxᵘⱼ ⊢u″ ⊢v″)))
-                        (⊩sucᵘ≡sucᵘ (⊩maxᵘ-assoc [t″] [u″] [v″]))
-                    (neLvl nepropv) →
-                      Levelₜ₌ _ _
-                        (id (maxᵘⱼ (sucᵘⱼ (maxᵘⱼ ⊢t″ ⊢u″)) ⊢v′))
-                        (id (maxᵘⱼ (sucᵘⱼ ⊢t″) (maxᵘⱼ (sucᵘⱼ ⊢u″) ⊢v′)))
-                        (neLvl (maxᵘ-assoc³ᵣ (reflLevel [t″]) (reflLevel [u″]) (reflneLevel-prop nepropv)))
-              (neLvl nepropu) →
-                Levelₜ₌ _ _
-                  (id (maxᵘⱼ (maxᵘⱼ (sucᵘⱼ ⊢t″) ⊢u′) ⊢v))
-                  (id (maxᵘⱼ (sucᵘⱼ ⊢t″) (maxᵘⱼ ⊢u′ ⊢v)))
-                  (neLvl (maxᵘ-assoc²ᵣ (reflLevel [t″]) (reflneLevel-prop nepropu) (reflLevel [v])))
-        (neLvl nepropt) →
-          Levelₜ₌ _ _
-            (id (maxᵘⱼ (maxᵘⱼ ⊢t′ ⊢u) ⊢v))
-            (id (maxᵘⱼ ⊢t′ (maxᵘⱼ ⊢u ⊢v)))
-            (neLvl (maxᵘ-assoc¹ᵣ (reflneLevel-prop nepropt) (reflLevel [u]) (reflLevel [v])))
+    combineLevel (⊩maxᵘ (⊩maxᵘ [t] [u]) [v]) (⊩maxᵘ [t] (⊩maxᵘ [u] [v]))
+      -- (≅ₜ-maxᵘ-assoc (escapeLevel [t]) (escapeLevel [u]) (escapeLevel [v]))
+      {!   !}
+    -- let
+    --   ⊢u = escapeLevel [u]
+    --   ⊢v = escapeLevel [v]
+    --   ⊢Γ = wfTerm ⊢u
+    --   ⊢t′ = escape-Level-prop ⊢Γ propt
+    --   ⊢u′ = escape-Level-prop ⊢Γ propu
+    --   ⊢v′ = escape-Level-prop ⊢Γ propv
+    -- in ⊩Level≡-⇒*
+    --   (maxᵘ-substˡ* (maxᵘ-substˡ* t⇒ ⊢u) ⊢v)
+    --   (maxᵘ-substˡ* t⇒ (maxᵘⱼ ⊢u ⊢v)) $
+    --   case propt of λ where
+    --     zeroᵘᵣ → ⊩Level≡-⇒*
+    --       (redMany (maxᵘ-substˡ (maxᵘ-zeroˡ ⊢u) ⊢v))
+    --       (redMany (maxᵘ-zeroˡ (maxᵘⱼ ⊢u ⊢v)))
+    --       (reflLevel (⊩maxᵘ [u] [v]))
+    --     (sucᵘᵣ {k = t″} [t″]) →
+    --       let ⊢t″ = escapeLevel [t″]
+    --       in ⊩Level≡-⇒*
+    --         (maxᵘ-substˡ* (maxᵘ-substʳ* ⊢t″ u⇒) ⊢v)
+    --         (maxᵘ-substʳ* ⊢t″ (maxᵘ-substˡ* u⇒ ⊢v)) $
+    --         case propu of λ where
+    --           zeroᵘᵣ → ⊩Level≡-⇒*
+    --             (redMany (maxᵘ-substˡ (maxᵘ-zeroʳ ⊢t″) ⊢v))
+    --             (redMany (maxᵘ-substʳ ⊢t″ (maxᵘ-zeroˡ ⊢v)))
+    --             (reflLevel (⊩maxᵘ (⊩sucᵘ [t″]) [v]))
+    --           (sucᵘᵣ {k = u″} [u″]) →
+    --             let ⊢u″ = escapeLevel [u″]
+    --             in ⊩Level≡-⇒*
+    --               (maxᵘ-substˡ (maxᵘ-sucᵘ ⊢t″ ⊢u″) ⊢v ⇨ maxᵘ-substʳ* (maxᵘⱼ ⊢t″ ⊢u″) v⇒)
+    --               (maxᵘ-substʳ* ⊢t″ (maxᵘ-substʳ* ⊢u″ v⇒)) $
+    --               case propv of λ where
+    --                 zeroᵘᵣ → ⊩Level≡-⇒*
+    --                   (redMany (maxᵘ-zeroʳ (maxᵘⱼ ⊢t″ ⊢u″)))
+    --                   (maxᵘ-substʳ ⊢t″ (maxᵘ-zeroʳ ⊢u″) ⇨ redMany (maxᵘ-sucᵘ ⊢t″ ⊢u″))
+    --                   (reflLevel (⊩sucᵘ (⊩maxᵘ [t″] [u″])))
+    --                 (sucᵘᵣ {k = v″} [v″]) →
+    --                   let ⊢v″ = escapeLevel [v″]
+    --                   in ⊩Level≡-⇒*
+    --                     (redMany (maxᵘ-sucᵘ (maxᵘⱼ ⊢t″ ⊢u″) ⊢v″))
+    --                     (maxᵘ-substʳ ⊢t″ (maxᵘ-sucᵘ ⊢u″ ⊢v″) ⇨ redMany (maxᵘ-sucᵘ ⊢t″ (maxᵘⱼ ⊢u″ ⊢v″)))
+    --                     (⊩sucᵘ≡sucᵘ (⊩maxᵘ-assoc [t″] [u″] [v″]))
+    --                 (neLvl nepropv) →
+    --                   Levelₜ₌ _ _
+    --                     (id (maxᵘⱼ (sucᵘⱼ (maxᵘⱼ ⊢t″ ⊢u″)) ⊢v′))
+    --                     (id (maxᵘⱼ (sucᵘⱼ ⊢t″) (maxᵘⱼ (sucᵘⱼ ⊢u″) ⊢v′)))
+    --                     (neLvl (maxᵘ-assoc³ᵣ (reflLevel [t″]) (reflLevel [u″]) (reflneLevel-prop nepropv)))
+    --           (neLvl nepropu) →
+    --             Levelₜ₌ _ _
+    --               (id (maxᵘⱼ (maxᵘⱼ (sucᵘⱼ ⊢t″) ⊢u′) ⊢v))
+    --               (id (maxᵘⱼ (sucᵘⱼ ⊢t″) (maxᵘⱼ ⊢u′ ⊢v)))
+    --               (neLvl (maxᵘ-assoc²ᵣ (reflLevel [t″]) (reflneLevel-prop nepropu) (reflLevel [v])))
+    --     (neLvl nepropt) →
+    --       Levelₜ₌ _ _
+    --         (id (maxᵘⱼ (maxᵘⱼ ⊢t′ ⊢u) ⊢v))
+    --         (id (maxᵘⱼ ⊢t′ (maxᵘⱼ ⊢u ⊢v)))
+    --         (neLvl (maxᵘ-assoc¹ᵣ (reflneLevel-prop nepropt) (reflLevel [u]) (reflLevel [v])))
 
 opaque
-  private
-    maxᵘ-zeroʳ′ : ⊢ Γ → Level-prop Γ t → ∃ λ u → Γ ⊢ t maxᵘ zeroᵘ ⇒* u ∷ Level × [Level]-prop Γ u t
-    maxᵘ-zeroʳ′ ⊢Γ zeroᵘᵣ =
-      _ , redMany (maxᵘ-zeroˡ (zeroᵘⱼ ⊢Γ)) , zeroᵘᵣ
-    maxᵘ-zeroʳ′ ⊢Γ (sucᵘᵣ x) =
-      _ , redMany (maxᵘ-zeroʳ (escapeLevel x)) , sucᵘᵣ (reflLevel x)
-    maxᵘ-zeroʳ′ ⊢Γ (neLvl n) =
-        _
-      , id (maxᵘⱼ (escape-neLevel-prop n) (zeroᵘⱼ ⊢Γ))
-      , neLvl (maxᵘ-zeroʳˡᵣ (reflneLevel-prop n))
+  -- private
+  --   maxᵘ-zeroʳ′ : ⊢ Γ → Level-prop Γ t → ∃ λ u → Γ ⊢ t maxᵘ zeroᵘ ⇒* u ∷ Level × [Level]-prop Γ u t
+  --   maxᵘ-zeroʳ′ ⊢Γ zeroᵘᵣ =
+  --     _ , redMany (maxᵘ-zeroˡ (zeroᵘⱼ ⊢Γ)) , zeroᵘᵣ
+  --   maxᵘ-zeroʳ′ ⊢Γ (sucᵘᵣ x) =
+  --     _ , redMany (maxᵘ-zeroʳ (escapeLevel x)) , sucᵘᵣ (reflLevel x)
+  --   maxᵘ-zeroʳ′ ⊢Γ (neLvl n) =
+  --       _
+  --     , id (maxᵘⱼ (escape-neLevel-prop n) (zeroᵘⱼ ⊢Γ))
+  --     , neLvl (maxᵘ-zeroʳˡᵣ (reflneLevel-prop n))
 
   ⊩maxᵘ-zeroʳ :
     Γ ⊩Level t ∷Level →
     Γ ⊩Level t maxᵘ zeroᵘ ≡ t ∷Level
-  ⊩maxᵘ-zeroʳ {t} (Levelₜ k t⇒ prop) =
-    let ⊢Γ = wfEqTerm (subset*Term t⇒)
-        u , k⇒ , u≡k = maxᵘ-zeroʳ′ ⊢Γ prop
-    in Levelₜ₌ _ _
-      (t maxᵘ zeroᵘ ⇒*⟨ maxᵘ-substˡ* t⇒ (zeroᵘⱼ ⊢Γ) ⟩
-       k maxᵘ zeroᵘ ⇒*⟨ k⇒ ⟩∎
-       u ∎)
-      t⇒
-      u≡k
+  ⊩maxᵘ-zeroʳ {t} [t] =
+    -- let ⊢Γ = wfEqTerm (subset*Term t⇒)
+    --     u , k⇒ , u≡k = maxᵘ-zeroʳ′ ⊢Γ prop
+    -- in Levelₜ₌ _ _
+    --   (t maxᵘ zeroᵘ ⇒*⟨ maxᵘ-substˡ* t⇒ (zeroᵘⱼ ⊢Γ) ⟩
+    --    k maxᵘ zeroᵘ ⇒*⟨ k⇒ ⟩∎
+    --    u ∎)
+    --   t⇒
+    --   u≡k
+    combineLevel (⊩maxᵘ [t] (⊩zeroᵘ (wfTerm (escapeLevel [t])))) [t]
+      -- (≅ₜ-maxᵘ-zeroʳ (escapeLevel [t]))
+      {!   !}
 
 opaque
 
@@ -544,49 +532,50 @@ opaque
     Γ ⊩Level u ∷Level →
     Γ ⊩Level t maxᵘ u ≡ u maxᵘ t ∷Level
   ⊩maxᵘ-comm {t} {u} [t]@(Levelₜ t′ t⇒ propt) [u]@(Levelₜ u′ u⇒ propu) =
-    let
-      ⊢t = escapeLevel [t]
-      ⊢u = escapeLevel [u]
-      ⊢Γ = wfTerm ⊢u
-      ⊢t′ = escape-Level-prop ⊢Γ propt
-      ⊢u′ = escape-Level-prop ⊢Γ propu
-    in ⊩Level≡-⇒* (maxᵘ-substˡ* t⇒ ⊢u) (id (maxᵘⱼ ⊢u ⊢t)) $ case propt of λ where
-      zeroᵘᵣ → ⊩Level≡-⇒*
-        (redMany (maxᵘ-zeroˡ ⊢u))
-        (id (maxᵘⱼ ⊢u ⊢t))
-        (transEqTermLevel
-          (symLevel (⊩maxᵘ-zeroʳ [u]))
-          (⊩maxᵘ≡maxᵘ (reflLevel [u]) (symLevel (redLevel t⇒ [t]))))
-      (sucᵘᵣ {k = t′} [t′]) →
-        let ⊢t′ = escapeLevel [t′]
-        in
-          ⊩Level≡-⇒* (maxᵘ-substʳ* ⊢t′ u⇒) (maxᵘ-substˡ* u⇒ ⊢t) $
-          case propu of λ where
-            zeroᵘᵣ → ⊩Level≡-⇒*
-              (redMany (maxᵘ-zeroʳ ⊢t′))
-              (maxᵘ-zeroˡ ⊢t ⇨ t⇒)
-              (reflLevel (⊩sucᵘ [t′]))
-            (sucᵘᵣ {k = u′} [u′]) →
-              let ⊢u′ = escapeLevel [u′]
-              in ⊩Level≡-⇒*
-                (redMany (maxᵘ-sucᵘ ⊢t′ ⊢u′))
-                (maxᵘ-substʳ* ⊢u′ t⇒ ⇨∷* redMany (maxᵘ-sucᵘ ⊢u′ ⊢t′))
-                (⊩sucᵘ≡sucᵘ (⊩maxᵘ-comm [t′] [u′]))
-            (neLvl [u′]) → Levelₜ₌ _ _
-              (id (maxᵘⱼ (sucᵘⱼ ⊢t′) ⊢u′))
-              (id (maxᵘⱼ ⊢u′ ⊢t))
-              (neLvl (maxᵘ-comm²ᵣ (reflLevel [t′]) (symLevel (redLevel t⇒ [t])) (reflneLevel-prop [u′])))
-      (neLvl [t′]) → ⊩Level≡-⇒* (id (maxᵘⱼ ⊢t′ ⊢u)) (maxᵘ-substˡ* u⇒ ⊢t) $
-        case propu of λ where
-          zeroᵘᵣ → ⊩Level≡-⇒* (id (maxᵘⱼ ⊢t′ ⊢u)) (maxᵘ-zeroˡ ⊢t ⇨ t⇒)
-            (transEqTermLevel (⊩maxᵘ≡maxᵘ (reflLevel (⊩neLvl [t′])) (redLevel u⇒ [u])) (⊩maxᵘ-zeroʳ (⊩neLvl [t′])))
-          (sucᵘᵣ {k = u′} [u′]) →
-            let ⊢u′ = escapeLevel [u′]
-            in Levelₜ₌ _ _ (id (maxᵘⱼ ⊢t′ ⊢u)) (maxᵘ-substʳ* ⊢u′ t⇒)
-              (sym (neLvl (maxᵘ-comm²ᵣ (reflLevel [u′]) (symLevel (redLevel u⇒ [u])) (reflneLevel-prop [t′]))))
-          (neLvl [u′]) →
-            Levelₜ₌ _ _ (id (maxᵘⱼ ⊢t′ ⊢u)) (id (maxᵘⱼ ⊢u′ ⊢t))
-              (neLvl (maxᵘ-comm¹ᵣ (reflneLevel-prop [t′]) (symLevel (redLevel t⇒ [t])) (reflneLevel-prop [u′]) (redLevel u⇒ [u])))
+    combineLevel (⊩maxᵘ [t] [u]) (⊩maxᵘ [u] [t]) {!   !}
+    -- let
+    --   ⊢t = escapeLevel [t]
+    --   ⊢u = escapeLevel [u]
+    --   ⊢Γ = wfTerm ⊢u
+    --   ⊢t′ = escape-Level-prop ⊢Γ propt
+    --   ⊢u′ = escape-Level-prop ⊢Γ propu
+    -- in ⊩Level≡-⇒* (maxᵘ-substˡ* t⇒ ⊢u) (id (maxᵘⱼ ⊢u ⊢t)) $ case propt of λ where
+    --   zeroᵘᵣ → ⊩Level≡-⇒*
+    --     (redMany (maxᵘ-zeroˡ ⊢u))
+    --     (id (maxᵘⱼ ⊢u ⊢t))
+    --     (transEqTermLevel
+    --       (symLevel (⊩maxᵘ-zeroʳ [u]))
+    --       (⊩maxᵘ≡maxᵘ (reflLevel [u]) (symLevel (redLevel t⇒ [t]))))
+    --   (sucᵘᵣ {k = t′} [t′]) →
+    --     let ⊢t′ = escapeLevel [t′]
+    --     in
+    --       ⊩Level≡-⇒* (maxᵘ-substʳ* ⊢t′ u⇒) (maxᵘ-substˡ* u⇒ ⊢t) $
+    --       case propu of λ where
+    --         zeroᵘᵣ → ⊩Level≡-⇒*
+    --           (redMany (maxᵘ-zeroʳ ⊢t′))
+    --           (maxᵘ-zeroˡ ⊢t ⇨ t⇒)
+    --           (reflLevel (⊩sucᵘ [t′]))
+    --         (sucᵘᵣ {k = u′} [u′]) →
+    --           let ⊢u′ = escapeLevel [u′]
+    --           in ⊩Level≡-⇒*
+    --             (redMany (maxᵘ-sucᵘ ⊢t′ ⊢u′))
+    --             (maxᵘ-substʳ* ⊢u′ t⇒ ⇨∷* redMany (maxᵘ-sucᵘ ⊢u′ ⊢t′))
+    --             (⊩sucᵘ≡sucᵘ (⊩maxᵘ-comm [t′] [u′]))
+    --         (neLvl [u′]) → Levelₜ₌ _ _
+    --           (id (maxᵘⱼ (sucᵘⱼ ⊢t′) ⊢u′))
+    --           (id (maxᵘⱼ ⊢u′ ⊢t))
+    --           (neLvl (maxᵘ-comm²ᵣ (reflLevel [t′]) (symLevel (redLevel t⇒ [t])) (reflneLevel-prop [u′])))
+    --   (neLvl [t′]) → ⊩Level≡-⇒* (id (maxᵘⱼ ⊢t′ ⊢u)) (maxᵘ-substˡ* u⇒ ⊢t) $
+    --     case propu of λ where
+    --       zeroᵘᵣ → ⊩Level≡-⇒* (id (maxᵘⱼ ⊢t′ ⊢u)) (maxᵘ-zeroˡ ⊢t ⇨ t⇒)
+    --         (transEqTermLevel (⊩maxᵘ≡maxᵘ (reflLevel (⊩neLvl [t′])) (redLevel u⇒ [u])) (⊩maxᵘ-zeroʳ (⊩neLvl [t′])))
+    --       (sucᵘᵣ {k = u′} [u′]) →
+    --         let ⊢u′ = escapeLevel [u′]
+    --         in Levelₜ₌ _ _ (id (maxᵘⱼ ⊢t′ ⊢u)) (maxᵘ-substʳ* ⊢u′ t⇒)
+    --           (sym (neLvl (maxᵘ-comm²ᵣ (reflLevel [u′]) (symLevel (redLevel u⇒ [u])) (reflneLevel-prop [t′]))))
+    --       (neLvl [u′]) →
+    --         Levelₜ₌ _ _ (id (maxᵘⱼ ⊢t′ ⊢u)) (id (maxᵘⱼ ⊢u′ ⊢t))
+    --           (neLvl (maxᵘ-comm¹ᵣ (reflneLevel-prop [t′]) (symLevel (redLevel t⇒ [t])) (reflneLevel-prop [u′]) (redLevel u⇒ [u])))
 
 opaque
 
@@ -596,20 +585,21 @@ opaque
     Γ ⊩Level t ∷Level →
     Γ ⊩Level t maxᵘ t ≡ t ∷Level
   ⊩maxᵘ-idem {t} [t]@(Levelₜ t′ t⇒ propt) =
-    let
-      ⊢t = escapeLevel [t]
-      ⊢Γ = wfTerm ⊢t
-      ⊢t′ = escape-Level-prop ⊢Γ propt
-    in ⊩Level≡-⇒* (maxᵘ-substˡ* t⇒ ⊢t) t⇒ $
-      case propt of λ where
-        zeroᵘᵣ → redLevel (maxᵘ-zeroˡ ⊢t ⇨ t⇒) (⊩maxᵘ (⊩zeroᵘ ⊢Γ) [t])
-        (sucᵘᵣ [t′]) →
-          let ⊢t′ = escapeLevel [t′]
-          in ⊩Level≡-⇒*
-            (maxᵘ-substʳ* ⊢t′ t⇒ ⇨∷* redMany (maxᵘ-sucᵘ ⊢t′ ⊢t′))
-            (id (sucᵘⱼ ⊢t′))
-            (⊩sucᵘ≡sucᵘ (⊩maxᵘ-idem [t′]))
-        (neLvl [t′]) → Levelₜ₌ _ _
-          (id (maxᵘⱼ ⊢t′ ⊢t))
-          (id ⊢t′)
-          (neLvl (maxᵘ-idem (reflneLevel-prop [t′]) (symLevel (redLevel t⇒ [t]))))
+    combineLevel (⊩maxᵘ [t] [t]) [t] {!   !}
+    -- let
+    --   ⊢t = escapeLevel [t]
+    --   ⊢Γ = wfTerm ⊢t
+    --   ⊢t′ = escape-Level-prop ⊢Γ propt
+    -- in ⊩Level≡-⇒* (maxᵘ-substˡ* t⇒ ⊢t) t⇒ $
+    --   case propt of λ where
+    --     zeroᵘᵣ → redLevel (maxᵘ-zeroˡ ⊢t ⇨ t⇒) (⊩maxᵘ (⊩zeroᵘ ⊢Γ) [t])
+    --     (sucᵘᵣ [t′]) →
+    --       let ⊢t′ = escapeLevel [t′]
+    --       in ⊩Level≡-⇒*
+    --         (maxᵘ-substʳ* ⊢t′ t⇒ ⇨∷* redMany (maxᵘ-sucᵘ ⊢t′ ⊢t′))
+    --         (id (sucᵘⱼ ⊢t′))
+    --         (⊩sucᵘ≡sucᵘ (⊩maxᵘ-idem [t′]))
+    --     (neLvl [t′]) → Levelₜ₌ _ _
+    --       (id (maxᵘⱼ ⊢t′ ⊢t))
+    --       (id ⊢t′)
+    --       (neLvl (maxᵘ-idem (reflneLevel-prop [t′]) (symLevel (redLevel t⇒ [t]))))
