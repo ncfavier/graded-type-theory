@@ -349,6 +349,38 @@ mutual
   transConv↓Level ([↓]ˡ tᵛ uᵛ t≡ u≡ t≡u) ([↓]ˡ uᵛ′ vᵛ u≡′ v≡ u≡v) =
     [↓]ˡ tᵛ vᵛ t≡ v≡ (trans-≡ᵛ t≡u (trans-≡≡ᵛ-≡ᵛ (irrelevance-↓ᵛ u≡ u≡′) u≡v))
 
+  test↑ :
+    ∀ {l k} →
+    Γ ⊢ t [conv↑] u ∷ U l →
+    Γ ⊢ u [conv↑] v ∷ U k →
+    Γ ⊢ t [conv↑] v ∷ U l
+  test↑ ([↑]ₜ B t′ u′ (D , w) d d′ t<>u) ([↑]ₜ B₁ t′₁ u′₁ (D₁ , w₁) d₁ d′₁ t<>u₁) =
+    case whnfRed* D Uₙ of λ {
+      PE.refl →
+    case whnfRed* D₁ Uₙ of λ {
+      PE.refl →
+    case whrDet*Term d′ d₁ of λ {
+      PE.refl →
+    [↑]ₜ _ _ _ (id {!   !} , Uₙ) d {! d′₁  !} (test t<>u t<>u₁) }}}
+
+  test :
+    ∀ {l k} →
+    Γ ⊢ t [conv↓] u ∷ U l →
+    Γ ⊢ u [conv↓] v ∷ U k →
+    Γ ⊢ t [conv↓] v ∷ U l
+  test (ne-ins x x₁ () x₃) y
+  test (U-ins x) y = U-ins (trans~∷ x (inv-[conv↓]-ne∷U (ne~∷ x .proj₂) y) .proj₁)
+  test (Level-refl x) y = case inv-[conv↓]-Level∷U y of λ { (PE.refl , _) → Level-refl x }
+  test (U-cong x x₁) y = {!   !}
+  test (ℕ-refl x) y = {!   !}
+  test (Empty-refl x) y = {!   !}
+  test (Unit-cong x x₁ x₂) y = {!   !}
+  test (ΠΣ-cong x x₁ x₂ x₃ x₄ x₅) (ne-ins x₆ x₇ x₈ x₉) = {!   !}
+  test (ΠΣ-cong x x₁ x₂ x₃ x₄ x₅) (U-ins x₆) = {!   !}
+  test (ΠΣ-cong x x₁ x₂ x₃ x₄ x₅) (ΠΣ-cong x₆ x₇ x₈ x₉ x₁₀ x₁₁) =
+    ΠΣ-cong x x₁ {! test↑  !} {!   !} {!   !} {!   !}
+  test (Id-cong x x₁ x₂) y = {!   !}
+
   -- Transitivity for _⊢_[conv↓]_∷_.
   transConv↓Term :
     Γ ⊢ t [conv↓] u ∷ A →
@@ -360,9 +392,33 @@ mutual
         _ , _ , ⊢v = syntacticEqTerm (soundnessConv↓Term u≡v)
     in
     ne-ins ⊢t ⊢v A-ne (trans~↓ t~u u~v .proj₁)
-  transConv↓Term (univ ⊢A ⊢B A≡B) B≡C =
-    let _ , _ , ⊢C = syntacticEqTerm (soundnessConv↓Term B≡C) in
-    univ ⊢A ⊢C (transConv↓ A≡B (inv-[conv↓]∷-U B≡C))
+  transConv↓Term (U-ins x) u≡v = U-ins (trans~∷ x (inv-[conv↓]-ne∷U (ne~∷ x .proj₂) u≡v) .proj₁)
+  transConv↓Term (Level-refl x) u≡v =
+    case inv-[conv↓]-Level∷U u≡v of λ {
+      (PE.refl , x) → Level-refl x }
+  transConv↓Term (U-cong x y) u≡v =
+    case inv-[conv↓]-U∷U u≡v of λ {
+      (_ , PE.refl , z , _) →
+    U-cong (transConvTerm x z) y }
+  transConv↓Term (ℕ-refl x) u≡v =
+    case inv-[conv↓]-ℕ∷U u≡v of λ {
+      (PE.refl , x) → ℕ-refl x }
+  transConv↓Term (Empty-refl x) u≡v =
+    case inv-[conv↓]-Empty∷U u≡v of λ {
+      (PE.refl , x) → Empty-refl x }
+  transConv↓Term (Unit-cong x x₁ y) u≡v =
+    case inv-[conv↓]-Unit∷U u≡v of λ {
+      (_ , PE.refl , z , _) →
+    Unit-cong (transConvTerm x z) x₁ y }
+  transConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (ne-ins x₃ x₄ x₅ x₆) = {!   !}
+  transConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (U-ins x₃) = {!   !}
+  transConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (ΠΣ-cong x₃ x₄ x₅ x₆ x₇ x₈) =
+    ΠΣ-cong x₃ x₄ {!   !} {!   !} {!   !} {!   !}
+  -- transConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) u≡v =
+  --   case inv-[conv↓]-ΠΣ∷U u≡v of λ {
+  --     (_ , _ , _ , _ , PE.refl , z , w) →
+  --   ΠΣ-cong ⊢l₁ ⊢l₂ (transConvTerm x {! z  !}) (transConvTerm x₁ {!   !}) x₂ y }
+  transConv↓Term (Id-cong x x₁ x₂) u≡v = {!   !}
   transConv↓Term (η-eq ⊢t ⊢u t-fun u-fun t0≡u0) u≡v =
     let _ , v-fun , u0≡v0 = inv-[conv↓]∷-Π u≡v
         _ , _ , ⊢v        = syntacticEqTerm (soundnessConv↓Term u≡v)

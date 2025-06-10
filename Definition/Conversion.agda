@@ -348,11 +348,40 @@ mutual
               → Γ ⊢ t₁ ~ t₂ ↓ A′
               → Γ ⊢ t₁ [conv↓] t₂ ∷ A
 
-    univ      : ∀ {A B}
-              → Γ ⊢ A ∷ U l
-              → Γ ⊢ B ∷ U l
-              → Γ ⊢ A [conv↓] B
-              → Γ ⊢ A [conv↓] B ∷ U l
+    U-ins      : Γ ⊢ A₁ ~ A₂ ∷ U l
+               → Γ ⊢ A₁ [conv↓] A₂ ∷ U l
+
+    Level-refl : Γ ⊢ l ≡ zeroᵘ ∷ Level
+               → Γ ⊢ Level [conv↓] Level ∷ U l
+
+    U-cong     : Γ ⊢ l₁ [conv↑] l₂ ∷ Level
+               → Γ ⊢ l ≡ sucᵘ l₁ ∷ Level
+               → Γ ⊢ U l₁ [conv↓] U l₂ ∷ U l
+
+    ℕ-refl     : Γ ⊢ l ≡ zeroᵘ ∷ Level
+               → Γ ⊢ ℕ [conv↓] ℕ ∷ U l
+
+    Empty-refl : Γ ⊢ l ≡ zeroᵘ ∷ Level
+               → Γ ⊢ Empty [conv↓] Empty ∷ U l
+
+    Unit-cong  : Γ ⊢ l₁ [conv↑] l₂ ∷ Level
+               → Unit-allowed s
+               → Γ ⊢ l ≡ l₁ ∷ Level
+               → Γ ⊢ Unit s l₁ [conv↓] Unit s l₂ ∷ U l
+
+    ΠΣ-cong    : ∀ {F G H E}
+               → Γ ⊢ l₁ ∷ Level
+               → Γ ⊢ l₂ ∷ Level
+               → Γ ⊢ F [conv↑] H ∷ U l₁
+               → Γ ∙ F ⊢ G [conv↑] E ∷ U (wk1 l₂)
+               → ΠΣ-allowed b p q
+               → Γ ⊢ l ≡ l₁ maxᵘ l₂ ∷ Level
+               → Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ F ▹ G [conv↓] ΠΣ⟨ b ⟩ p , q ▷ H ▹ E ∷ U l
+
+    Id-cong    : Γ ⊢ A₁ [conv↑] A₂ ∷ U l
+               → Γ ⊢ t₁ [conv↑] t₂ ∷ A₁
+               → Γ ⊢ u₁ [conv↑] u₂ ∷ A₁
+               → Γ ⊢ Id A₁ t₁ u₁ [conv↓] Id A₂ t₂ u₂ ∷ U l
 
     zero-refl : ⊢ Γ → Γ ⊢ zero [conv↓] zero ∷ ℕ
 

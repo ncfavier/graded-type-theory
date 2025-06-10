@@ -273,8 +273,22 @@ mutual
     Σʷ-ins (stabilityTerm Γ≡Δ x) (stabilityTerm Γ≡Δ x₁) (stability~↓ Γ≡Δ x₂)
   stabilityConv↓Term Γ≡Δ (ne-ins t u neN x) =
     ne-ins (stabilityTerm Γ≡Δ t) (stabilityTerm Γ≡Δ u) neN (stability~↓ Γ≡Δ x)
-  stabilityConv↓Term Γ≡Δ (univ x x₁ x₂) =
-    univ (stabilityTerm Γ≡Δ x) (stabilityTerm Γ≡Δ x₁) (stabilityConv↓ Γ≡Δ x₂)
+  stabilityConv↓Term Γ≡Δ (U-ins x) = U-ins (stability~∷ Γ≡Δ x)
+  stabilityConv↓Term Γ≡Δ (Level-refl x) =
+    Level-refl (stabilityEqTerm Γ≡Δ x)
+  stabilityConv↓Term Γ≡Δ (U-cong x y) = U-cong (stabilityConv↑Term Γ≡Δ x) (stabilityEqTerm Γ≡Δ y)
+  stabilityConv↓Term Γ≡Δ (ℕ-refl x) =
+    ℕ-refl (stabilityEqTerm Γ≡Δ x)
+  stabilityConv↓Term Γ≡Δ (Empty-refl x) =
+    Empty-refl (stabilityEqTerm Γ≡Δ x)
+  stabilityConv↓Term Γ≡Δ (Unit-cong x ok y) = Unit-cong (stabilityConv↑Term Γ≡Δ x) ok (stabilityEqTerm Γ≡Δ y)
+  stabilityConv↓Term Γ≡Δ (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) =
+    ΠΣ-cong (stabilityTerm Γ≡Δ ⊢l₁) (stabilityTerm Γ≡Δ ⊢l₂)
+      (stabilityConv↑Term Γ≡Δ x)
+      (stabilityConv↑Term (Γ≡Δ ∙ refl (syntacticEq (univ (soundnessConv↑Term x)) .proj₁)) x₁)
+      x₂
+      (stabilityEqTerm Γ≡Δ y)
+  stabilityConv↓Term Γ≡Δ (Id-cong x x₁ x₂) = Id-cong (stabilityConv↑Term Γ≡Δ x) (stabilityConv↑Term Γ≡Δ x₁) (stabilityConv↑Term Γ≡Δ x₂)
   stabilityConv↓Term Γ≡Δ (zero-refl x) =
     let _ , ⊢Δ , _ = contextConvSubst Γ≡Δ
     in  zero-refl ⊢Δ

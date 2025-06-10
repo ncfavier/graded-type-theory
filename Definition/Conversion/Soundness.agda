@@ -319,8 +319,16 @@ mutual
         _ , t∷M , _ = syntacticEqTerm (soundness~↓ x₁)
         M≡A = neTypeEq neA t∷M t
     in  conv (soundness~↓ x₁) M≡A
-  soundnessConv↓Term (univ ⊢A ⊢B A≡B) =
-    soundnessConv↓-U ⊢A ⊢B A≡B .proj₁
+  soundnessConv↓Term (U-ins x) = soundness~∷ x
+  soundnessConv↓Term (Level-refl x) = conv (refl (Levelⱼ (wfEqTerm x))) (sym (U-cong x))
+  soundnessConv↓Term (U-cong x y) = conv (U-cong (soundnessConv↑Term x)) (sym (U-cong y))
+  soundnessConv↓Term (ℕ-refl x) = refl (conv (ℕⱼ (wfEqTerm x)) (sym (U-cong x)))
+  soundnessConv↓Term (Empty-refl x) = refl (conv (Emptyⱼ (wfEqTerm x)) (sym (U-cong x)))
+  soundnessConv↓Term (Unit-cong x x₁ y) = conv (Unit-cong (soundnessConv↑Term x) x₁) (sym (U-cong y))
+  soundnessConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) = conv
+    (ΠΣ-cong ⊢l₁ ⊢l₂ (soundnessConv↑Term x) (soundnessConv↑Term x₁) x₂)
+    (sym (U-cong y))
+  soundnessConv↓Term (Id-cong x x₁ x₂) = Id-cong (soundnessConv↑Term x) (soundnessConv↑Term x₁) (soundnessConv↑Term x₂)
   soundnessConv↓Term (zero-refl ⊢Γ) = refl (zeroⱼ ⊢Γ)
   soundnessConv↓Term (starʷ-cong l≡l₁ l₁≡l₂ ok _) =
     conv (star-cong l₁≡l₂ ok) (sym (Unit-cong l≡l₁ ok))
@@ -346,150 +354,3 @@ mutual
        Γ ⊢ Id A′ t′ u′ ≡ Id A t u                □) }
   soundnessConv↓Term (rfl-refl t≡u) =
     refl (rflⱼ′ t≡u)
-
-  {-
-  private
-    open import Definition.LogicalRelation R
-    open import Definition.LogicalRelation.Properties R
-
-    strengthenRed : ∀ {A B t u} → Γ ∙ A ⊢ wk1 t ⇒ wk1 u ∷ wk1 B → Γ ⊢ t ⇒ u ∷ B
-    strengthenRed x = {! x !}
-
-    strengthen⊩LevelEq : ∀ {A t u} → Γ ∙ A ⊩Level wk1 t ≡ wk1 u ∷Level → Γ ⊩Level t ≡ u ∷Level
-    strengthen⊩LevelEq (Levelₜ₌ k k′ d d′ prop) = Levelₜ₌ _ _ {!   !} {!   !} {!   !}
-
-    strengthenLevelEq : ∀ {A t u} → Γ ∙ A ⊢ wk1 t ≡ wk1 u ∷ Level → Γ ⊢ t ≡ u ∷ Level
-    strengthenLevelEq wk1t≡wk1u = {!   !}
-  -}
-
-  -- A variant of soundnessConv↓.
-
-  soundnessConv↓-U :
-    Γ ⊢ A ∷ U l₁ →
-    Γ ⊢ B ∷ U l₂ →
-    Γ ⊢ A [conv↓] B →
-    Γ ⊢ A ≡ B ∷ U l₁ × Γ ⊢ l₁ ≡ l₂ ∷ Level
-  soundnessConv↓-U {l₁} {l₂} ⊢A ⊢B (ne {l} A~B) =
-    let A≡B             = soundness~↓ A~B
-        _ , A-ne , B-ne = ne~↓ A~B
-        _ , ⊢A′ , ⊢B′   = syntacticEqTerm A≡B
-        U≡U₁            = neTypeEq A-ne ⊢A′ ⊢A
-        U≡U₂            = neTypeEq B-ne ⊢B′ ⊢B
-    in
-      conv A≡B U≡U₁
-    , U-injectivity
-        (U l₁  ≡˘⟨ U≡U₁ ⟩⊢
-         U l   ≡⟨ U≡U₂ ⟩⊢∎
-         U l₂  ∎)
-    where
-    open TyR
-  soundnessConv↓-U {l₁} {l₂} ⊢Level₁ ⊢Level₂ (Level-refl _) =
-      refl ⊢Level₁
-    , U-injectivity
-        (U l₁     ≡⟨ inversion-Level ⊢Level₁ ⟩⊢
-         U zeroᵘ  ≡˘⟨ inversion-Level ⊢Level₂ ⟩⊢∎
-         U l₂     ∎)
-    where
-    open TyR
-  soundnessConv↓-U {l₁} {l₂}⊢U₁ ⊢U₂ (U-cong {l₁ = l₃} {l₂ = l₄} l₃≡l₄) =
-    let l₃≡l₄ = soundnessConv↑Term l₃≡l₄
-        U≡U₁ = inversion-U ⊢U₁
-        U≡U₂ = inversion-U ⊢U₂
-    in
-      conv (U-cong l₃≡l₄) (sym U≡U₁)
-    , U-injectivity
-        (U l₁        ≡⟨ inversion-U ⊢U₁ ⟩⊢
-         U (sucᵘ l₃) ≡⟨ U-cong (sucᵘ-cong l₃≡l₄) ⟩⊢
-         U (sucᵘ l₄) ≡˘⟨ inversion-U ⊢U₂ ⟩⊢∎
-         U l₂        ∎)
-    where
-    open TyR
-  soundnessConv↓-U {l₁} {l₂} ⊢ΠΣA₁A₂ ⊢ΠΣB₁B₂ (ΠΣ-cong A₁≡B₁ A₂≡B₂ ok) =
-    let l₃ , l₄ , ⊢l₃ , ⊢l₄ , ⊢A₁ , ⊢A₂ , U≡U₁ , _ = inversion-ΠΣ-U ⊢ΠΣA₁A₂
-        l₅ , l₆ , ⊢l₅ , ⊢l₆ , ⊢B₁ , ⊢B₂ , U≡U₂ , _ = inversion-ΠΣ-U ⊢ΠΣB₁B₂
-        A₁≡B₁ , l₃≡l₅            = soundnessConv↑-U ⊢A₁ ⊢B₁ A₁≡B₁
-        A₂≡B₂ , l₄≡l₆            =
-          soundnessConv↑-U ⊢A₂
-            (stabilityTerm (refl-∙ (sym (univ A₁≡B₁))) ⊢B₂) A₂≡B₂
-    in
-      conv (ΠΣ-cong ⊢l₃ ⊢l₄ A₁≡B₁ A₂≡B₂ ok) (sym U≡U₁)
-    , U-injectivity
-        (U l₁            ≡⟨ U≡U₁ ⟩⊢
-         U (l₃ maxᵘ l₄)  ≡⟨ U-cong (maxᵘ-cong l₃≡l₅ {! l₄≡l₆  !}) ⟩⊢
-         U (l₅ maxᵘ l₆)  ≡˘⟨ U≡U₂ ⟩⊢∎
-         U l₂            ∎)
-    where
-    open TyR
-  soundnessConv↓-U {l₁} {l₂} ⊢Empty₁ ⊢Empty₂ (Empty-refl _) =
-      refl ⊢Empty₁
-    , U-injectivity
-        (U l₁    ≡⟨ inversion-Empty ⊢Empty₁ ⟩⊢
-         U zeroᵘ ≡˘⟨ inversion-Empty ⊢Empty₂ ⟩⊢∎
-         U l₂    ∎)
-    where
-    open TyR
-  soundnessConv↓-U {l₁} {l₂} ⊢Unit₁ ⊢Unit₂ (Unit-cong {l₁ = l₃} {l₂ = l₄} l₃≡l₄ ok) =
-    let l₃≡l₄ = soundnessConv↑Term l₃≡l₄
-        ⊢l₃ , U≡U₁ , _ = inversion-Unit-U ⊢Unit₁
-        ⊢l₄ , U≡U₂ , _ = inversion-Unit-U ⊢Unit₂
-    in
-      conv (Unit-cong l₃≡l₄ ok) (sym U≡U₁)
-    , U-injectivity
-        (U l₁  ≡⟨ U≡U₁ ⟩⊢
-         U l₃  ≡⟨ U-cong l₃≡l₄ ⟩⊢
-         U l₄  ≡˘⟨ U≡U₂ ⟩⊢∎
-         U l₂  ∎)
-    where
-    open TyR
-  soundnessConv↓-U {l₁} {l₂} ⊢ℕ₁ ⊢ℕ₂ (ℕ-refl _) =
-      refl ⊢ℕ₁
-    , U-injectivity
-        (U l₁     ≡⟨ inversion-ℕ ⊢ℕ₁ ⟩⊢
-         U zeroᵘ  ≡˘⟨ inversion-ℕ ⊢ℕ₂ ⟩⊢∎
-         U l₂     ∎)
-    where
-    open TyR
-  soundnessConv↓-U
-    {l₁} {l₂} ⊢IdAt₁t₂ ⊢IdBu₁u₂ (Id-cong A≡B t₁≡u₁ t₂≡u₂) =
-    let l₃ , ⊢A , ⊢t₁ , ⊢t₂ , U≡U₁ = inversion-Id-U ⊢IdAt₁t₂
-        l₄ , ⊢B , ⊢u₁ , ⊢u₂ , U≡U₂ = inversion-Id-U ⊢IdBu₁u₂
-        A≡B , l₃≡l₄          = soundnessConv↑-U ⊢A ⊢B A≡B
-    in
-      conv
-        (Id-cong A≡B (soundnessConv↑Term t₁≡u₁)
-           (soundnessConv↑Term t₂≡u₂))
-        (sym U≡U₁)
-    , U-injectivity
-        (U l₁  ≡⟨ U≡U₁ ⟩⊢
-         U l₃  ≡⟨ U-cong l₃≡l₄ ⟩⊢
-         U l₄  ≡˘⟨ U≡U₂ ⟩⊢∎
-         U l₂  ∎)
-    where
-    open TyR
-
-  -- A variant of soundnessConv↑.
-
-  soundnessConv↑-U :
-    Γ ⊢ A ∷ U l₁ → Γ ⊢ B ∷ U l₂ → Γ ⊢ A [conv↑] B →
-    Γ ⊢ A ≡ B ∷ U l₁ × Γ ⊢ l₁ ≡ l₂ ∷ Level
-  soundnessConv↑-U {A} {l₁} {B} {l₂} ⊢A ⊢B ([↑] A′ B′ A↘A′ B↘B′ A′≡B′) =
-    let A″ , A″-type , A⇒*A″ = red-U ⊢A
-        B″ , B″-type , B⇒*B″ = red-U ⊢B
-        _ , _ , ⊢A″ = wf-⊢≡∷ (subset*Term A⇒*A″)
-        _ , _ , ⊢B″ = wf-⊢≡∷ (subset*Term B⇒*B″)
-        A′≡A″ = whrDet* A↘A′ (univ* A⇒*A″ , typeWhnf A″-type)
-        B′≡B″ = whrDet* B↘B′ (univ* B⇒*B″ , typeWhnf B″-type)
-        A′≡B′ , l₁≡l₂ =
-          soundnessConv↓-U (PE.subst (_ ⊢_∷ _) (PE.sym A′≡A″) ⊢A″)
-            (PE.subst (_ ⊢_∷ _) (PE.sym B′≡B″) ⊢B″) A′≡B′
-    in
-      (A          ⇒*⟨ A⇒*A″ ⟩⊢
-       A″         ≡˘⟨ A′≡A″ ⟩⊢≡
-       A′ ∷ U l₁  ≡⟨ A′≡B′ ⟩⊢∷
-                   ⟨ U-cong l₁≡l₂ ⟩≡
-       B′ ∷ U l₂  ≡⟨ B′≡B″ ⟩⊢∷≡
-       B″         ⇐*⟨ B⇒*B″ ⟩⊢∎
-       B          ∎)
-    , l₁≡l₂
-    where
-    open TmR

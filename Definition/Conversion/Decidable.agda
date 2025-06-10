@@ -41,6 +41,7 @@ open import Definition.Conversion.Transitivity R
 open import Definition.Conversion.Stability R
 open import Definition.Conversion.Conversion R
 open import Definition.Conversion.Lift R
+open import Definition.Conversion.Universe R
 open import Definition.Typed.Consequences.Injectivity R
 open import Definition.Typed.Consequences.Reduction R
 open import Definition.Typed.Consequences.Equality R
@@ -650,6 +651,24 @@ private opaque
       , PE.subst (_⊢_[conv↑]_ _ _) ≡A₂ A₁≡
       )
 
+  decConv↓-ΠΣ∷U :
+    Γ ⊢ l₁ ∷ Level →
+    Γ ⊢ l₂ ∷ Level →
+    Γ ⊢ l ≡ l₁ maxᵘ l₂ ∷ Level →
+    ΠΣ-allowed b₁ p₁ q₁ →
+    Dec
+      (b₁ PE.≡ b₂ × p₁ PE.≡ p₂ × q₁ PE.≡ q₂ ×
+       Γ ⊢ A₁ [conv↑] A₂ ∷ U l₁) →
+    (⊢ Γ ∙ A₁ ≡ Γ ∙ A₂ → Dec (Γ ∙ A₁ ⊢ B₁ [conv↑] B₂ ∷ U (wk1 l₂))) →
+    Dec
+      (Γ ⊢ ΠΣ⟨ b₁ ⟩ p₁ , q₁ ▷ A₁ ▹ B₁ [conv↓]
+         ΠΣ⟨ b₂ ⟩ p₂ , q₂ ▷ A₂ ▹ B₂ ∷ U l)
+  decConv↓-ΠΣ∷U ⊢l₁ ⊢l₂ l≡ ok (yes (PE.refl , PE.refl , PE.refl , A₁≡A₂)) y =
+    case y (refl-∙ (univ (soundnessConv↑Term A₁≡A₂))) of λ where
+      (yes B₁≡B₂) → yes (ΠΣ-cong ⊢l₁ ⊢l₂ A₁≡A₂ B₁≡B₂ ok l≡)
+      (no B₁≢B₂) → no λ ΠΣ≡ΠΣ → {!   !}
+  decConv↓-ΠΣ∷U ⊢l₁ ⊢l₂ l≡ ok (no x) y = {!   !}
+
 private opaque
 
   -- A lemma used below.
@@ -1031,10 +1050,66 @@ mutual
   decConv↓Term (Level-ins x) u≡ =
     let u≡ = inv-[conv↓]∷-Level u≡
     in Dec-map (Level-ins , inv-[conv↓]∷-Level) (decConv↓Level x u≡)
-  decConv↓Term (univ ⊢A _ A≡) B≡ =
-    case decConv↓ A≡ (inv-[conv↓]∷-U B≡) of λ where
-      (yes A≡B) → yes (univ ⊢A ([conv↓]∷→∷ B≡) A≡B)
-      (no A≢B)  → no (A≢B ∘→ inv-[conv↓]∷-U)
+  decConv↓Term (U-ins A~) B≡ =
+    let A-ne , _ = ne~∷ A~ in
+    case inv-[conv↓]-ne′ (univConv↓ B≡) of λ where
+      (inj₁ (_ , B~)) →
+        case dec~∷ A~ (~↓→~∷ B~) of λ where
+          (yes A~B) → yes (U-ins A~B)
+          (no ¬A~B) → no (¬A~B ∘→ inv-[conv↓]-ne∷U A-ne)
+      (inj₂ (¬-B-ne , _)) →
+        no λ A≡B →
+        ¬-B-ne (ne~↓ (inv-[conv↓]-ne A-ne (univConv↓ A≡B) .proj₂) .proj₂ .proj₂)
+  decConv↓Term (Level-refl x) B≡ =
+    case inv-[conv↓]-Level′ (univConv↓ B≡) of λ where
+      (inj₁ (PE.refl , _)) → yes (Level-refl x)
+      (inj₂ (B≢Level , _)) → no (B≢Level ∘→ inv-[conv↓]-Level ∘→ univConv↓)
+  decConv↓Term (U-cong x y) B≡ =
+    case inv-[conv↓]-U′ (univConv↓ B≡) of λ where
+      (inj₁ (l₃ , l₄ , PE.refl , PE.refl , z)) →
+        case decConv↑Term x z of λ where
+          (yes l₁≡l₃) → yes (U-cong l₁≡l₃ y)
+          (no l₁≢l₃) → no λ U≡U →
+            case inv-[conv↓]-U (univConv↓ U≡U) of λ where
+              (_ , PE.refl , z) → l₁≢l₃ z
+      (inj₂ (B≢U , _)) → no λ U≡B →
+        let _ , eq , _ = inv-[conv↓]-U (univConv↓ U≡B)
+        in B≢U (_ , eq)
+  decConv↓Term (ℕ-refl x) B≡ =
+    case inv-[conv↓]-ℕ′ (univConv↓ B≡) of λ where
+      (inj₁ (PE.refl , _)) → yes (ℕ-refl x)
+      (inj₂ (B≢ℕ , _))     → no (B≢ℕ ∘→ inv-[conv↓]-ℕ ∘→ univConv↓)
+  decConv↓Term (Empty-refl x) B≡ =
+    case inv-[conv↓]-Empty′ (univConv↓ B≡) of λ where
+      (inj₁ (PE.refl , _)) → yes (Empty-refl x)
+      (inj₂ (B≢Empty , _)) → no (B≢Empty ∘→ inv-[conv↓]-Empty ∘→ univConv↓)
+  decConv↓Term (Unit-cong {s} x ok y) B≡ =
+    case inv-[conv↓]-Unit′ (univConv↓ B≡) of λ where
+      (inj₁ (s′ , l′ , l″ , PE.refl , PE.refl , z)) →
+        case decStrength s s′ ×-dec decConv↑Term x z of λ where
+          (yes (PE.refl , x≡z)) → yes (Unit-cong x≡z ok y)
+          (no not-both-equal) → no λ Unit≡Unit →
+            case inv-[conv↓]-Unit (univConv↓ Unit≡Unit) of λ {
+              (_ , PE.refl , z) →
+            not-both-equal (PE.refl , z) }
+      (inj₂ (B≢Unit , _)) →
+        no λ Unit≡B →
+          let _ , B≡ , _ = inv-[conv↓]-Unit (univConv↓ Unit≡B)
+          in B≢Unit (_ , _ , B≡)
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (ne-ins x₃ x₄ x₅ x₆) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (U-ins x₃) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (Level-refl x₃) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (U-cong x₃ x₄) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (ℕ-refl x₃) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (Empty-refl x₃) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (Unit-cong x₃ x₄ x₅) = {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (ΠΣ-cong x₃ x₄ x₅ x₆ x₇ x₈) =
+    decConv↓-ΠΣ∷U ⊢l₁ ⊢l₂ y x₂ (decBinderMode _ _ ×-dec _ ≟ _ ×-dec _ ≟ _ ×-dec {! decConv↑Term   !}) {!   !}
+  decConv↓Term (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) (Id-cong x₃ x₄ x₅) = {!   !}
+    -- case inv-[conv↓]-ΠΣ′ (univConv↓ B≡) of λ where
+    --   (inj₁ (_ , _ , _ , _ , _ , _ , _ , PE.refl , PE.refl , z)) → {! z  !}
+    --   (inj₂ y) → {!   !}
+  decConv↓Term (Id-cong A≡ x₁ x₂) B≡ = {!   !}
   decConv↓Term (η-eq ⊢t _ t-fun _ t0≡) u≡ =
     let u-fun , _ , u0≡ = inv-[conv↓]∷-Π u≡ in
     case decConv↑Term t0≡ u0≡ of λ where

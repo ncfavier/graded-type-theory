@@ -92,12 +92,42 @@ mutual
   convConv↓Term′ Γ≡Δ A≡B whnfB (ne-ins t u x x₁) =
     ne-ins (stabilityTerm Γ≡Δ (conv t A≡B)) (stabilityTerm Γ≡Δ (conv u A≡B))
            (ne≡A x A≡B whnfB) (stability~↓ Γ≡Δ x₁)
-  convConv↓Term′ Γ≡Δ A≡B whnfB (univ x x₁ x₂) =
+  convConv↓Term′ Γ≡Δ A≡B whnfB (U-ins x) =
     case U≡A A≡B whnfB of λ {
-      (_ , PE.refl) →
-    let l≡k = U-injectivity A≡B
-        Ul≡Uk = U-cong l≡k
-    in univ (stabilityTerm Γ≡Δ (conv x Ul≡Uk)) (stabilityTerm Γ≡Δ (conv x₁ Ul≡Uk)) (stabilityConv↓ Γ≡Δ x₂) }
+      (k , PE.refl) →
+    U-ins (conv~∷ Γ≡Δ A≡B x) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (Level-refl x) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    Level-refl (stabilityEqTerm Γ≡Δ (trans (U-injectivity (sym A≡B)) x)) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (U-cong x y) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    U-cong (stabilityConv↑Term Γ≡Δ x) (stabilityEqTerm Γ≡Δ (trans (U-injectivity (sym A≡B)) y)) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (ℕ-refl x) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    ℕ-refl (stabilityEqTerm Γ≡Δ (trans (U-injectivity (sym A≡B)) x)) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (Empty-refl x) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    Empty-refl (stabilityEqTerm Γ≡Δ (trans (U-injectivity (sym A≡B)) x)) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (Unit-cong x x₁ y) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    Unit-cong (stabilityConv↑Term Γ≡Δ x) x₁ (stabilityEqTerm Γ≡Δ (trans (U-injectivity (sym A≡B)) y)) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    ΠΣ-cong (stabilityTerm Γ≡Δ ⊢l₁) (stabilityTerm Γ≡Δ ⊢l₂)
+      (stabilityConv↑Term Γ≡Δ x)
+      (stabilityConv↑Term (Γ≡Δ ∙ refl (syntacticEq (univ (soundnessConv↑Term x)) .proj₁)) x₁)
+      x₂
+      (stabilityEqTerm Γ≡Δ (trans (U-injectivity (sym A≡B)) y)) }
+  convConv↓Term′ Γ≡Δ A≡B whnfB (Id-cong x x₁ x₂) =
+    case U≡A A≡B whnfB of λ {
+      (k , PE.refl) →
+    Id-cong (convConv↑Term′ Γ≡Δ A≡B x) (stabilityConv↑Term Γ≡Δ x₁) (stabilityConv↑Term Γ≡Δ x₂) }
   convConv↓Term′ Γ≡Δ A≡B whnfB (zero-refl x) rewrite ℕ≡A A≡B whnfB =
     let _ , ⊢Δ , _ = contextConvSubst Γ≡Δ
     in  zero-refl ⊢Δ

@@ -111,7 +111,16 @@ whnfConv↓Term (Σʷ-ins x x₁ x₂) =
 whnfConv↓Term (ne-ins t u x x₁) =
   let _ , neT , neU = ne~↓ x₁
   in ne! x , ne! neT , ne! neU
-whnfConv↓Term (univ x x₁ x₂) = Uₙ , whnfConv↓ x₂
+whnfConv↓Term (U-ins x) =
+  let neT , neU = ne~∷ x
+  in Uₙ , ne! neT , ne! neU
+whnfConv↓Term (Level-refl _) = Uₙ , Levelₙ , Levelₙ
+whnfConv↓Term (U-cong _ _) = Uₙ , Uₙ , Uₙ
+whnfConv↓Term (ℕ-refl x) = Uₙ , ℕₙ , ℕₙ
+whnfConv↓Term (Empty-refl x) = Uₙ , Emptyₙ , Emptyₙ
+whnfConv↓Term (Unit-cong x x₁ _) = Uₙ , Unitₙ , Unitₙ
+whnfConv↓Term (ΠΣ-cong _ _ x x₁ x₂ _) = Uₙ , ΠΣₙ , ΠΣₙ
+whnfConv↓Term (Id-cong x x₁ x₂) = Uₙ , Idₙ , Idₙ
 whnfConv↓Term (zero-refl x) = ℕₙ , zeroₙ , zeroₙ
 whnfConv↓Term (starʷ-cong _ _ _ _) = Unitₙ , starₙ , starₙ
 whnfConv↓Term (suc-cong x) = ℕₙ , sucₙ , sucₙ

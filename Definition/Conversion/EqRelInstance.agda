@@ -427,7 +427,7 @@ private opaque
     .Equality-relations.≅ₜ-red   →
       λ (A⇒* , _) (t⇒* , _) (u⇒* , _) → reductionConv↑Term A⇒* t⇒* u⇒*
     .Equality-relations.≅ₜ-Levelrefl →
-      λ x → liftConvTerm (univ (Levelⱼ x) (Levelⱼ x) (Level-refl x))
+      λ x → liftConvTerm (Level-refl (refl (zeroᵘⱼ x)))
     .Equality-relations.≅ₜ-zeroᵘrefl →
       liftConvTerm ∘ᶠ Level-ins ∘ᶠ zeroᵘrefl
     .Equality-relations.≅ₜ-sucᵘ-cong →
@@ -445,18 +445,18 @@ private opaque
     .Equality-relations.≅ₜ-U-cong →
       λ l≡l′ →
         let ⊢l≡l′ = soundnessConv↑Term l≡l′
-            ⊢Level , ⊢l , ⊢l′ = syntacticEqTerm ⊢l≡l′
-        in liftConvTerm (univ (Uⱼ ⊢l) (conv (Uⱼ ⊢l′) (U-cong (sucᵘ-cong (sym ⊢Level ⊢l≡l′)))) (U-cong l≡l′))
+            _ , ⊢l , ⊢l′ = syntacticEqTerm ⊢l≡l′
+        in liftConvTerm (U-cong l≡l′ (refl (sucᵘⱼ ⊢l)))
     .Equality-relations.≅ₜ-ℕrefl →
-      λ x → liftConvTerm (univ (ℕⱼ x) (ℕⱼ x) (ℕ-refl x))
+      λ x → liftConvTerm (ℕ-refl (refl (zeroᵘⱼ x)))
     .Equality-relations.≅ₜ-Emptyrefl →
-      λ x → liftConvTerm (univ (Emptyⱼ x) (Emptyⱼ x) (Empty-refl x))
+      λ x → liftConvTerm (Empty-refl (refl (zeroᵘⱼ x)))
     .Equality-relations.≅ₜ-Unit-cong →
       λ l≡l′ ok →
         let ⊢l≡l′ = soundnessConv↑Term l≡l′
             ⊢Level , ⊢l , ⊢l′ = syntacticEqTerm ⊢l≡l′
         in liftConvTerm $
-        univ (Unitⱼ ⊢l ok) (conv (Unitⱼ ⊢l′ ok) (U-cong (sym ⊢Level ⊢l≡l′))) (Unit-cong l≡l′ ok)
+        Unit-cong l≡l′ ok (refl ⊢l)
     .Equality-relations.≅ₜ-η-unit →
       λ [l] [e] [e'] ok η →
         let u , uWhnf , uRed = whNormTerm [e]
@@ -472,18 +472,7 @@ private opaque
       λ x₁ x₂ ok → liftConv (ΠΣ-cong x₁ x₂ ok)
     .Equality-relations.≅ₜ-ΠΣ-cong →
       λ l₁ l₂ x₁ x₂ ok →
-        let _ , F∷U , H∷U = syntacticEqTerm (soundnessConv↑Term x₁)
-            _ , G∷U , E∷U = syntacticEqTerm (soundnessConv↑Term x₂)
-            ⊢Γ = wfTerm F∷U
-            F<>H = univConv↑ x₁
-            G<>E = univConv↑ x₂
-            F≡H = soundnessConv↑ F<>H
-            E∷U′ = stabilityTerm (refl-∙ F≡H) E∷U
-        in
-        liftConvTerm $ univ
-          (ΠΣⱼ l₁ l₂ F∷U G∷U ok)
-          (ΠΣⱼ l₁ l₂ H∷U E∷U′ ok)
-          (ΠΣ-cong F<>H G<>E ok)
+        liftConvTerm $ ΠΣ-cong l₁ l₂ x₁ x₂ ok (refl (maxᵘⱼ l₁ l₂))
     .Equality-relations.≅ₜ-zerorefl →
       liftConvTerm ∘ᶠ zero-refl
     .Equality-relations.≅ₜ-star-cong →
@@ -511,18 +500,7 @@ private opaque
       λ A₁≡A₂ t₁≡t₂ u₁≡u₂ → liftConv (Id-cong A₁≡A₂ t₁≡t₂ u₁≡u₂)
     .Equality-relations.≅ₜ-Id-cong →
       λ A₁≡A₂ t₁≡t₂ u₁≡u₂ →
-        case soundnessConv↑Term A₁≡A₂ of λ {
-          ⊢A₁≡A₂ →
-        case syntacticEqTerm ⊢A₁≡A₂ of λ {
-          (_ , ⊢A₁ , ⊢A₂) →
-        case syntacticEqTerm (soundnessConv↑Term t₁≡t₂) of λ {
-          (_ , ⊢t₁ , ⊢t₂) →
-        case syntacticEqTerm (soundnessConv↑Term u₁≡u₂) of λ {
-          (_ , ⊢u₁ , ⊢u₂) →
-        liftConvTerm $
-        univ (Idⱼ ⊢A₁ ⊢t₁ ⊢u₁)
-          (Idⱼ ⊢A₂ (conv ⊢t₂ (univ ⊢A₁≡A₂)) (conv ⊢u₂ (univ ⊢A₁≡A₂)))
-          (Id-cong (univConv↑ A₁≡A₂) t₁≡t₂ u₁≡u₂) }}}}
+        liftConvTerm $ Id-cong A₁≡A₂ t₁≡t₂ u₁≡u₂
     .Equality-relations.≅ₜ-rflrefl →
       liftConvTerm ∘→ rfl-refl ∘→ refl
     .Equality-relations.~-J       → ~-J

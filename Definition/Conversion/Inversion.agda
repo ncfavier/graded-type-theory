@@ -22,6 +22,9 @@ open import Definition.Conversion.Whnf R
 
 open import Definition.Typed R
 open import Definition.Typed.Properties R
+open import Definition.Typed.Consequences.Equality R
+open import Definition.Typed.Consequences.Reduction R
+open import Definition.Typed.Syntactic R
 open import Definition.Untyped M
 import Definition.Untyped.Erased 𝕄 as Erased
 open import Definition.Untyped.Neutral M type-variant
@@ -1182,7 +1185,14 @@ opaque
     ∃ λ A → Γ ⊢ t ~ u ↓ A
   inv-[conv↓]∷-ne A-ne = λ where
     (ne-ins _ _ _ t~u)  → _ , t~u
-    (univ _ _ _)        → ⊥-elim (¬-Neutral-U     A-ne)
+    (U-ins (↑ A≡B k~↑l)) → ⊥-elim (¬-Neutral-U A-ne)
+    (Level-refl x) → ⊥-elim (¬-Neutral-U A-ne)
+    (U-cong x y) → ⊥-elim (¬-Neutral-U A-ne)
+    (ℕ-refl x) → ⊥-elim (¬-Neutral-U A-ne)
+    (Empty-refl x) → ⊥-elim (¬-Neutral-U A-ne)
+    (Unit-cong x x₁ y) → ⊥-elim (¬-Neutral-U A-ne)
+    (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) → ⊥-elim (¬-Neutral-U A-ne)
+    (Id-cong x x₁ x₂) → ⊥-elim (¬-Neutral-U A-ne)
     (η-eq _ _ _ _ _)    → ⊥-elim (¬-Neutral-ΠΣ    A-ne)
     (Σ-η _ _ _ _ _ _)   → ⊥-elim (¬-Neutral-ΠΣ    A-ne)
     (Σʷ-ins _ _ _)      → ⊥-elim (¬-Neutral-ΠΣ    A-ne)
@@ -1200,13 +1210,76 @@ opaque
 
 opaque
 
-  -- Inversion for U.
-
-  inv-[conv↓]∷-U :
+  inv-[conv↓]-ne∷U :
+    Neutral A →
     Γ ⊢ A [conv↓] B ∷ U l →
-    Γ ⊢ A [conv↓] B
-  inv-[conv↓]∷-U (univ _ _ A≡B)    = A≡B
-  inv-[conv↓]∷-U (ne-ins _ _ () _)
+    Γ ⊢ A ~ B ∷ U l
+  inv-[conv↓]-ne∷U A-ne (ne-ins x x₁ () x₃)
+  inv-[conv↓]-ne∷U A-ne (U-ins x) = x
+  inv-[conv↓]-ne∷U () (Level-refl x)
+  inv-[conv↓]-ne∷U () (U-cong x x₁)
+  inv-[conv↓]-ne∷U () (ℕ-refl x)
+  inv-[conv↓]-ne∷U () (Empty-refl x)
+  inv-[conv↓]-ne∷U () (Unit-cong x x₁ x₂)
+  inv-[conv↓]-ne∷U () (ΠΣ-cong x x₁ x₂ x₃ x₄ x₅)
+  inv-[conv↓]-ne∷U () (Id-cong x x₁ x₂)
+
+opaque
+
+  inv-[conv↓]-Level∷U :
+    Γ ⊢ Level [conv↓] A ∷ U l →
+    A PE.≡ Level × Γ ⊢ l ≡ zeroᵘ ∷ Level
+  inv-[conv↓]-Level∷U (ne-ins x x₁ () x₃)
+  inv-[conv↓]-Level∷U (U-ins x) = case ne~∷ x of λ ()
+  inv-[conv↓]-Level∷U (Level-refl x) = PE.refl , x
+
+opaque
+
+  inv-[conv↓]-U∷U :
+    Γ ⊢ U l₁ [conv↓] A ∷ U l →
+    ∃ λ l₂ → A PE.≡ U l₂ × Γ ⊢ l₁ [conv↑] l₂ ∷ Level × Γ ⊢ l ≡ sucᵘ l₁ ∷ Level
+  inv-[conv↓]-U∷U (ne-ins x x₁ () x₃)
+  inv-[conv↓]-U∷U (U-ins x) = case ne~∷ x of λ ()
+  inv-[conv↓]-U∷U (U-cong x x₁) = _ , PE.refl , x , x₁
+
+opaque
+
+  inv-[conv↓]-Unit∷U :
+    Γ ⊢ Unit s l₁ [conv↓] A ∷ U l →
+    ∃ λ l₂ → A PE.≡ Unit s l₂ × Γ ⊢ l₁ [conv↑] l₂ ∷ Level × Γ ⊢ l ≡ l₁ ∷ Level
+  inv-[conv↓]-Unit∷U (ne-ins x x₁ () x₃)
+  inv-[conv↓]-Unit∷U (U-ins x) = case ne~∷ x of λ ()
+  inv-[conv↓]-Unit∷U (Unit-cong x ok x₁) = _ , PE.refl , x , x₁
+
+opaque
+
+  inv-[conv↓]-ℕ∷U :
+    Γ ⊢ ℕ [conv↓] A ∷ U l →
+    A PE.≡ ℕ × Γ ⊢ l ≡ zeroᵘ ∷ Level
+  inv-[conv↓]-ℕ∷U (ne-ins x x₁ () x₃)
+  inv-[conv↓]-ℕ∷U (U-ins x) = case ne~∷ x of λ ()
+  inv-[conv↓]-ℕ∷U (ℕ-refl x) = PE.refl , x
+
+opaque
+
+  inv-[conv↓]-Empty∷U :
+    Γ ⊢ Empty [conv↓] A ∷ U l →
+    A PE.≡ Empty × Γ ⊢ l ≡ zeroᵘ ∷ Level
+  inv-[conv↓]-Empty∷U (ne-ins x x₁ () x₃)
+  inv-[conv↓]-Empty∷U (U-ins x) = case ne~∷ x of λ ()
+  inv-[conv↓]-Empty∷U (Empty-refl x) = PE.refl , x
+
+opaque
+
+  inv-[conv↓]-ΠΣ∷U :
+    Γ ⊢ ΠΣ⟨ b ⟩ p , q ▷ A₁ ▹ A₂ [conv↓] B ∷ U l →
+    ∃₄ λ l₁ l₂ B₁ B₂ →
+      B PE.≡ ΠΣ⟨ b ⟩ p , q ▷ B₁ ▹ B₂ ×
+      Γ ⊢ A₁ [conv↑] B₁ ∷ U l₁ ×
+      Γ ∙ A₁ ⊢ A₂ [conv↑] B₂ ∷ U (wk1 l₂)
+  inv-[conv↓]-ΠΣ∷U (ne-ins x x₁ () x₃)
+  inv-[conv↓]-ΠΣ∷U (U-ins x) = case ne~∷ x of λ ()
+  inv-[conv↓]-ΠΣ∷U (ΠΣ-cong _ _ x y _ _) = _ , _ , _ , _ , PE.refl , x , y
 
 opaque
 

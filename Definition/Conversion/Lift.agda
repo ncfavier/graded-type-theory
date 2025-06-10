@@ -102,10 +102,7 @@ mutual
       (Any.here (≤-refl , ne≤ (ne≡ t↓u)) All.∷ All.[] , Any.here (≤-refl , ne≤ (ne≡' t↓u)) All.∷ All.[]))
   lift~toConv↓′ (Uᵣ′ _ _ _ A′⇒*U) A′⇒*A ([~] _ (B⇒*A , A-whnf) t~u)
     rewrite PE.sym (whrDet* (A′⇒*U , Uₙ) (A′⇒*A , A-whnf)) =
-    let _ , ⊢t , ⊢u =
-          syntacticEqTerm (conv (soundness~↑ t~u) (subset* B⇒*A))
-    in
-    univ ⊢t ⊢u (ne ([~] _ (B⇒*A , Uₙ) t~u))
+    U-ins (↑ (sym (subset* B⇒*A)) t~u)
   lift~toConv↓′ (ℕᵣ D) D₁ ([~] A (D₂ , whnfB) k~l)
                 rewrite PE.sym (whrDet* (D , ℕₙ) (D₁ , whnfB)) =
     ℕ-ins ([~] A (D₂ , ℕₙ) k~l)

@@ -296,8 +296,21 @@ mutual
     Σʷ-ins (wkTerm ρ t) (wkTerm ρ u) (wk~↓ ρ x)
   wkConv↓Term {ρ} [ρ] (ne-ins t u x x₁) =
     ne-ins (wkTerm [ρ] t) (wkTerm [ρ] u) (wkNeutral ρ x) (wk~↓ [ρ] x₁)
-  wkConv↓Term ρ (univ x x₁ x₂) =
-    univ (wkTerm ρ x) (wkTerm ρ x₁) (wkConv↓ ρ x₂)
+  wkConv↓Term ρ (U-ins x) = U-ins (wk~∷ ρ x)
+  wkConv↓Term ρ (Level-refl x) = Level-refl (wkEqTerm ρ x)
+  wkConv↓Term ρ (U-cong x y) = U-cong (wkConv↑Term ρ x) (wkEqTerm ρ y)
+  wkConv↓Term ρ (ℕ-refl x) = ℕ-refl (wkEqTerm ρ x)
+  wkConv↓Term ρ (Empty-refl x) = Empty-refl (wkEqTerm ρ x)
+  wkConv↓Term ρ (Unit-cong x x₁ y) = Unit-cong (wkConv↑Term ρ x) x₁ (wkEqTerm ρ y)
+  wkConv↓Term {ρ} [ρ] (ΠΣ-cong ⊢l₁ ⊢l₂ x x₁ x₂ y) =
+    ΠΣ-cong (wkTerm [ρ] ⊢l₁) (wkTerm [ρ] ⊢l₂)
+      (wkConv↑Term [ρ] x)
+      (PE.subst (_⊢_[conv↑]_∷_ _ _ _)
+        (PE.sym (wk1-wk≡lift-wk1 ρ (U _)))
+        (wkConv↑Term (liftʷʷ [ρ] (wk [ρ] (syntacticEq (univ (soundnessConv↑Term x)) .proj₁))) x₁))
+      x₂
+      (wkEqTerm [ρ] y)
+  wkConv↓Term ρ (Id-cong x x₁ x₂) = Id-cong (wkConv↑Term ρ x) (wkConv↑Term ρ x₁) (wkConv↑Term ρ x₂)
   wkConv↓Term ρ (zero-refl x) = zero-refl (wf-∷ʷ⊇ ρ)
   wkConv↓Term ρ (starʷ-cong x y ok no-η) = starʷ-cong (wkEqTerm ρ x) (wkEqTerm ρ y) ok no-η
   wkConv↓Term ρ (suc-cong t<>u) = suc-cong (wkConv↑Term ρ t<>u)
