@@ -322,8 +322,8 @@ mutual
     ne-ins (wkTerm [ρ] t) (wkTerm [ρ] u) (wkNeutral ρ x) (wk~↓ [ρ] x₁)
   wkConv↓Term ρ (univ x x₁ x₂) =
     univ (wkTerm ρ x) (wkTerm ρ x₁) (wkConv↓ ρ x₂)
-  wkConv↓Term {ρ} [ρ] (Lift-η ⊢t ⊢u wt wu lower≡lower) =
-    Lift-η (wkTerm [ρ] ⊢t) (wkTerm [ρ] ⊢u) (wkWhnf ρ wt) (wkWhnf ρ wu) (wkConv↑Term [ρ] lower≡lower)
+  wkConv↓Term {ρ} [ρ] (Lift-η k≡k ⊢t ⊢u wt wu lower≡lower) =
+    Lift-η (wkConv↑Term [ρ] k≡k) (wkTerm [ρ] ⊢t) (wkTerm [ρ] ⊢u) (wkWhnf ρ wt) (wkWhnf ρ wu) (wkConv↑Term [ρ] lower≡lower)
   wkConv↓Term ρ (zero-refl x) = zero-refl (wf-∷ʷ⊇ ρ)
   wkConv↓Term ρ (starʷ-cong x y ok no-η) =
     starʷ-cong (wkEqTerm ρ x) (wkConv↑Term ρ y) ok no-η

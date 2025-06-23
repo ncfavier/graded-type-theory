@@ -346,7 +346,7 @@ mutual
     in  conv (soundness~↓ x₁) M≡A
   soundnessConv↓Term (univ ⊢A ⊢B A≡B) =
     soundnessConv↓-U ⊢A ⊢B A≡B .proj₁
-  soundnessConv↓Term (Lift-η x x₁ x₂ x₃ x₄) =
+  soundnessConv↓Term (Lift-η _ x x₁ x₂ x₃ x₄) =
     Lift-η′ x x₁ (soundnessConv↑Term x₄)
   soundnessConv↓Term (zero-refl ⊢Γ) = refl (zeroⱼ ⊢Γ)
   soundnessConv↓Term (starʷ-cong l≡l₁ l₁≡l₂ ok _) =

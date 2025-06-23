@@ -98,11 +98,12 @@ mutual
     let l≡k = U-injectivity A≡B
         Ul≡Uk = U-cong l≡k
     in univ (stabilityTerm Γ≡Δ (conv x Ul≡Uk)) (stabilityTerm Γ≡Δ (conv x₁ Ul≡Uk)) (stabilityConv↓ Γ≡Δ x₂) }
-  convConv↓Term′ Γ≡Δ A≡B whnfB (Lift-η ⊢t ⊢u wt wu lower≡lower) =
+  convConv↓Term′ Γ≡Δ A≡B whnfB (Lift-η k≡k ⊢t ⊢u wt wu lower≡lower) =
     case Lift≡A A≡B whnfB of λ {
       (_ , _ , PE.refl) →
     let k≡k′ , A≡A′ = Lift-injectivity A≡B
     in Lift-η
+      {!   !}
       (stabilityTerm Γ≡Δ (conv ⊢t A≡B))
       (stabilityTerm Γ≡Δ (conv ⊢u A≡B))
       wt wu
