@@ -118,8 +118,8 @@ record Equality-relations
     ~-trans  : Γ ⊢ t ~ u ∷ A → Γ ⊢ u ~ v ∷ A → Γ ⊢ t ~ v ∷ A
 
     -- Conversion
-    ≅-conv : Γ ⊢ t ≅ u ∷ A → Γ ⊢ A ≡ B → Γ ⊢ t ≅ u ∷ B
-    ~-conv : Γ ⊢ t ~ u ∷ A → Γ ⊢ A ≡ B → Γ ⊢ t ~ u ∷ B
+    ≅-conv : Γ ⊢ t ≅ u ∷ A → Γ ⊢ A ≅ B → Γ ⊢ t ≅ u ∷ B
+    ~-conv : Γ ⊢ t ~ u ∷ A → Γ ⊢ A ≅ B → Γ ⊢ t ~ u ∷ B
 
     -- Weakening
     ≅-wk  : ρ ∷ʷ Δ ⊇ Γ

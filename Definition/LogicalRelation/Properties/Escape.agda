@@ -135,7 +135,7 @@ escapeTermEq (Unitᵣ′ k [k] k< D ok) (Unitₜ₌ _ _ d d′ prop) =
        (Unitₜ₌ʷ (starᵣ k≡k′ k′≡k″) _) →
          ≅-conv
            (≅ₜ-star-cong (escapeLevelEq k′≡k″) ok)
-           (Unit-cong (≅ₜ-eq (≅ₜ-sym (escapeLevelEq k≡k′))) ok)
+           (≅-Unit-cong (≅ₜ-sym (escapeLevelEq k≡k′)) ok)
        (Unitₜ₌ʷ (ne (neNfₜ₌ _ _ _ t′~u′)) _) → ~-to-≅ₜ t′~u′)
 escapeTermEq (ne′ _ _ D neK _) (neₜ₌ _ _ d d′ (neNfₜ₌ _ neT neU t≡u)) =
   ≅ₜ-red (D , ne! neK) (d , ne! neT) (d′ , ne! neU) (~-to-≅ₜ t≡u)
@@ -156,8 +156,7 @@ escapeTermEq {Γ = Γ} (Idᵣ ⊩A) t≡u@(_ , _ , t⇒*t′ , u⇒*u′ , _) =
                                                  (escapeEq ⊩Ty (reflEq ⊩Ty))
                                                  (escapeTermEq ⊩Ty (reflEqTerm ⊩Ty ⊩lhs))
                                                  (escapeTermEq ⊩Ty lhs≡rhs) ⟩
-         Γ ⊢ Id Ty lhs lhs ≅ Id Ty lhs rhs  →⟨ ≅-eq ⟩
-         Γ ⊢ Id Ty lhs lhs ≡ Id Ty lhs rhs  →⟨ ≅-conv (≅ₜ-rflrefl (escapeTerm ⊩Ty ⊩lhs)) ⟩
+         Γ ⊢ Id Ty lhs lhs ≅ Id Ty lhs rhs  →⟨ ≅-conv (≅ₜ-rflrefl (escapeTerm ⊩Ty ⊩lhs)) ⟩
          (Γ ⊢≅ rfl ∷ Id Ty lhs rhs)         □)
   where
   open _⊩ₗId_ ⊩A
