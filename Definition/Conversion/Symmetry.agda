@@ -349,8 +349,8 @@ mutual
     in  ne-ins (stabilityTerm Γ≡Δ u) (stabilityTerm Γ≡Δ t) x u~t
   symConv↓Term Γ≡Δ (univ x x₁ x₂) =
     univ (stabilityTerm Γ≡Δ x₁) (stabilityTerm Γ≡Δ x) (symConv↓ Γ≡Δ x₂)
-  symConv↓Term Γ≡Δ (Lift-η ⊢t ⊢u wt wu lower≡lower) =
-    Lift-η (stabilityTerm Γ≡Δ ⊢u) (stabilityTerm Γ≡Δ ⊢t) wu wt (symConv↑Term Γ≡Δ lower≡lower)
+  symConv↓Term Γ≡Δ (Lift-η a b ⊢t ⊢u wt wu lower≡lower) =
+    Lift-η (stabilityConv↑Term Γ≡Δ a) (stabilityEqTerm Γ≡Δ b) (stabilityTerm Γ≡Δ ⊢u) (stabilityTerm Γ≡Δ ⊢t) wu wt (symConv↑Term Γ≡Δ lower≡lower)
   symConv↓Term Γ≡Δ (zero-refl x) =
     let _ , ⊢Δ , _ = contextConvSubst Γ≡Δ
     in  zero-refl ⊢Δ

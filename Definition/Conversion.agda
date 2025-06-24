@@ -375,6 +375,8 @@ mutual
               → Γ ⊢ A [conv↓] B ∷ U l
 
     Lift-η    : ∀ {A}
+              → Γ ⊢ l [conv↑] l ∷ Level
+              → Γ ⊢ k ≡ l ∷ Level
               → Γ ⊢ t₁ ∷ Lift k A
               → Γ ⊢ t₂ ∷ Lift k A
               → Whnf t₁

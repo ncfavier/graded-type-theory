@@ -1279,7 +1279,7 @@ opaque
   inv-[conv↓]∷-ne A-ne = λ where
     (ne-ins _ _ _ t~u)  → _ , t~u
     (univ _ _ _)        → ⊥-elim (¬-Neutral-U     A-ne)
-    (Lift-η _ _ _ _ _)  → ⊥-elim (¬-Neutral-Lift  A-ne)
+    (Lift-η _ _ _ _ _ _ _)  → ⊥-elim (¬-Neutral-Lift  A-ne)
     (η-eq _ _ _ _ _)    → ⊥-elim (¬-Neutral-ΠΣ    A-ne)
     (Σ-η _ _ _ _ _ _)   → ⊥-elim (¬-Neutral-ΠΣ    A-ne)
     (Σʷ-ins _ _ _)      → ⊥-elim (¬-Neutral-ΠΣ    A-ne)
@@ -1311,12 +1311,15 @@ opaque
 
   inv-[conv↓]∷-Lift :
     Γ ⊢ t [conv↓] u ∷ Lift l A →
+    ∃ λ k →
+    Γ ⊢ k [conv↑] k ∷ Level ×
+    Γ ⊢ l ≡ k ∷ Level ×
     Γ ⊢ t ∷ Lift l A ×
     Γ ⊢ u ∷ Lift l A ×
     Whnf t ×
     Whnf u ×
     Γ ⊢ lower t [conv↑] lower u ∷ A
-  inv-[conv↓]∷-Lift (Lift-η x x₁ x₂ x₃ x₄) = x , x₁ , x₂ , x₃ , x₄
+  inv-[conv↓]∷-Lift (Lift-η a b x x₁ x₂ x₃ x₄) = _ , a , b , x , x₁ , x₂ , x₃ , x₄
   inv-[conv↓]∷-Lift (ne-ins _ _ () _)
 
 opaque

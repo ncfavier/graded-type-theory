@@ -453,15 +453,15 @@ mutual
       , (                                                       $⟨ sym′ (Π-η ⊢t) ⟩
          Γ ⊢ t ≡ lam p (wk1 t ∘⟨ p ⟩ var x0) ∷ Π p , q ▷ A ▹ B  →⟨ flip _⊢_≡_∷_.trans (lam-cong t0≡u ok) ⟩
          Γ ⊢ t ≡ lam p u ∷ Π p , q ▷ A ▹ B                      □) }}
-    (Lift-η ⊢t ⊢u wt wu lower≡lower) →
+    (Lift-η x y ⊢t ⊢u wt wu lower≡lower) →
       case inversion-Lift (syntacticTerm ⊢t) of λ
         (⊢l , ⊢A) →
       case fullRedTermConv↑ lower≡lower of λ
         (t′ , t′-nf , lowert≡t′) →
+      case fullRedTermConv↑ x of λ
+        (l′ , l′-nf , eq) →
       let ⊢t′ = (⊢nf∷→⊢∷ t′-nf)
-      in lift _ t′
-      , liftₙ {!   !} t′-nf
-      , Lift-η′ ⊢t (liftⱼ′ ⊢l ⊢t′) (trans lowert≡t′ (sym′ (Lift-β′ ⊢l ⊢t′)))
+      in _ , convₙ (liftₙ l′-nf t′-nf) {! y  !} , Lift-η′ ⊢t {!   !} (trans lowert≡t′ {!   !})
     (Σ-η {p} {q} {A} {B} ⊢t _ _ _ fst-t↑ snd-t↑) →
       case inversion-ΠΣ (syntacticTerm ⊢t) of λ {
         (_ , ⊢B , ok) →

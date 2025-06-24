@@ -122,7 +122,7 @@ whnfConv↓Term (ne-ins t u x x₁) =
   let _ , neT , neU = ne~↓ x₁
   in ne! x , ne! neT , ne! neU
 whnfConv↓Term (univ x x₁ x₂) = Uₙ , whnfConv↓ x₂
-whnfConv↓Term (Lift-η x x₁ w₁ w₂ x₂) = Liftₙ , w₁ , w₂
+whnfConv↓Term (Lift-η _ _ x x₁ w₁ w₂ x₂) = Liftₙ , w₁ , w₂
 whnfConv↓Term (zero-refl x) = ℕₙ , zeroₙ , zeroₙ
 whnfConv↓Term (starʷ-cong _ _ _ _) = Unitₙ , starₙ , starₙ
 whnfConv↓Term (suc-cong x) = ℕₙ , sucₙ , sucₙ

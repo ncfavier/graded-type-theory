@@ -374,10 +374,10 @@ mutual
   transConv↓Term (univ ⊢A ⊢B A≡B) B≡C =
     let _ , _ , ⊢C = syntacticEqTerm (soundnessConv↓Term B≡C) in
     univ ⊢A ⊢C (transConv↓ A≡B (inv-[conv↓]∷-U B≡C))
-  transConv↓Term (Lift-η ⊢t ⊢u wt wu t≡u) [u≡v] =
-    let _ , ⊢v , _ , wv , u≡v = inv-[conv↓]∷-Lift [u≡v]
+  transConv↓Term (Lift-η a b ⊢t ⊢u wt wu t≡u) [u≡v] =
+    let _ , c , d , _ , ⊢v , _ , wv , u≡v = inv-[conv↓]∷-Lift [u≡v]
         ⊢A , _ , _ = syntacticEqTerm (soundnessConv↑Term t≡u)
-    in Lift-η ⊢t ⊢v wt wv (transConv↑Term (refl ⊢A) t≡u u≡v)
+    in Lift-η a b ⊢t ⊢v wt wv (transConv↑Term (refl ⊢A) t≡u u≡v)
   transConv↓Term (η-eq ⊢t ⊢u t-fun u-fun t0≡u0) u≡v =
     let _ , v-fun , u0≡v0 = inv-[conv↓]∷-Π u≡v
         _ , _ , ⊢v        = syntacticEqTerm (soundnessConv↓Term u≡v)

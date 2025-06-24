@@ -326,7 +326,7 @@ private module Lemmas where
 
   ~-to-conv : ∀ {k l A} →
         Γ ⊢ k ~ l ∷ A → Γ ⊢ k [conv↑] l ∷ A
-  ~-to-conv (↑ x x₁) = convConv↑Term (sym x) (lift~toConv↑ x₁)
+  ~-to-conv (↑ x x₁) = convConv↑Term (sym x) (lift~toConv↑ {!   !} x₁)
 
   ≅ₜ-sucᵘ-cong : Γ ⊢ t [conv↑] u ∷ Level → Γ ⊢ sucᵘ t [conv↓] sucᵘ u ∷Level
   ≅ₜ-sucᵘ-cong ([↑]ₜ B t′ u′ (D , _) d d′ t<>u) =
@@ -511,7 +511,7 @@ private opaque
     .Equality-relations.≅-η-eq →
       λ x₁ x₂ x₃ x₄ x₅ → liftConvTerm (η-eq x₁ x₂ x₃ x₄ x₅)
     .Equality-relations.≅-Lift-η →
-      λ ⊢t ⊢u wt wu lt≡lu → liftConvTerm (Lift-η ⊢t ⊢u wt wu lt≡lu)
+      λ ⊢t ⊢u wt wu lt≡lu → liftConvTerm (Lift-η {!   !} {!   !} ⊢t ⊢u wt wu lt≡lu)
     .Equality-relations.≅-Σ-η →
       λ x₂ x₃ x₄ x₅ x₆ x₇ → (liftConvTerm (Σ-η x₂ x₃ x₄ x₅ x₆ x₇))
     .Equality-relations.~-var → ~-var

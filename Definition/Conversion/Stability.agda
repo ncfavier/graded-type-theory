@@ -303,8 +303,8 @@ mutual
     ne-ins (stabilityTerm Γ≡Δ t) (stabilityTerm Γ≡Δ u) neN (stability~↓ Γ≡Δ x)
   stabilityConv↓Term Γ≡Δ (univ x x₁ x₂) =
     univ (stabilityTerm Γ≡Δ x) (stabilityTerm Γ≡Δ x₁) (stabilityConv↓ Γ≡Δ x₂)
-  stabilityConv↓Term Γ≡Δ (Lift-η ⊢t₁ ⊢t₂ w₁ w₂ lower≡lower) =
-    Lift-η (stabilityTerm Γ≡Δ ⊢t₁) (stabilityTerm Γ≡Δ ⊢t₂) w₁ w₂ (stabilityConv↑Term Γ≡Δ lower≡lower)
+  stabilityConv↓Term Γ≡Δ (Lift-η a b ⊢t₁ ⊢t₂ w₁ w₂ lower≡lower) =
+    Lift-η (stabilityConv↑Term Γ≡Δ a) (stabilityEqTerm Γ≡Δ b) (stabilityTerm Γ≡Δ ⊢t₁) (stabilityTerm Γ≡Δ ⊢t₂) w₁ w₂ (stabilityConv↑Term Γ≡Δ lower≡lower)
   stabilityConv↓Term Γ≡Δ (zero-refl x) =
     let _ , ⊢Δ , _ = contextConvSubst Γ≡Δ
     in  zero-refl ⊢Δ
