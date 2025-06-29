@@ -17,7 +17,7 @@ module Definition.LogicalRelation.Hidden
 open EqRelSet eqrel
 open Type-restrictions R
 
-open import Definition.LogicalRelation R
+open import Definition.LogicalRelation R renaming (_⊩⟨_⟩_ to _⊩′⟨_⟩_) public
 open import Definition.LogicalRelation.Irrelevance R
 open import Definition.LogicalRelation.Properties R
 open import Definition.LogicalRelation.ShapeView R
@@ -42,7 +42,7 @@ private variable
   Γ Δ               : Con Term _
   A B C t t₁ t₂ u v : Term _
   ρ                 : Wk _ _
-  l l′              : Universe-level
+  l l′              : GLevel n
   k                 : LogRelKit
 
 ------------------------------------------------------------------------
@@ -50,13 +50,24 @@ private variable
 
 opaque
 
+  -- Reducible types.
+
+  infix 4 _⊩⟨_⟩_
+
+  _⊩⟨_⟩_ : Con Term n → GLevel n → Term n → Set a
+  Γ ⊩⟨ l ⟩ A =
+    ∃ λ (⊩l : Γ ⊩GLevel l ∷GLevel) → Γ ⊩′⟨ ↑ᵍ ⊩l ⟩ A
+
+opaque
+
   -- Reducible terms.
 
   infix 4 _⊩⟨_⟩_∷_
 
-  _⊩⟨_⟩_∷_ : Con Term n → Universe-level → Term n → Term n → Set a
+  _⊩⟨_⟩_∷_ : Con Term n → GLevel n → Term n → Term n → Set a
   Γ ⊩⟨ l ⟩ t ∷ A =
-    ∃ λ (⊩A : Γ ⊩⟨ l ⟩ A) → Γ ⊩⟨ l ⟩ t ∷ A / ⊩A
+    ∃ λ (⊩l : Γ ⊩GLevel l ∷GLevel) →
+    ∃ λ (⊩A : Γ ⊩′⟨ ↑ᵍ ⊩l ⟩ A) → Γ ⊩⟨ ↑ᵍ ⊩l ⟩ t ∷ A / ⊩A
 
 opaque
 
@@ -64,9 +75,10 @@ opaque
 
   infix 4 _⊩⟨_⟩_≡_
 
-  _⊩⟨_⟩_≡_ : Con Term n → Universe-level → Term n → Term n → Set a
+  _⊩⟨_⟩_≡_ : Con Term n → GLevel n → Term n → Term n → Set a
   Γ ⊩⟨ l ⟩ A ≡ B =
-    ∃ λ (⊩A : Γ ⊩⟨ l ⟩ A) → (Γ ⊩⟨ l ⟩ B) × Γ ⊩⟨ l ⟩ A ≡ B / ⊩A
+    ∃ λ (⊩l : Γ ⊩GLevel l ∷GLevel) →
+    ∃ λ (⊩A : Γ ⊩′⟨ ↑ᵍ ⊩l ⟩ A) → (Γ ⊩′⟨ ↑ᵍ ⊩l ⟩ B) × Γ ⊩⟨ ↑ᵍ ⊩l ⟩ A ≡ B / ⊩A
 
 opaque
 
@@ -75,10 +87,11 @@ opaque
   infix 4 _⊩⟨_⟩_≡_∷_
 
   _⊩⟨_⟩_≡_∷_ :
-    Con Term n → Universe-level → Term n → Term n → Term n → Set a
+    Con Term n → GLevel n → Term n → Term n → Term n → Set a
   Γ ⊩⟨ l ⟩ t ≡ u ∷ A =
-    ∃ λ (⊩A : Γ ⊩⟨ l ⟩ A) →
-    Γ ⊩⟨ l ⟩ t ≡ u ∷ A / ⊩A
+    ∃ λ (⊩l : Γ ⊩GLevel l ∷GLevel) →
+    ∃ λ (⊩A : Γ ⊩′⟨ ↑ᵍ ⊩l ⟩ A) →
+    Γ ⊩⟨ ↑ᵍ ⊩l ⟩ t ≡ u ∷ A / ⊩A
 
 ------------------------------------------------------------------------
 -- Conversions to the underlying type formers
@@ -88,16 +101,16 @@ opaque
 
   -- A conversion to _⊩⟨_⟩_∷_/_.
 
-  ⊩∷→⊩∷/ : (⊩A : Γ ⊩⟨ l ⟩ A) → Γ ⊩⟨ l′ ⟩ t ∷ A → Γ ⊩⟨ l ⟩ t ∷ A / ⊩A
-  ⊩∷→⊩∷/ ⊩A (⊩A′ , ⊩t) = irrelevanceTerm ⊩A′ ⊩A ⊩t
+  ⊩∷→⊩∷/ : ∀ {l} → (⊩A : Γ ⊩′⟨ l ⟩ A) → Γ ⊩⟨ l′ ⟩ t ∷ A → Γ ⊩⟨ l ⟩ t ∷ A / ⊩A
+  ⊩∷→⊩∷/ ⊩A (_ , ⊩A′ , ⊩t) = irrelevanceTerm ⊩A′ ⊩A ⊩t
 
 opaque
   unfolding _⊩⟨_⟩_≡_
 
   -- A conversion to _⊩⟨_⟩_≡_/_.
 
-  ⊩≡→⊩≡/ : (⊩A : Γ ⊩⟨ l ⟩ A) → Γ ⊩⟨ l′ ⟩ A ≡ B → Γ ⊩⟨ l ⟩ A ≡ B / ⊩A
-  ⊩≡→⊩≡/ ⊩A (⊩A′ , _ , A≡B) = irrelevanceEq ⊩A′ ⊩A A≡B
+  ⊩≡→⊩≡/ : ∀ {l} → (⊩A : Γ ⊩′⟨ l ⟩ A) → Γ ⊩⟨ l′ ⟩ A ≡ B → Γ ⊩⟨ l ⟩ A ≡ B / ⊩A
+  ⊩≡→⊩≡/ ⊩A (_ , ⊩A′ , _ , A≡B) = irrelevanceEq ⊩A′ ⊩A A≡B
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_
@@ -105,23 +118,24 @@ opaque
   -- A conversion to _⊩⟨_⟩_≡_∷_/_.
 
   ⊩≡∷→⊩≡∷/ :
-    (⊩A : Γ ⊩⟨ l ⟩ A) → Γ ⊩⟨ l′ ⟩ t ≡ u ∷ A →
+    ∀ {l} →
+    (⊩A : Γ ⊩′⟨ l ⟩ A) → Γ ⊩⟨ l′ ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A / ⊩A
-  ⊩≡∷→⊩≡∷/ ⊩A (⊩A′ , t≡u) = irrelevanceEqTerm ⊩A′ ⊩A t≡u
+  ⊩≡∷→⊩≡∷/ ⊩A (_ , ⊩A′ , t≡u) = irrelevanceEqTerm ⊩A′ ⊩A t≡u
 
 ------------------------------------------------------------------------
 -- Reflexivity
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_≡_
 
   -- Reflexivity for _⊩⟨_⟩_≡_.
 
   refl-⊩≡ :
     Γ ⊩⟨ l ⟩ A →
     Γ ⊩⟨ l ⟩ A ≡ A
-  refl-⊩≡ ⊩A =
-    ⊩A , ⊩A , reflEq ⊩A
+  refl-⊩≡ (⊩l , ⊩A) =
+    ⊩l , ⊩A , ⊩A , reflEq ⊩A
 
 opaque
   unfolding _⊩⟨_⟩_∷_ _⊩⟨_⟩_≡_∷_
@@ -131,8 +145,8 @@ opaque
   refl-⊩≡∷ :
     Γ ⊩⟨ l ⟩ t ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ t ∷ A
-  refl-⊩≡∷ (⊩A , ⊩t) =
-    ⊩A , reflEqTerm ⊩A ⊩t
+  refl-⊩≡∷ (⊩l , ⊩A , ⊩t) =
+    ⊩l , ⊩A , reflEqTerm ⊩A ⊩t
 
 ------------------------------------------------------------------------
 -- Symmetry
@@ -145,8 +159,8 @@ opaque
   sym-⊩≡ :
     Γ ⊩⟨ l ⟩ A ≡ B →
     Γ ⊩⟨ l ⟩ B ≡ A
-  sym-⊩≡ (⊩A , ⊩B , A≡B) =
-    ⊩B , ⊩A , symEq ⊩A ⊩B A≡B
+  sym-⊩≡ (⊩l , ⊩A , ⊩B , A≡B) =
+    ⊩l , ⊩B , ⊩A , symEq ⊩A ⊩B A≡B
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_
@@ -156,8 +170,8 @@ opaque
   sym-⊩≡∷ :
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ u ≡ t ∷ A
-  sym-⊩≡∷ (⊩A , t≡u) =
-    ⊩A , symEqTerm ⊩A t≡u
+  sym-⊩≡∷ (⊩l , ⊩A , t≡u) =
+    ⊩l , ⊩A , symEqTerm ⊩A t≡u
 
 ------------------------------------------------------------------------
 -- Transitivity
@@ -171,8 +185,8 @@ opaque
     Γ ⊩⟨ l ⟩ A ≡ B →
     Γ ⊩⟨ l ⟩ B ≡ C →
     Γ ⊩⟨ l ⟩ A ≡ C
-  trans-⊩≡ (⊩A , _ , A≡B) (⊩B , ⊩C , B≡C) =
-    ⊩A , ⊩C , transEq ⊩A ⊩B ⊩C A≡B B≡C
+  trans-⊩≡ (⊩l , ⊩A , _ , A≡B) (_ , ⊩B , ⊩C , B≡C) =
+    ⊩l , ⊩A , irr-⊩ ⊩C , transEq ⊩A ⊩B ⊩C A≡B B≡C
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_
@@ -183,39 +197,39 @@ opaque
     Γ ⊩⟨ l′ ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ u ≡ v ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ v ∷ A
-  trans-⊩≡∷ (⊩A′ , t≡u) (⊩A , u≡v) =
-    ⊩A , transEqTerm ⊩A (irrelevanceEqTerm ⊩A′ ⊩A t≡u) u≡v
+  trans-⊩≡∷ (⊩l′ , ⊩A′ , t≡u) (⊩l , ⊩A , u≡v) =
+    ⊩l , ⊩A , transEqTerm ⊩A (irrelevanceEqTerm ⊩A′ ⊩A t≡u) u≡v
 
 ------------------------------------------------------------------------
 -- Well-formedness lemmas
 
 opaque
-  unfolding _⊩⟨_⟩_∷_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_∷_
 
   -- A well-formedness lemma for _⊩⟨_⟩_∷_.
 
   wf-⊩∷ : Γ ⊩⟨ l ⟩ t ∷ A → Γ ⊩⟨ l ⟩ A
-  wf-⊩∷ (⊩A , _) = ⊩A
+  wf-⊩∷ (⊩l , ⊩A , _) = ⊩l , ⊩A
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_≡_
 
   -- A well-formedness lemma for _⊩⟨_⟩_≡_.
 
   wf-⊩≡ : Γ ⊩⟨ l ⟩ A ≡ B → Γ ⊩⟨ l ⟩ A × Γ ⊩⟨ l ⟩ B
-  wf-⊩≡ (⊩A , ⊩B , _) = ⊩A , ⊩B
+  wf-⊩≡ (⊩l , ⊩A , ⊩B , _) = (⊩l , ⊩A) , (⊩l , ⊩B)
 
 opaque
-  unfolding _⊩⟨_⟩_∷_ _⊩⟨_⟩_≡_∷_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_∷_ _⊩⟨_⟩_≡_∷_
 
   -- A well-formedness lemma for _⊩⟨_⟩_≡_∷_.
 
   wf-⊩≡∷ :
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ t ∷ A × Γ ⊩⟨ l ⟩ u ∷ A
-  wf-⊩≡∷ (⊩A , t≡u) =
+  wf-⊩≡∷ (⊩l , ⊩A , t≡u) =
     let u≡t = symEqTerm ⊩A t≡u in
-    (⊩A , transEqTerm ⊩A t≡u u≡t) , (⊩A , transEqTerm ⊩A u≡t t≡u)
+    (⊩l , ⊩A , transEqTerm ⊩A t≡u u≡t) , (⊩l , ⊩A , transEqTerm ⊩A u≡t t≡u)
 
 ------------------------------------------------------------------------
 -- Some characterisation lemmas
@@ -238,7 +252,7 @@ opaque
 -- Changing type levels
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_≡_
 
   -- Changing type levels for _⊩⟨_⟩_≡_.
 
@@ -247,11 +261,11 @@ opaque
     Γ ⊩⟨ l ⟩ B →
     Γ ⊩⟨ l′ ⟩ A ≡ B →
     Γ ⊩⟨ l ⟩ A ≡ B
-  level-⊩≡ ⊩A ⊩B A≡B =
-    ⊩A , ⊩B , ⊩≡→⊩≡/ ⊩A A≡B
+  level-⊩≡ (⊩l , ⊩A) (_ , ⊩B) A≡B =
+    ⊩l , ⊩A , irr-⊩ ⊩B , ⊩≡→⊩≡/ ⊩A A≡B
 
 opaque
-  unfolding _⊩⟨_⟩_≡_∷_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_≡_∷_
 
   -- Changing type levels for _⊩⟨_⟩_≡_∷_.
 
@@ -259,8 +273,8 @@ opaque
     Γ ⊩⟨ l ⟩ A →
     Γ ⊩⟨ l′ ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A
-  level-⊩≡∷ ⊩A t≡u =
-    ⊩A , ⊩≡∷→⊩≡∷/ ⊩A t≡u
+  level-⊩≡∷ (⊩l , ⊩A) t≡u =
+    ⊩l , ⊩A , ⊩≡∷→⊩≡∷/ ⊩A t≡u
 
 opaque
 
@@ -285,8 +299,8 @@ opaque
     Γ ⊩⟨ l ⟩ A ≡ B →
     Γ ⊩⟨ l′ ⟩ t ≡ u ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ u ∷ B
-  conv-⊩≡∷ (⊩A , ⊩B , A≡B) (⊩A′ , t≡u) =
-    ⊩B , convEqTerm₁ ⊩A′ ⊩B (irrelevanceEq ⊩A ⊩A′ A≡B) t≡u
+  conv-⊩≡∷ (⊩l , ⊩A , ⊩B , A≡B) (_ , ⊩A′ , t≡u) =
+    ⊩l , ⊩B , convEqTerm₁ ⊩A′ ⊩B (irrelevanceEq ⊩A ⊩A′ A≡B) t≡u
 
 opaque
 
@@ -303,20 +317,27 @@ opaque
 -- Weakening
 
 opaque
+  unfolding _⊩⟨_⟩_
 
   -- Weakening for _⊩⟨_⟩_.
 
-  wk-⊩ : ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ A → Δ ⊩⟨ l ⟩ wk ρ A
-  wk-⊩ = W.wk
+  wk-⊩ : ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ A → Δ ⊩⟨ wkᵍ ρ l ⟩ wk ρ A
+  wk-⊩ [ρ] (⊩l , ⊩A) =
+      W.wkGLevel (∷ʷʳ⊇→∷ʷ⊇ [ρ]) ⊩l
+    , W.wk [ρ] (PE.subst (_ ⊩′⟨_⟩ _) (PE.sym $ W.wk-↑ᵍ (∷ʷʳ⊇→∷ʷ⊇ [ρ]) PE.refl) ⊩A)
 
 opaque
   unfolding _⊩⟨_⟩_≡_
 
   -- Weakening for _⊩⟨_⟩_≡_.
 
-  wk-⊩≡ : ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ A ≡ B → Δ ⊩⟨ l ⟩ wk ρ A ≡ wk ρ B
-  wk-⊩≡ Δ⊇Γ (⊩A , ⊩B , A≡B) =
-    W.wk Δ⊇Γ ⊩A , W.wk Δ⊇Γ ⊩B , W.wkEq Δ⊇Γ ⊩A A≡B
+  wk-⊩≡ : ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ A ≡ B → Δ ⊩⟨ wkᵍ ρ l ⟩ wk ρ A ≡ wk ρ B
+  wk-⊩≡ Δ⊇Γ (⊩l , ⊩A , ⊩B , A≡B) =
+    let eq = PE.sym $ W.wk-↑ᵍ (∷ʷʳ⊇→∷ʷ⊇ Δ⊇Γ) PE.refl
+    in W.wkGLevel (∷ʷʳ⊇→∷ʷ⊇ Δ⊇Γ) ⊩l
+    , PE.subst (_ ⊩′⟨_⟩ _) eq (W.wk Δ⊇Γ ⊩A)
+    , PE.subst (_ ⊩′⟨_⟩ _) eq (W.wk Δ⊇Γ ⊩B)
+    , irrelevanceEq _ _ (W.wkEq Δ⊇Γ ⊩A A≡B)
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_
@@ -325,27 +346,30 @@ opaque
 
   wk-⊩≡∷ :
     ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ t ≡ u ∷ A →
-    Δ ⊩⟨ l ⟩ wk ρ t ≡ wk ρ u ∷ wk ρ A
-  wk-⊩≡∷ Δ⊇Γ (⊩A , t≡u) =
-    W.wk Δ⊇Γ ⊩A , W.wkEqTerm Δ⊇Γ ⊩A t≡u
+    Δ ⊩⟨ wkᵍ ρ l ⟩ wk ρ t ≡ wk ρ u ∷ wk ρ A
+  wk-⊩≡∷ Δ⊇Γ (⊩l , ⊩A , t≡u) =
+    let ⊩A′ = PE.subst (_ ⊩′⟨_⟩ _) (PE.sym $ W.wk-↑ᵍ (∷ʷʳ⊇→∷ʷ⊇ Δ⊇Γ) PE.refl) (W.wk Δ⊇Γ ⊩A)
+    in W.wkGLevel (∷ʷʳ⊇→∷ʷ⊇ Δ⊇Γ) ⊩l
+    , ⊩A′
+    , irrelevanceEqTerm (W.wk Δ⊇Γ ⊩A) ⊩A′ (W.wkEqTerm Δ⊇Γ ⊩A t≡u)
 
 opaque
 
   -- Weakening for _⊩⟨_⟩_∷_.
 
-  wk-⊩∷ : ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ t ∷ A → Δ ⊩⟨ l ⟩ wk ρ t ∷ wk ρ A
+  wk-⊩∷ : ρ ∷ʷʳ Δ ⊇ Γ → Γ ⊩⟨ l ⟩ t ∷ A → Δ ⊩⟨ wkᵍ ρ l ⟩ wk ρ t ∷ wk ρ A
   wk-⊩∷ Δ⊇Γ = ⊩∷⇔⊩≡∷ .proj₂ ∘→ wk-⊩≡∷ Δ⊇Γ ∘→ ⊩∷⇔⊩≡∷ .proj₁
 
 ------------------------------------------------------------------------
 -- Reduction
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_≡_
 
   -- A reduction lemma for _⊩⟨_⟩_.
 
   ⊩-⇒* : Γ ⊢ A ⇒* B → Γ ⊩⟨ l ⟩ A → Γ ⊩⟨ l ⟩ A ≡ B
-  ⊩-⇒* A⇒*B ⊩A = ⊩A , redSubst*′ A⇒*B ⊩A
+  ⊩-⇒* A⇒*B (⊩l , ⊩A) = ⊩l , ⊩A , redSubst*′ A⇒*B ⊩A
 
 opaque
   unfolding _⊩⟨_⟩_∷_ _⊩⟨_⟩_≡_∷_
@@ -356,22 +380,22 @@ opaque
     Γ ⊢ t ⇒* u ∷ A →
     Γ ⊩⟨ l ⟩ t ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A
-  ⊩∷-⇒* t⇒*u (⊩A , ⊩t) =
-    ⊩A , redSubst*Term′ t⇒*u ⊩A ⊩t
+  ⊩∷-⇒* t⇒*u (⊩l , ⊩A , ⊩t) =
+    ⊩l , ⊩A , redSubst*Term′ t⇒*u ⊩A ⊩t
 
 ------------------------------------------------------------------------
 -- Expansion
 
 opaque
-  unfolding _⊩⟨_⟩_≡_
+  unfolding _⊩⟨_⟩_ _⊩⟨_⟩_≡_
 
   -- An expansion lemma for _⊩⟨_⟩_.
 
   ⊩-⇐* : Γ ⊢ A ⇒* B → Γ ⊩⟨ l ⟩ B → Γ ⊩⟨ l ⟩ A ≡ B
-  ⊩-⇐* A⇒*B ⊩B =
+  ⊩-⇐* A⇒*B (⊩l , ⊩B) =
     case redSubst* A⇒*B ⊩B of λ
       (⊩A , A≡B) →
-    ⊩A , ⊩B , A≡B
+    ⊩l , ⊩A , ⊩B , A≡B
 
 opaque
   unfolding _⊩⟨_⟩_∷_ _⊩⟨_⟩_≡_∷_
@@ -382,18 +406,27 @@ opaque
     Γ ⊢ t ⇒* u ∷ A →
     Γ ⊩⟨ l ⟩ u ∷ A →
     Γ ⊩⟨ l ⟩ t ≡ u ∷ A
-  ⊩∷-⇐* t⇒*u (⊩A , ⊩u) =
-    ⊩A , redSubst*Term t⇒*u ⊩A ⊩u
+  ⊩∷-⇐* t⇒*u (⊩l , ⊩A , ⊩u) =
+    ⊩l , ⊩A , redSubst*Term t⇒*u ⊩A ⊩u
 
 ------------------------------------------------------------------------
 -- Escape lemmas
 
+-- opaque
+--   unfolding _⊩⟨_⟩_
+
+--   -- An escape lemma for _⊩⟨_⟩_.
+
+--   escape-⊩-level : Γ ⊩⟨ l ⟩ A → Γ ⊢ l ∷GLevel
+--   escape-⊩-level (⊩l , ⊩A) = escapeGLevel ⊩l
+
 opaque
+  unfolding _⊩⟨_⟩_
 
   -- An escape lemma for _⊩⟨_⟩_.
 
   escape-⊩ : Γ ⊩⟨ l ⟩ A → Γ ⊢ A
-  escape-⊩ = escape
+  escape-⊩ (⊩l , ⊩A) = escape ⊩A
 
 opaque
   unfolding _⊩⟨_⟩_∷_
@@ -401,7 +434,7 @@ opaque
   -- An escape lemma for _⊩⟨_⟩_∷_.
 
   escape-⊩∷ : Γ ⊩⟨ l ⟩ t ∷ A → Γ ⊢ t ∷ A
-  escape-⊩∷ (⊩A , ⊩t) = escapeTerm ⊩A ⊩t
+  escape-⊩∷ (_ , ⊩A , ⊩t) = escapeTerm ⊩A ⊩t
 
 opaque
   unfolding _⊩⟨_⟩_≡_
@@ -409,7 +442,7 @@ opaque
   -- An escape lemma for _⊩⟨_⟩_≡_.
 
   escape-⊩≡ : Γ ⊩⟨ l ⟩ A ≡ B → Γ ⊢ A ≅ B
-  escape-⊩≡ (⊩A , _ , A≡B) = escapeEq ⊩A A≡B
+  escape-⊩≡ (_ , ⊩A , _ , A≡B) = escapeEq ⊩A A≡B
 
 opaque
   unfolding _⊩⟨_⟩_≡_∷_
@@ -417,7 +450,7 @@ opaque
   -- An escape lemma for _⊩⟨_⟩_≡_∷_.
 
   escape-⊩≡∷ : Γ ⊩⟨ l ⟩ t ≡ u ∷ A → Γ ⊢ t ≅ u ∷ A
-  escape-⊩≡∷ (⊩A , t≡u) = escapeTermEq ⊩A t≡u
+  escape-⊩≡∷ (_ , ⊩A , t≡u) = escapeTermEq ⊩A t≡u
 
 ------------------------------------------------------------------------
 -- Equational reasoning combinators
@@ -789,6 +822,7 @@ opaque
     Γ ⊩⟨ l′ ⟩ A
   emb-⊩ = emb-≤-⊩
 
+{-
 opaque
   unfolding _⊩⟨_⟩_≡_
 
@@ -1041,3 +1075,4 @@ opaque
                                                         ⟩
     (Neutrals-included × Γ ⊢≅ A ×
      ∃ λ u → Γ ⊢ t ⇒* u ∷ A × Neutral u × Γ ⊢~ u ∷ A)  □⇔
+-}

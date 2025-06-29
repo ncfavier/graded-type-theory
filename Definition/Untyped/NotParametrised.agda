@@ -134,9 +134,12 @@ wk₀ {n = 1+ n} = step wk₀
 
 -- Universe levels.
 
+Infinite-universe-level : Set
+Infinite-universe-level = Nat
+
 data Universe-level : Set where
   0ᵘ+_ : Nat → Universe-level
-  ωᵘ : Universe-level
+  ωᵘ+_ : Infinite-universe-level → Universe-level
 
 0ᵘ : Universe-level
 0ᵘ = 0ᵘ+ 0
@@ -144,34 +147,46 @@ data Universe-level : Set where
 1ᵘ : Universe-level
 1ᵘ = 0ᵘ+ 1
 
+ωᵘ : Universe-level
+ωᵘ = ωᵘ+ 0
+
+-- The successor of a universe level.
+
+1ᵘ+_ : Universe-level → Universe-level
+1ᵘ+ (0ᵘ+ x) = 0ᵘ+ 1+ x
+1ᵘ+ (ωᵘ+ x) = ωᵘ+ 1+ x
+
 -- The maximum of two universe levels.
 
 infixl 6 _⊔ᵘ_
 
 _⊔ᵘ_ : (_ _ : Universe-level) → Universe-level
 (0ᵘ+ m) ⊔ᵘ (0ᵘ+ n) = 0ᵘ+ (m Tools.Nat.⊔ n)
-(0ᵘ+ m) ⊔ᵘ ωᵘ      = ωᵘ
-ωᵘ      ⊔ᵘ n       = ωᵘ
+(0ᵘ+ m) ⊔ᵘ (ωᵘ+ n) = ωᵘ+ n
+(ωᵘ+ m) ⊔ᵘ (0ᵘ+ n) = ωᵘ+ m
+(ωᵘ+ m) ⊔ᵘ (ωᵘ+ n) = ωᵘ+ (m Tools.Nat.⊔ n)
 
 -- Ordering of universe levels.
 
 infix 4 _≤ᵘ_
 
 data _≤ᵘ_ : Universe-level → Universe-level → Set where
-  ≤ᵘ-nat : ∀ {l l′} → l ≤′ l′ → 0ᵘ+ l ≤ᵘ 0ᵘ+ l′
-  ≤ᵘ-ωᵘ  : ∀ {l} → l ≤ᵘ ωᵘ
+  ≤ᵘ-fin     : ∀ {l l′} → l ≤′ l′ → 0ᵘ+ l ≤ᵘ 0ᵘ+ l′
+  ≤ᵘ-fin-inf : ∀ {l l′} → 0ᵘ+ l ≤ᵘ ωᵘ+ l′
+  ≤ᵘ-inf     : ∀ {l l′} → l ≤′ l′ → ωᵘ+ l ≤ᵘ ωᵘ+ l′
 
 ≤ᵘ-refl : ∀ {l} → l ≤ᵘ l
-≤ᵘ-refl {0ᵘ+ x} = ≤ᵘ-nat ≤′-refl
-≤ᵘ-refl {(ωᵘ)} = ≤ᵘ-ωᵘ
+≤ᵘ-refl {0ᵘ+ x} = ≤ᵘ-fin ≤′-refl
+≤ᵘ-refl {ωᵘ+ x} = ≤ᵘ-inf ≤′-refl
 
 -- Strict ordering of universe levels.
 
 infix 4 _<ᵘ_
 
 data _<ᵘ_ : Universe-level → Universe-level → Set where
-  <ᵘ-nat : ∀ {l l′} → l <′ l′ → 0ᵘ+ l <ᵘ 0ᵘ+ l′
-  <ᵘ-ωᵘ  : ∀ {l} → 0ᵘ+ l <ᵘ ωᵘ
+  <ᵘ-fin     : ∀ {l l′} → l <′ l′ → 0ᵘ+ l <ᵘ 0ᵘ+ l′
+  <ᵘ-fin-inf : ∀ {l l′} → 0ᵘ+ l <ᵘ ωᵘ+ l′
+  <ᵘ-inf     : ∀ {l l′} → l <′ l′ → ωᵘ+ l <ᵘ ωᵘ+ l′
 
 0ᵘ<ᵘ1ᵘ : 0ᵘ <ᵘ 1ᵘ
-0ᵘ<ᵘ1ᵘ = <ᵘ-nat ≤′-refl
+0ᵘ<ᵘ1ᵘ = <ᵘ-fin ≤′-refl

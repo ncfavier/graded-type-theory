@@ -33,6 +33,7 @@ private
     A A₁ A₂ A′ B B₁ B₂ C E F F′ G H : Term _
     a f g l l₁ l₂ l₂′ l₃ l′ n′ s s′ t t₁ t₂ t′ u u₁ u₂ u′ v v₁ v₂ v′ w w₁ w₂ w′ z z′ :
       Term _
+    l∞ : Infinite-universe-level
     σ σ′ : Subst _ _
     x : Fin _
     p p′ q q′ r : M
@@ -55,6 +56,7 @@ mutual
     Levelⱼ : ⊢ Γ → Γ ⊢ Level
     Uⱼ     : Γ ⊢ l ∷ Level
            → Γ ⊢ U l
+    U∞ⱼ    : ⊢ Γ → Γ ⊢ U∞ l∞
     univ   : Γ ⊢ A ∷ U l
            → Γ ⊢ A
     Liftⱼ  : Γ ⊢ l₂ ∷ Level

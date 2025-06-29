@@ -159,9 +159,9 @@ opaque
 
   _≟ᵘ_ : Decidable (_≡_ {A = Universe-level})
   0ᵘ+ l₁ ≟ᵘ 0ᵘ+ l₂ = Dec-map (cong 0ᵘ+_ , λ { refl → refl }) (l₁ ≟ l₂)
-  0ᵘ+ l₁ ≟ᵘ ωᵘ     = no (λ ())
-  ωᵘ     ≟ᵘ 0ᵘ+ l₂ = no (λ ())
-  ωᵘ     ≟ᵘ ωᵘ     = yes refl
+  0ᵘ+ l₁ ≟ᵘ ωᵘ+ l₂ = no (λ ())
+  ωᵘ+ l₁ ≟ᵘ 0ᵘ+ l₂ = no (λ ())
+  ωᵘ+ l₁ ≟ᵘ ωᵘ+ l₂ = Dec-map (cong ωᵘ+_ , λ { refl → refl }) (l₁ ≟ l₂)
 
 ------------------------------------------------------------------------
 -- Properties related to _≤ᵘ_ and _<ᵘ_
@@ -171,59 +171,69 @@ opaque
   -- The level 0 is the lowest level.
 
   0≤ᵘ : 0ᵘ ≤ᵘ l
-  0≤ᵘ {0ᵘ+ x} = ≤ᵘ-nat z≤′n
-  0≤ᵘ {(ωᵘ)}  = ≤ᵘ-ωᵘ
+  0≤ᵘ {0ᵘ+ x} = ≤ᵘ-fin z≤′n
+  0≤ᵘ {ωᵘ+ x} = ≤ᵘ-fin-inf
 
 opaque
 
   -- The relation _≤ᵘ_ is transitive.
 
   ≤ᵘ-trans : l₁ ≤ᵘ l₂ → l₂ ≤ᵘ l₃ → l₁ ≤ᵘ l₃
-  ≤ᵘ-trans (≤ᵘ-nat p) (≤ᵘ-nat q) = ≤ᵘ-nat (≤′-trans p q)
-  ≤ᵘ-trans _          ≤ᵘ-ωᵘ      = ≤ᵘ-ωᵘ
+  ≤ᵘ-trans (≤ᵘ-fin x) (≤ᵘ-fin y) = ≤ᵘ-fin (≤′-trans x y)
+  ≤ᵘ-trans (≤ᵘ-fin x) ≤ᵘ-fin-inf = ≤ᵘ-fin-inf
+  ≤ᵘ-trans ≤ᵘ-fin-inf (≤ᵘ-inf x) = ≤ᵘ-fin-inf
+  ≤ᵘ-trans (≤ᵘ-inf x) (≤ᵘ-inf y) = ≤ᵘ-inf (≤′-trans x y)
 
 opaque
 
   -- The relation _<ᵘ_ is transitive.
 
   <ᵘ-trans : l₁ <ᵘ l₂ → l₂ <ᵘ l₃ → l₁ <ᵘ l₃
-  <ᵘ-trans (<ᵘ-nat p) (<ᵘ-nat q) = <ᵘ-nat (<′-trans p q)
-  <ᵘ-trans (<ᵘ-nat _) <ᵘ-ωᵘ      = <ᵘ-ωᵘ
-  <ᵘ-trans <ᵘ-ωᵘ      ()
+  <ᵘ-trans (<ᵘ-fin x) (<ᵘ-fin y) = <ᵘ-fin (<′-trans x y)
+  <ᵘ-trans (<ᵘ-fin x) <ᵘ-fin-inf = <ᵘ-fin-inf
+  <ᵘ-trans <ᵘ-fin-inf (<ᵘ-inf x) = <ᵘ-fin-inf
+  <ᵘ-trans (<ᵘ-inf x) (<ᵘ-inf y) = <ᵘ-inf (<′-trans x y)
 
 opaque
 
   <ᵘ-≤ᵘ-trans : l₁ <ᵘ l₂ → l₂ ≤ᵘ l₃ → l₁ <ᵘ l₃
-  <ᵘ-≤ᵘ-trans (<ᵘ-nat p) (≤ᵘ-nat q) = <ᵘ-nat (≤′-trans p q)
-  <ᵘ-≤ᵘ-trans (<ᵘ-nat _) ≤ᵘ-ωᵘ      = <ᵘ-ωᵘ
-  <ᵘ-≤ᵘ-trans <ᵘ-ωᵘ      ≤ᵘ-ωᵘ      = <ᵘ-ωᵘ
+  <ᵘ-≤ᵘ-trans (<ᵘ-fin x) (≤ᵘ-fin y) = <ᵘ-fin (≤′-trans x y)
+  <ᵘ-≤ᵘ-trans (<ᵘ-fin x) ≤ᵘ-fin-inf = <ᵘ-fin-inf
+  <ᵘ-≤ᵘ-trans <ᵘ-fin-inf (≤ᵘ-inf x) = <ᵘ-fin-inf
+  <ᵘ-≤ᵘ-trans (<ᵘ-inf x) (≤ᵘ-inf y) = <ᵘ-inf (≤′-trans x y)
 
 opaque
 
   -- The relation _<ᵘ_ is contained in _≤ᵘ_.
 
   <ᵘ→≤ᵘ : l₁ <ᵘ l₂ → l₁ ≤ᵘ l₂
-  <ᵘ→≤ᵘ (<ᵘ-nat p) = ≤ᵘ-nat (<′→≤′ p)
-  <ᵘ→≤ᵘ <ᵘ-ωᵘ      = ≤ᵘ-ωᵘ
+  <ᵘ→≤ᵘ (<ᵘ-fin x) = ≤ᵘ-fin (<′→≤′ x)
+  <ᵘ→≤ᵘ <ᵘ-fin-inf = ≤ᵘ-fin-inf
+  <ᵘ→≤ᵘ (<ᵘ-inf x) = ≤ᵘ-inf (<′→≤′ x)
 
 -- The relation _<ᵘ_ is well-founded.
 
 private
-  nat-accessible : ∀ n → Acc _<ᵘ_ (0ᵘ+ n)
-  nat-accessible′ : ∀ n → WfRec _<ᵘ_ (Acc _<ᵘ_) (0ᵘ+ n)
-  nat-accessible n = acc (nat-accessible′ n)
-  nat-accessible′ .(1+ n) (<ᵘ-nat {l = n} (≤′-refl)) = nat-accessible n
-  nat-accessible′ .(1+ n) (<ᵘ-nat (≤′-step {n} p)) = nat-accessible′ n (<ᵘ-nat p)
+  fin-accessible : ∀ n → Acc _<ᵘ_ (0ᵘ+ n)
+  fin-wfrec : ∀ n → WfRec _<ᵘ_ (Acc _<ᵘ_) (0ᵘ+ n)
 
-  ωᵘ-accessible′ : WfRec _<ᵘ_ (Acc _<ᵘ_) ωᵘ
-  ωᵘ-accessible′ <ᵘ-ωᵘ = nat-accessible _
+  fin-accessible n = acc (fin-wfrec n)
 
-  ωᵘ-accessible : Acc _<ᵘ_ ωᵘ
-  ωᵘ-accessible = acc ωᵘ-accessible′
+  fin-wfrec .(1+ n) (<ᵘ-fin {l = n} ≤′-refl) = fin-accessible n
+  fin-wfrec .(1+ n) (<ᵘ-fin (≤′-step {n} p)) = fin-wfrec n (<ᵘ-fin p)
+
+  inf-accessible : ∀ n → Acc _<ᵘ_ (ωᵘ+ n)
+  inf-wfrec : ∀ n → WfRec _<ᵘ_ (Acc _<ᵘ_) (ωᵘ+ n)
+
+  inf-accessible n = acc (inf-wfrec n)
+
+  inf-wfrec n (<ᵘ-fin-inf {l}) = fin-accessible l
+  inf-wfrec .(1+ n) (<ᵘ-inf {l = n} ≤′-refl) = inf-accessible n
+  inf-wfrec .(1+ n) (<ᵘ-inf (≤′-step {n} p)) = inf-wfrec n (<ᵘ-inf p)
 
 <ᵘ-wellFounded : WellFounded _<ᵘ_
-<ᵘ-wellFounded (0ᵘ+ n) = nat-accessible n
-<ᵘ-wellFounded ωᵘ      = ωᵘ-accessible
+<ᵘ-wellFounded (0ᵘ+ n) = fin-accessible n
+<ᵘ-wellFounded (ωᵘ+ n) = inf-accessible n
 
 <ᵘ-Rec : ∀ {ℓ} → RecStruct Universe-level ℓ ℓ
 <ᵘ-Rec = WfRec _<ᵘ_
@@ -243,27 +253,35 @@ opaque
   -- The level l₁ is bounded by the maximum of l₁ and l₂.
 
   ≤ᵘ⊔ᵘʳ : l₁ ≤ᵘ l₁ ⊔ᵘ l₂
-  ≤ᵘ⊔ᵘʳ {0ᵘ+ l₁} {0ᵘ+ l₂} = ≤ᵘ-nat ≤′⊔ʳ
-  ≤ᵘ⊔ᵘʳ {0ᵘ+ l₁} {(ωᵘ)}   = ≤ᵘ-ωᵘ
-  ≤ᵘ⊔ᵘʳ {(ωᵘ)}            = ≤ᵘ-ωᵘ
+  ≤ᵘ⊔ᵘʳ {0ᵘ+ x} {0ᵘ+ y} = ≤ᵘ-fin ≤′⊔ʳ
+  ≤ᵘ⊔ᵘʳ {0ᵘ+ x} {ωᵘ+ y} = ≤ᵘ-fin-inf
+  ≤ᵘ⊔ᵘʳ {ωᵘ+ x} {0ᵘ+ y} = ≤ᵘ-refl
+  ≤ᵘ⊔ᵘʳ {ωᵘ+ x} {ωᵘ+ y} = ≤ᵘ-inf ≤′⊔ʳ
 
 opaque
 
   -- The level l₂ is bounded by the maximum of l₁ and l₂.
 
   ≤ᵘ⊔ᵘˡ : l₂ ≤ᵘ l₁ ⊔ᵘ l₂
-  ≤ᵘ⊔ᵘˡ {0ᵘ+ l₂} {0ᵘ+ l₁} = ≤ᵘ-nat ≤′⊔ˡ
-  ≤ᵘ⊔ᵘˡ {(ωᵘ)}   {0ᵘ+ l₁} = ≤ᵘ-ωᵘ
-  ≤ᵘ⊔ᵘˡ {(l₂)}   {(ωᵘ)}   = ≤ᵘ-ωᵘ
+  ≤ᵘ⊔ᵘˡ {0ᵘ+ x} {0ᵘ+ y} = ≤ᵘ-fin ≤′⊔ˡ
+  ≤ᵘ⊔ᵘˡ {0ᵘ+ x} {ωᵘ+ y} = ≤ᵘ-fin-inf
+  ≤ᵘ⊔ᵘˡ {ωᵘ+ x} {0ᵘ+ y} = ≤ᵘ-refl
+  ≤ᵘ⊔ᵘˡ {ωᵘ+ x} {ωᵘ+ y} = ≤ᵘ-inf ≤′⊔ˡ
 
 opaque
 
   -- The function _⊔ᵘ_ is monotone.
 
   ⊔ᵘ-mono : l₁ ≤ᵘ l₁′ → l₂ ≤ᵘ l₂′ → l₁ ⊔ᵘ l₂ ≤ᵘ l₁′ ⊔ᵘ l₂′
-  ⊔ᵘ-mono (≤ᵘ-nat l₁≤) (≤ᵘ-nat l₂≤) = ≤ᵘ-nat (⊔-mono l₁≤ l₂≤)
-  ⊔ᵘ-mono (≤ᵘ-nat l₁≤) ≤ᵘ-ωᵘ        = ≤ᵘ-ωᵘ
-  ⊔ᵘ-mono ≤ᵘ-ωᵘ        l₂≤          = ≤ᵘ-ωᵘ
+  ⊔ᵘ-mono (≤ᵘ-fin x) (≤ᵘ-fin y) = ≤ᵘ-fin (⊔-mono x y)
+  ⊔ᵘ-mono (≤ᵘ-fin x) ≤ᵘ-fin-inf = ≤ᵘ-fin-inf
+  ⊔ᵘ-mono (≤ᵘ-fin x) (≤ᵘ-inf y) = ≤ᵘ-inf y
+  ⊔ᵘ-mono ≤ᵘ-fin-inf (≤ᵘ-fin x) = ≤ᵘ-fin-inf
+  ⊔ᵘ-mono ≤ᵘ-fin-inf ≤ᵘ-fin-inf = ≤ᵘ-fin-inf
+  ⊔ᵘ-mono ≤ᵘ-fin-inf (≤ᵘ-inf x) = ≤ᵘ-inf (≤′-trans x ≤′⊔ˡ)
+  ⊔ᵘ-mono (≤ᵘ-inf x) (≤ᵘ-fin y) = ≤ᵘ-inf x
+  ⊔ᵘ-mono (≤ᵘ-inf x) ≤ᵘ-fin-inf = ≤ᵘ-inf (≤′-trans x ≤′⊔ʳ)
+  ⊔ᵘ-mono (≤ᵘ-inf x) (≤ᵘ-inf y) = ≤ᵘ-inf (⊔-mono x y)
 
 opaque
 
@@ -271,7 +289,7 @@ opaque
 
   ⊔ᵘ-identityˡ : 0ᵘ ⊔ᵘ l ≡ l
   ⊔ᵘ-identityˡ {0ᵘ+ l} = refl
-  ⊔ᵘ-identityˡ {(ωᵘ)}  = refl
+  ⊔ᵘ-identityˡ {ωᵘ+ l} = refl
 
 opaque
 
@@ -279,7 +297,7 @@ opaque
 
   ⊔ᵘ-idem : l ⊔ᵘ l ≡ l
   ⊔ᵘ-idem {0ᵘ+ l} = cong 0ᵘ+_ (⊔-idem l)
-  ⊔ᵘ-idem {(ωᵘ)}  = refl
+  ⊔ᵘ-idem {ωᵘ+ l} = cong ωᵘ+_ (⊔-idem l)
 
 ------------------------------------------------------------------------
 -- Properties related to Empty-con and _or-empty_

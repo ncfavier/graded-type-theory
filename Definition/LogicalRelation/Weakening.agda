@@ -105,6 +105,13 @@ mutual
   wk[neLevel]-prop [ρ] (maxᵘ-idemᵣ x y) = maxᵘ-idemᵣ (wkneLevel-prop [ρ] x) (wkEqTermLevel [ρ] y)
   wk[neLevel]-prop [ρ] (ne x) = ne (wkEqTermNe [ρ] x)
 
+wkGLevel
+  : ∀ {t} → ρ ∷ʷ Δ ⊇ Γ
+  → Γ ⊩GLevel t ∷GLevel
+  → Δ ⊩GLevel U.wkᵍ ρ t ∷GLevel
+wkGLevel [ρ] (lvl x) = lvl (wkTermLevel [ρ] x)
+wkGLevel [ρ] (ωᵘ x) = ωᵘ (wf-∷ʷ⊇ [ρ])
+
 opaque
   unfolding ↑ⁿ_
 
@@ -173,6 +180,17 @@ opaque
     → t′ PE.≡ U.wk ρ t
     → ↑ᵘ wk-t≡u′ PE.≡ ↑ᵘ t≡u
   wk-↑ᵘ [ρ] {t≡u} {wk-t≡u′} eq = PE.cong 0ᵘ+_ (wk-↑ⁿ [ρ] t≡u wk-t≡u′ eq)
+
+  wk-↑ᵍ
+    : ∀ {t t′} ([ρ] : ρ ∷ʷ Δ ⊇ Γ)
+    → {t≡u : Γ ⊩GLevel t ∷GLevel}
+    → {wk-t≡u′ : Δ ⊩GLevel t′ ∷GLevel}
+    → t′ PE.≡ U.wkᵍ ρ t
+    → ↑ᵍ wk-t≡u′ PE.≡ ↑ᵍ t≡u
+  wk-↑ᵍ [ρ] {lvl x} {lvl x₁} PE.refl = wk-↑ᵘ [ρ] {x} {x₁} PE.refl
+  wk-↑ᵍ [ρ] {lvl x} {ωᵘ x₁} ()
+  wk-↑ᵍ [ρ] {ωᵘ x} {lvl x₁} ()
+  wk-↑ᵍ [ρ] {ωᵘ x} {ωᵘ x₁} eq = PE.refl
 
 -- Weakening of reducible natural numbers
 

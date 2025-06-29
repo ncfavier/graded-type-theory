@@ -45,6 +45,7 @@ opaque
   toTerm∘fromTerm (l₁ maxᵘ l₂) =
     cong₂ _maxᵘ_ (toTerm∘fromTerm l₁) (toTerm∘fromTerm l₂)
   toTerm∘fromTerm (U l) = cong U (toTerm∘fromTerm l)
+  toTerm∘fromTerm (U∞ l) = refl
   toTerm∘fromTerm (Lift l A) =
     cong₂ Lift (toTerm∘fromTerm l) (toTerm∘fromTerm A)
   toTerm∘fromTerm (lift a) =
@@ -111,6 +112,8 @@ opaque
       (fromTerm∘toTerm l₁) (fromTerm∘toTerm l₂)
   fromTerm∘toTerm (gen Ukind (l ∷ₜ [])) =
     cong (λ l → gen Ukind (l ∷ₜ [])) (fromTerm∘toTerm l)
+  fromTerm∘toTerm (gen (U∞kind l) []) =
+    refl
   fromTerm∘toTerm (gen Liftkind (l ∷ₜ A ∷ₜ [])) =
     cong₂ (λ l A → gen Liftkind (l ∷ₜ A ∷ₜ [])) (fromTerm∘toTerm l) (fromTerm∘toTerm A)
   fromTerm∘toTerm (gen liftkind (a ∷ₜ [])) =
@@ -188,6 +191,7 @@ opaque
   wk≡wk′ (sucᵘ l) = cong sucᵘ (wk≡wk′ l)
   wk≡wk′ (l₁ maxᵘ l₂) = cong₂ _maxᵘ_ (wk≡wk′ l₁) (wk≡wk′ l₂)
   wk≡wk′ (U l) = cong U (wk≡wk′ l)
+  wk≡wk′ (U∞ l) = refl
   wk≡wk′ (Lift l A) = cong₂ Lift (wk≡wk′ l) (wk≡wk′ A)
   wk≡wk′ (lift a) = cong lift (wk≡wk′ a)
   wk≡wk′ (lower a) = cong lower (wk≡wk′ a)
@@ -364,6 +368,7 @@ opaque
   subst≡subst′ (l₁ maxᵘ l₂) =
     cong₂ _maxᵘ_ (subst≡subst′ l₁) (subst≡subst′ l₂)
   subst≡subst′ (U l) = cong U (subst≡subst′ l)
+  subst≡subst′ (U∞ l) = refl
   subst≡subst′ (Lift l A) = cong₂ Lift (subst≡subst′ l) (subst≡subst′ A)
   subst≡subst′ (lift a) = cong lift (subst≡subst′ a)
   subst≡subst′ (lower a) = cong lower (subst≡subst′ a)
@@ -1987,6 +1992,7 @@ opaque
   isNumeral? (sucᵘ _) = no (λ ())
   isNumeral? (_ maxᵘ _) = no (λ ())
   isNumeral? (U n) = no (λ ())
+  isNumeral? (U∞ n) = no (λ ())
   isNumeral? (Lift _ _) = no λ ()
   isNumeral? (lift _) = no λ ()
   isNumeral? (lower _) = no λ ()

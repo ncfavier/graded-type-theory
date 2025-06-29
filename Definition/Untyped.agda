@@ -54,6 +54,7 @@ data Term (n : Nat) : Set a where
   sucᵘ : Term n → Term n
   _maxᵘ_ : Term n → Term n → Term n
   U : Term n → Term n
+  U∞ : Infinite-universe-level → Term n
   Lift : (l : Term n) (A : Term n) → Term n
   lift : (a : Term n) → Term n
   lower : (a : Term n) → Term n
@@ -133,6 +134,12 @@ data Numeral {n : Nat} : Term n → Set a where
   zeroₙ : Numeral zero
   sucₙ : Numeral t → Numeral (suc t)
 
+-- A generalised level is either a level term or an external level ≥ ω.
+
+data GLevel (n : Nat) : Set a where
+  fin : Term n → GLevel n
+  inf : Infinite-universe-level → GLevel n
+
 -- The canonical term corresponding to the given natural number.
 
 sucᵏ : (k : Nat) → Term n
@@ -166,6 +173,7 @@ data Kind : (ns : List Nat) → Set a where
   Maxᵘkind   : Kind (0 ∷ 0 ∷ [])
 
   Ukind : Kind (0 ∷ [])
+  U∞kind : Infinite-universe-level → Kind []
 
   Liftkind : Kind (0 ∷ 0 ∷ [])
   liftkind : Kind (0 ∷ [])
@@ -231,6 +239,8 @@ toTerm (gen Maxᵘkind (l₁ ∷ₜ l₂ ∷ₜ [])) =
   toTerm l₁ maxᵘ toTerm l₂
 toTerm (gen Ukind (l ∷ₜ [])) =
   U (toTerm l)
+toTerm (gen (U∞kind l) []) =
+  U∞ l
 toTerm (gen Liftkind (l ∷ₜ A ∷ₜ [])) =
   Lift (toTerm l) (toTerm A)
 toTerm (gen liftkind (a ∷ₜ [])) =
@@ -295,6 +305,8 @@ fromTerm (l₁ maxᵘ l₂) =
   gen Maxᵘkind (fromTerm l₁ ∷ₜ fromTerm l₂ ∷ₜ [])
 fromTerm (U l) =
   gen Ukind (fromTerm l ∷ₜ [])
+fromTerm (U∞ l) =
+  gen (U∞kind l) []
 fromTerm (Lift l A) =
   gen Liftkind (fromTerm l ∷ₜ fromTerm A ∷ₜ [])
 fromTerm (lift a) =
@@ -366,6 +378,7 @@ wk ρ zeroᵘ = zeroᵘ
 wk ρ (sucᵘ l) = sucᵘ (wk ρ l)
 wk ρ (l₁ maxᵘ l₂) = wk ρ l₁ maxᵘ wk ρ l₂
 wk ρ (U l) = U (wk ρ l)
+wk ρ (U∞ l) = U∞ l
 wk ρ (Lift l A) = Lift (wk ρ l) (wk ρ A)
 wk ρ (lift a) = lift (wk ρ a)
 wk ρ (lower a) = lower (wk ρ a)
@@ -410,6 +423,12 @@ mutual
   wk′ : (ρ : Wk m n) (t : Term′ n) → Term′ m
   wk′ ρ (var x) = var (wkVar ρ x)
   wk′ ρ (gen k ts) = gen k (wkGen ρ ts)
+
+-- Weakening of generalised levels.
+
+wkᵍ : (ρ : Wk m n) (t : GLevel n) → GLevel m
+wkᵍ ρ (fin x) = fin (wk ρ x)
+wkᵍ ρ (inf x) = inf x
 
 -- Adding one variable to the context requires wk1.
 -- If Γ ⊢ t : B then Γ∙A ⊢ wk1 t : wk1 B.
@@ -544,6 +563,7 @@ zeroᵘ [ σ ] = zeroᵘ
 sucᵘ l [ σ ] = sucᵘ (l [ σ ])
 l₁ maxᵘ l₂ [ σ ] = (l₁ [ σ ]) maxᵘ (l₂ [ σ ])
 U l [ σ ] = U (l [ σ ])
+U∞ l [ σ ] = U∞ l
 Lift l A [ σ ] = Lift (l [ σ ]) (A [ σ ])
 lift a [ σ ] = lift (a [ σ ])
 lower a [ σ ] = lower (a [ σ ])

@@ -241,6 +241,12 @@ mutual
       → [neLevel]-prop Γ (t₁ maxᵘ t₂) t₁
     ne : ∀ {k k′} → Γ ⊩neNf k ≡ k′ ∷ Level → [neLevel]-prop Γ k k′
 
+-- Reducible generalised levels
+
+data _⊩GLevel_∷GLevel (Γ : Con Term ℓ) : (t : GLevel ℓ) → Set a where
+  lvl : Γ ⊩Level t ∷Level → Γ ⊩GLevel lvl t ∷GLevel
+  ωᵘ  : ⊢ Γ               → Γ ⊩GLevel ωᵘ ∷GLevel
+
 -- Level reflection
 
 abstract
@@ -268,6 +274,10 @@ opaque mutual
 
 ↑ᵘ_ : Γ ⊩Level t ∷Level → Universe-level
 ↑ᵘ [t] = 0ᵘ+ ↑ⁿ [t]
+
+↑ᵍ_ : ∀ {t} → Γ ⊩GLevel t ∷GLevel → Universe-level
+↑ᵍ lvl x = ↑ᵘ x
+↑ᵍ ωᵘ _ = ωᵘ
 
 -- Reducibility of natural numbers:
 
