@@ -89,6 +89,18 @@ opaque
   → ↑ᵘ [t] PE.≡ ↑ᵘ [t]′
 ↑ᵘ-irrelevance {[t]} {[t]′} = PE.cong 0ᵘ+_ (↑ᵘ′-irrelevance [t] [t]′)
 
+↑ᵍ-irrelevance
+  : ∀ {t} {[t] : Γ ⊩GLevel t ∷GLevel} {[t]′ : Γ ⊩GLevel t ∷GLevel}
+  → ↑ᵍ [t] PE.≡ ↑ᵍ [t]′
+↑ᵍ-irrelevance {[t] = lvl x} {lvl y} = ↑ᵘ-irrelevance
+↑ᵍ-irrelevance {[t] = ωᵘ _} {ωᵘ _} = PE.refl
+
+irr-⊩
+  : ∀ {l} {[l] [l]′ : Γ ⊩GLevel l ∷GLevel}
+  → Γ ⊩⟨ ↑ᵍ [l] ⟩ A
+  → Γ ⊩⟨ ↑ᵍ [l]′ ⟩ A
+irr-⊩ = PE.subst (_ ⊩⟨_⟩ _) ↑ᵍ-irrelevance
+
 opaque
   unfolding ↑ᵘ′_ ⊩sucᵘ
 

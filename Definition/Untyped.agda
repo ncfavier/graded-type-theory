@@ -133,6 +133,12 @@ data Numeral {n : Nat} : Term n → Set a where
   zeroₙ : Numeral zero
   sucₙ : Numeral t → Numeral (suc t)
 
+-- A generalised level is either a level term or an external level ≥ ω.
+
+data GLevel (n : Nat) : Set a where
+  lvl : Term n → GLevel n
+  ωᵘ  : GLevel n
+
 -- The canonical term corresponding to the given natural number.
 
 sucᵏ : (k : Nat) → Term n
@@ -410,6 +416,12 @@ mutual
   wk′ : (ρ : Wk m n) (t : Term′ n) → Term′ m
   wk′ ρ (var x) = var (wkVar ρ x)
   wk′ ρ (gen k ts) = gen k (wkGen ρ ts)
+
+-- Weakening of generalised levels.
+
+wkᵍ : (ρ : Wk m n) (t : GLevel n) → GLevel m
+wkᵍ ρ (lvl x) = lvl (wk ρ x)
+wkᵍ ρ ωᵘ = ωᵘ
 
 -- Adding one variable to the context requires wk1.
 -- If Γ ⊢ t : B then Γ∙A ⊢ wk1 t : wk1 B.
